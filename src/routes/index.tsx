@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Truck, ShieldCheck, Beaker, Users, Package, CreditCard, Home, Check, MessageCircle, TrendingUp } from "lucide-react";
+import { ArrowRight, Truck, ShieldCheck, Beaker, Users, Package, CreditCard, Home as HomeIcon, Check, MessageCircle, TrendingUp } from "lucide-react";
 import { buildHead, organizationJsonLd, faqJsonLd } from "@/lib/seo";
 import { products } from "@/data/products";
 import { homeFaqs } from "@/data/faqs";
@@ -88,7 +88,7 @@ function Home() {
             {[
               { icon: Package, n: "01", t: "Eliges tus péptidos", d: "Mínimo 10 viales totales. Mezcla libre entre cualquier producto del catálogo." },
               { icon: CreditCard, n: "02", t: "Pagas en MXN", d: "Transferencia SPEI, OXXO o USDT. Pago 100% en pesos mexicanos." },
-              { icon: Home, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu dirección. 15-25 días." },
+              { icon: HomeIcon, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu dirección. 15-25 días." },
             ].map((s) => (
               <div key={s.n} className="rounded-lg border border-border bg-card p-8 transition-shadow hover:shadow-md">
                 <div className="flex items-center justify-between">
