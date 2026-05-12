@@ -14,7 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      order_items: {
+        Row: {
+          dose: string
+          id: string
+          line_total_mxn: number
+          order_id: string
+          product_name: string
+          product_slug: string
+          qty: number
+          unit_price_mxn: number
+        }
+        Insert: {
+          dose: string
+          id?: string
+          line_total_mxn: number
+          order_id: string
+          product_name: string
+          product_slug: string
+          qty: number
+          unit_price_mxn: number
+        }
+        Update: {
+          dose?: string
+          id?: string
+          line_total_mxn?: number
+          order_id?: string
+          product_name?: string
+          product_slug?: string
+          qty?: number
+          unit_price_mxn?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_address: Json
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          mp_payment_id: string | null
+          mp_preference_id: string | null
+          notes: string | null
+          status: string
+          total_mxn: number
+        }
+        Insert: {
+          created_at?: string
+          customer_address: Json
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          notes?: string | null
+          status?: string
+          total_mxn: number
+        }
+        Update: {
+          created_at?: string
+          customer_address?: Json
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          mp_payment_id?: string | null
+          mp_preference_id?: string | null
+          notes?: string | null
+          status?: string
+          total_mxn?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
