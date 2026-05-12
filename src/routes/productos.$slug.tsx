@@ -62,7 +62,7 @@ function ProductPage() {
   const { product: p } = Route.useLoaderData();
   const cat = categories.find((c) => c.slug === p.category);
   const minPrice = p.tiers[p.tiers.length - 1].pricePerVial;
-  const related = p.related.map((s) => getProduct(s)).filter(Boolean) as typeof products;
+  const related = p.related.map((s: string) => getProduct(s)).filter(Boolean) as typeof products;
   const wa = buildWaLink(
     `Hola, quiero cotizar ${p.name} (${p.mgPerVial}). ¿Me das el precio actualizado al mayoreo?`,
   );
