@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export const Route = createFileRoute("/_admin/configuracion")({ component: Config });
+export const Route = createFileRoute("/admin/configuracion")({ component: Config });
 
 function Config() {
   const get = useServerFn(adminGetSettings);

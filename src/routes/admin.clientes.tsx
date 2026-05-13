@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { adminListCustomers } from "@/lib/admin.functions";
 import { formatMxn } from "@/lib/pricing";
 
-export const Route = createFileRoute("/_admin/clientes")({ component: Clientes });
+export const Route = createFileRoute("/admin/clientes")({ component: Clientes });
 
 function Clientes() {
   const fn = useServerFn(adminListCustomers);

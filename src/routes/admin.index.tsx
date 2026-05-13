@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { adminGetDashboard } from "@/lib/admin.functions";
 import { formatMxn } from "@/lib/pricing";
 
-export const Route = createFileRoute("/_admin/")({ component: Dashboard });
+export const Route = createFileRoute("/admin/")({ component: Dashboard });
 
 function Dashboard() {
   const fn = useServerFn(adminGetDashboard);

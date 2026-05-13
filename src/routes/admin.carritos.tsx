@@ -5,7 +5,7 @@ import { adminListAbandonedCarts } from "@/lib/admin.functions";
 import { formatMxn } from "@/lib/pricing";
 import { buildWaLink } from "@/lib/whatsapp";
 
-export const Route = createFileRoute("/_admin/carritos")({ component: Carritos });
+export const Route = createFileRoute("/admin/carritos")({ component: Carritos });
 
 function Carritos() {
   const fn = useServerFn(adminListAbandonedCarts);
