@@ -92,7 +92,13 @@ export const adminUpdateOrder = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateOrderSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const update: Record<string, unknown> = {};
+    const update: {
+      shipping_status?: string;
+      shipped_at?: string;
+      tracking_number?: string;
+      carrier?: string;
+      admin_notes?: string;
+    } = {};
     if (data.shipping_status) update.shipping_status = data.shipping_status;
     if (data.shipping_status === "enviado") update.shipped_at = new Date().toISOString();
     if (data.tracking_number !== undefined) update.tracking_number = data.tracking_number;
@@ -100,7 +106,7 @@ export const adminUpdateOrder = createServerFn({ method: "POST" })
     if (data.admin_notes !== undefined) update.admin_notes = data.admin_notes;
     const { error } = await supabaseAdmin.from("orders").update(update).eq("id", data.id);
     if (error) throw new Response(error.message, { status: 500 });
-    await supabaseAdmin.from("order_events").insert({ order_id: data.id, event: "admin_update", payload: update });
+    await supabaseAdmin.from("order_events").insert({ order_id: data.id, event: "admin_update", payload: update as Record<string, string> });
     return { ok: true };
   });
 
@@ -125,7 +131,7 @@ export const adminListCustomers = createServerFn({ method: "GET" })
     const { data: orders } = await supabaseAdmin.from("orders")
       .select("customer_email, customer_name, customer_phone, total_mxn, status, created_at, customer_address")
       .order("created_at", { ascending: false }).limit(1000);
-    const map = new Map<string, { email: string; name: string; phone: string; orders: number; spent: number; lastOrder: string; address: unknown }>();
+    const map = new Map<string, { email: string; name: string; phone: string; orders: number; spent: number; lastOrder: string; address: string }>();
     (orders ?? []).forEach((o) => {
       const k = (o.customer_email || "").toLowerCase();
       if (!k) return;
@@ -135,7 +141,7 @@ export const adminListCustomers = createServerFn({ method: "GET" })
         cur.orders += 1; cur.spent += inc;
         if (o.created_at > cur.lastOrder) cur.lastOrder = o.created_at;
       } else {
-        map.set(k, { email: k, name: o.customer_name, phone: o.customer_phone, orders: 1, spent: inc, lastOrder: o.created_at, address: o.customer_address });
+        map.set(k, { email: k, name: o.customer_name, phone: o.customer_phone, orders: 1, spent: inc, lastOrder: o.created_at, address: JSON.stringify(o.customer_address) });
       }
     });
     return { customers: Array.from(map.values()).sort((a,b) => b.spent - a.spent) };
