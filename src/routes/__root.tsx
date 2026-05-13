@@ -134,6 +134,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
         <ScrollToTop />
+        <PageviewTracker />
         <Header />
         <main className="flex-1">
           <Outlet />
