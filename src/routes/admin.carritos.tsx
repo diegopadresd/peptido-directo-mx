@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminListAbandonedCarts } from "@/lib/admin.functions";
+import { callAdminFn, formatAdminError } from "@/lib/admin-client";
 import { formatMxn } from "@/lib/pricing";
 import { buildWaLink } from "@/lib/whatsapp";
 
@@ -9,12 +10,13 @@ export const Route = createFileRoute("/admin/carritos")({ component: Carritos })
 
 function Carritos() {
   const fn = useServerFn(adminListAbandonedCarts);
-  const { data } = useQuery({ queryKey: ["admin","carts"], queryFn: () => fn() });
+  const { data, isError, error } = useQuery({ queryKey: ["admin","carts"], queryFn: () => callAdminFn(fn), retry: false });
   const carts = data?.carts ?? [];
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Carritos abandonados</h1>
       <p className="text-sm text-muted-foreground">Carritos con email donde el cliente no completó la compra después de 1 hora.</p>
+      {isError && <AdminError message={formatAdminError(error)} />}
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider">
@@ -40,4 +42,8 @@ function Carritos() {
       </div>
     </div>
   );
+}
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
 }
