@@ -16,6 +16,7 @@ import { Footer } from "@/components/site/Footer";
 import { WhatsAppFAB } from "@/components/site/WhatsAppFAB";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/whatsapp";
+import { trackPageview } from "@/lib/analytics/track";
 
 function NotFoundComponent() {
   return (
@@ -153,5 +154,14 @@ function ScrollToTop() {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
   }, [pathname, hash]);
+  return null;
+}
+
+function PageviewTracker() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    if (!pathname || pathname.startsWith("/admin") || pathname.startsWith("/api")) return;
+    trackPageview(pathname);
+  }, [pathname]);
   return null;
 }
