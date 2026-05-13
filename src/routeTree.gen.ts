@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as ProductosRouteImport } from './routes/productos'
 import { Route as PreguntasFrecuentesRouteImport } from './routes/preguntas-frecuentes'
 import { Route as EmpezarNegocioRouteImport } from './routes/empezar-negocio'
 import { Route as DistribuidorRouteImport } from './routes/distribuidor'
@@ -19,6 +18,7 @@ import { Route as ContactoRouteImport } from './routes/contacto'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 
@@ -30,11 +30,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductosRoute = ProductosRouteImport.update({
-  id: '/productos',
-  path: '/productos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreguntasFrecuentesRoute = PreguntasFrecuentesRouteImport.update({
@@ -72,10 +67,15 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductosIndexRoute = ProductosIndexRouteImport.update({
+  id: '/productos/',
+  path: '/productos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductosSlugRoute = ProductosSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ProductosRoute,
+  id: '/productos/$slug',
+  path: '/productos/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
@@ -91,11 +91,11 @@ export interface FileRoutesByFullPath {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
-  '/productos': typeof ProductosRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/productos/$slug': typeof ProductosSlugRoute
+  '/productos/': typeof ProductosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -105,11 +105,11 @@ export interface FileRoutesByTo {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
-  '/productos': typeof ProductosRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/productos/$slug': typeof ProductosSlugRoute
+  '/productos': typeof ProductosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,11 +120,11 @@ export interface FileRoutesById {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
-  '/productos': typeof ProductosRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/productos/$slug': typeof ProductosSlugRoute
+  '/productos/': typeof ProductosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -136,11 +136,11 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/preguntas-frecuentes'
-    | '/productos'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/productos/$slug'
+    | '/productos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,11 +150,11 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/preguntas-frecuentes'
-    | '/productos'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/productos/$slug'
+    | '/productos'
   id:
     | '__root__'
     | '/'
@@ -164,11 +164,11 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/preguntas-frecuentes'
-    | '/productos'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/productos/$slug'
+    | '/productos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -179,9 +179,10 @@ export interface RootRouteChildren {
   DistribuidorRoute: typeof DistribuidorRoute
   EmpezarNegocioRoute: typeof EmpezarNegocioRoute
   PreguntasFrecuentesRoute: typeof PreguntasFrecuentesRoute
-  ProductosRoute: typeof ProductosRouteWithChildren
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ProductosSlugRoute: typeof ProductosSlugRoute
+  ProductosIndexRoute: typeof ProductosIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -198,13 +199,6 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/productos': {
-      id: '/productos'
-      path: '/productos'
-      fullPath: '/productos'
-      preLoaderRoute: typeof ProductosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preguntas-frecuentes': {
@@ -256,12 +250,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/productos/': {
+      id: '/productos/'
+      path: '/productos'
+      fullPath: '/productos/'
+      preLoaderRoute: typeof ProductosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/productos/$slug': {
       id: '/productos/$slug'
-      path: '/$slug'
+      path: '/productos/$slug'
       fullPath: '/productos/$slug'
       preLoaderRoute: typeof ProductosSlugRouteImport
-      parentRoute: typeof ProductosRoute
+      parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -283,18 +284,6 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
-interface ProductosRouteChildren {
-  ProductosSlugRoute: typeof ProductosSlugRoute
-}
-
-const ProductosRouteChildren: ProductosRouteChildren = {
-  ProductosSlugRoute: ProductosSlugRoute,
-}
-
-const ProductosRouteWithChildren = ProductosRoute._addFileChildren(
-  ProductosRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BlogRoute: BlogRouteWithChildren,
@@ -303,10 +292,21 @@ const rootRouteChildren: RootRouteChildren = {
   DistribuidorRoute: DistribuidorRoute,
   EmpezarNegocioRoute: EmpezarNegocioRoute,
   PreguntasFrecuentesRoute: PreguntasFrecuentesRoute,
-  ProductosRoute: ProductosRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ProductosSlugRoute: ProductosSlugRoute,
+  ProductosIndexRoute: ProductosIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
