@@ -1,0 +1,27 @@
+# Péptidos Mayoreo México
+
+> Distribuidor mayorista de péptidos en México. Mínimo 10 viales por pedido, pago seguro con Mercado Pago, envío nacional y COA por lote. Atención por WhatsApp para distribuidores y revendedores.
+
+## Páginas principales
+
+- [Inicio](/): Distribuidor mayorista de péptidos en México con envío nacional.
+- [Catálogo de productos](/productos): Semaglutida, tirzepatida, retatrutida, BPC-157, GHK-Cu y más al mayoreo.
+- [Cómo funciona](/como-funciona): Proceso de compra, pago, envío y entrega de pedidos mayoristas.
+- [Empezar negocio](/empezar-negocio): Guía para arrancar tu negocio de reventa de péptidos en México.
+- [Programa distribuidor](/distribuidor): Condiciones, precios y soporte para distribuidores oficiales.
+- [Preguntas frecuentes](/preguntas-frecuentes): Legalidad, envío, aduana, pago, garantías y dudas comunes.
+- [Blog](/blog): Guías, comparativas y tutoriales para distribuidores y revendedores.
+- [Resumen empresa](/resumen-empresa): Quiénes somos, cobertura y propuesta de valor.
+- [Contacto](/contacto): WhatsApp, email y horarios de atención.
+
+## Información clave
+
+- País de operación: México (envío a toda la República).
+- Pedido mínimo: 10 viales.
+- Pago: Mercado Pago (tarjeta, OXXO, transferencia).
+- Documentación: Certificado de Análisis (COA) por lote.
+- Canal principal de soporte: WhatsApp, Lun–Sáb 9:00–19:00 CDMX.
+
+## Sitemap
+
+- [sitemap.xml](/sitemap.xml)
