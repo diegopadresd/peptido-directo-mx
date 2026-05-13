@@ -101,7 +101,7 @@ function ProductPage() {
               Research-only · Síntesis de alta pureza
             </span>
           </div>
-          <h1 className="mt-4 font-display text-4xl font-extrabold uppercase tracking-tight text-foreground md:text-6xl">
+          <h1 className="mt-4 font-display text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl md:text-6xl">
             {p.name}
           </h1>
           {p.tags && p.tags.length > 0 && (

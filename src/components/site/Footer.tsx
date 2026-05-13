@@ -1,17 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { cities } from "@/data/cities";
 import { categories } from "@/data/categories";
+import logoFull from "@/assets/peptidos-mayoreo-logo.svg";
 
 export function Footer() {
   return (
     <footer className="mt-20 border-t border-border bg-secondary">
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-2 font-display text-lg font-bold text-primary">
-              <span className="grid h-9 w-9 place-items-center rounded-md bg-primary text-primary-foreground">PM</span>
-              Péptidos Mayoreo
-            </div>
+          <div className="col-span-2 md:col-span-1">
+            <img src={logoFull} alt="Péptidos Mayoreo" className="h-12 w-auto" />
             <p className="mt-3 text-sm text-muted-foreground">
               Distribuidor mayorista de péptidos en México. Mínimo 10 viales, pago Mercado Pago, envío nacional.
             </p>

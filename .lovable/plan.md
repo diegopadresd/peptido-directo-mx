@@ -1,71 +1,44 @@
-## Hallazgos de la auditoría
+## Objetivo
 
-Antes de proponer cambios, lo que verifiqué en el código:
+1. Reemplazar el placeholder "PM" por el logo SVG nuevo en header y footer.
+2. Forzar scroll al tope al navegar entre rutas (a pesar de `scrollRestoration: true`, en SPA quedan posiciones residuales en algunos casos como links internos a la misma sección o navegación tras filtros).
+3. Auditar y pulir mobile en todo el sitio (≤768px).
 
-- **#3 JSON-LD ya está implementado.** `Organization` + `WebSite` se inyectan en `__root.tsx` (líneas 100-101), `FAQPage` y `Organization` en home (`index.tsx`), `Product` + `Breadcrumb` + `FAQPage` en cada PDP, `LocalBusiness` en cada `/peptidos/$ciudad`. Se sirven via `head()` durante SSR. Si tu extractor no los vio, probablemente miró el HTML pre-hidratación o una build vieja. **Acción: verificar con `curl https://peptidosmayoreo.com/ | grep ld+json` y reportar — no es rebuild.**
-- **#4 Blog ya tiene 12 posts** en `src/data/blog.ts` (`/blog`, `/blog/$slug`). No vacío.
-- **#5 `/contacto` y `/resumen-empresa` existen** como archivos de ruta. Solo falta confirmar HTTP 200 en producción.
-- **#6 Las 10 ciudades existen** en `src/data/cities.ts`: cdmx, guadalajara, monterrey, tijuana, puebla, queretaro, **merida, leon, hermosillo, cancun**. Footer solo lista 6, pero ninguna da 404.
+## 1. Logo
 
-**Lo que sí está roto y necesita fix de código (#1 y #2):**
+- Copiar `user-uploads://peptidos-mayoreo-logo.svg` a `src/assets/peptidos-mayoreo-logo.svg`.
+- Crear variante compacta (solo chevron) `src/assets/peptidos-mayoreo-mark.svg` para mobile (<sm) y favicon, manteniendo la versión completa para sm+.
+- `src/components/site/Header.tsx`: reemplazar el badge "PM" + texto por `<img src={logo} alt="Péptidos Mayoreo" class="h-8 w-auto sm:h-9" />`. Quitar el `<span>` redundante. Mantener `<Link to="/">`.
+- `src/components/site/Footer.tsx`: añadir el logo arriba del bloque de marca (si aplica) o sustituir el texto principal. Mantener tagline.
+- `public/favicon.ico` → además generar `public/favicon.svg` desde el mark para navegadores modernos. Actualizar `<link rel="icon">` en `__root.tsx` head.
+- Actualizar `og:image` solo si el usuario lo pide (no en este pase, ya existe `og-image.webp`).
 
-Precios reales de BPC-157 en el catálogo (`src/data/products.ts`):
-- Pack 10: `$450/vial`
-- Pack 20: `$405/vial` (10% off)
-- Pack 30: `$375/vial` (17% off — el más barato)
+## 2. Auto scroll-to-top global
 
-La home dice `$280/vial mayoreo` y la calculadora usa `$280` y promete `$10,300` de ganancia mensual. Inventado. Y a esos números les falta la inversión real (necesitarías ~17 viales × $280 = $4,760, pero a precio real serían $6,375 → no entra en $5,000).
+Aunque `scrollRestoration: true` está activo, restaura la posición previa al usar back/forward. Para forward navigations queremos siempre top. Añadir un componente `ScrollToTop` en `src/routes/__root.tsx` que escuche `useRouterState({ select: s => s.location.pathname })` y haga `window.scrollTo({ top: 0, behavior: 'instant' })` cuando cambia el pathname (ignorando hash anchors para no romper TOCs).
 
-## Cambios
+## 3. Mobile optimization (auditoría dirigida, sin rediseño)
 
-### 1. `src/routes/index.tsx` — tabla comparativa (línea 133)
-Reemplazar `["Precio por vial BPC-157", "$650 MXN", "$420 MXN", "$280 MXN"]` por números reales:
+Recorrer en viewport 375px y corregir issues comunes:
 
-```text
-["Precio por vial BPC-157 5mg", "$650 MXN", "$520 MXN", "$375 MXN"]
-```
+- **Header**: ya colapsa a hamburguesa; verificar logo no overflow, CTA "Comprar ahora" oculto en `<md` está bien.
+- **`index.tsx` (Home)**: tabla comparativa BPC-157 y calculadora distribuidor → garantizar `overflow-x-auto` en tablas, tipografía hero `text-3xl sm:text-5xl`, padding `px-4`, grids `grid-cols-1 md:grid-cols-3`.
+- **`productos.$slug.tsx` (PDP)**: `ConcentrationVolumePicker` selects/botones full-width, sticky CTA inferior en mobile, imágenes `w-full h-auto`.
+- **`ConcentrationVolumePicker.tsx`: botón Mercado Pago + WhatsApp `flex-col sm:flex-row gap-3`, tap targets ≥44px.
+- **`Footer.tsx`**: columnas `grid-cols-2 md:grid-cols-4`, tipografía legible.
+- **`peptidos.$ciudad.tsx`, `blog.$slug.tsx`, `como-funciona.tsx`, `distribuidor.tsx`, `empezar-negocio.tsx`, `contacto.tsx`, `resumen-empresa.tsx`, `preguntas-frecuentes.tsx`**: revisar containers tienen `px-4`, headings escalan con breakpoints, no hay anchos fijos en px que rompan a 360px, imágenes con `max-w-full`.
+- **WhatsAppFAB**: confirmar `bottom-4 right-4` y z-index correcto sobre CTAs.
+- **CookieBanner**: que no tape el FAB en mobile.
+- Añadir `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` (verificar que ya está).
 
-`$650` retail (queda), `$520` farmacia gris (entre retail y mayoreo), `$375` mayoreo pack 30 (real).
+QA final con screenshots a 375×812 de: home, PDP, catálogo, una ciudad, un blog post, checkout success.
 
-### 2. `src/routes/index.tsx` — calculadora distribuidor (líneas 177-222)
+## Archivos afectados
 
-Reescribir con **matemática real del pack 30 de BPC-157**, escalando la inversión para que el headline siga siendo impactante y honesto:
+- nuevo: `src/assets/peptidos-mayoreo-logo.svg`, `src/assets/peptidos-mayoreo-mark.svg`, `public/favicon.svg`
+- editado: `src/components/site/Header.tsx`, `src/components/site/Footer.tsx`, `src/routes/__root.tsx` (ScrollToTop + favicon link), y los route/component files con fixes mobile puntuales listados arriba.
 
-```text
-Headline: "Convierte $11,250 MXN en $27,000. Cada mes."
-─────────────────────────────────────────────────
-Inversión inicial          $11,250 MXN
-30 viales BPC-157 5mg
-(pack mayoreo)              $375/vial
-Reventa a $900 MXN/vial    $27,000 MXN
-─────────────────────────────────────────────────
-Ganancia mensual           $15,750
-```
+## Fuera de alcance
 
-Cuadra exacto: `30 × $375 = $11,250` (pack 30 real) y `30 × $900 = $27,000`. Margen `140%`.
-
-Mantener bullet "Precios escalonados por pack (10 / 20 / 30 viales)" y CTA `/empezar-negocio` sin cambios.
-
-### 3. Microcopy del hero/meta (opcional, mismo archivo)
-Si en algún meta de home se menciona "$280", ajustar también — ya hice grep y no aparece más fuera de la calculadora y la tabla.
-
-### 4. Validación post-deploy (sin cambios de código)
-Después de publicar:
-- `curl -s https://peptidosmayoreo.com/ | grep -c "application/ld+json"` → debe dar ≥2
-- `curl -sI https://peptidosmayoreo.com/contacto` → 200
-- `curl -sI https://peptidosmayoreo.com/resumen-empresa` → 200
-- `curl -sI https://peptidosmayoreo.com/peptidos/merida` → 200 (y demás ciudades)
-
-Si alguno falla te lo reporto y lo arreglo en una pasada corta.
-
-## Lo que NO hago (queda explícitamente fuera)
-
-- **No re-emitir JSON-LD** desde cero. Ya está. Solo verifico.
-- **No agregar la palabra "Semaglutida" en la calculadora** aunque resolvería más fácil — Semaglutida no existe como producto en `src/data/products.ts` (solo se menciona en blog). Si el cliente busca "Semaglutida mayoreo" desde Google, llega al blog pero no a un PDP. Eso es un hueco real. **Te pregunto abajo si quieres que lo agregue como producto del catálogo en este mismo turno.**
-
-## Pregunta antes de implementar
-
-1. **¿Agrego Semaglutida al catálogo (`src/data/products.ts`)** con variantes 5mg y 10mg? El blog ya menciona precios `$850–$1,200 mayoreo / $1,800–$2,800 reventa`, lo alinearía con eso. Si sí, la calculadora se vuelve aún más impresionante:
-   - Pack 30 Semaglutida 5mg @ $900 mayoreo = `$27,000 inversión → $54,000 reventa → $27,000 ganancia`.
-   - Y cierras un keyword crítico ("comprar semaglutida mexico") que hoy solo te apunta al blog.
-2. ¿O dejo el plan tal cual con BPC-157 y muevo Semaglutida a una tarea aparte?
+- No cambios de copy ni de funcionalidad de Mercado Pago.
+- No rediseño visual; solo pulido responsive y logo.
