@@ -18,7 +18,7 @@ export async function getAdminAuthHeaders() {
   return { Authorization: `Bearer ${token}` };
 }
 
-export async function callAdminFn<TResult>(fn: ServerFn<undefined, TResult>): Promise<TResult>;
+export async function callAdminFn<TResult>(fn: ServerFn<{ headers?: HeadersInit } | undefined, TResult>): Promise<TResult>;
 export async function callAdminFn<TData, TResult>(
   fn: ServerFn<{ data: TData; headers?: HeadersInit }, TResult>,
   data: TData,
