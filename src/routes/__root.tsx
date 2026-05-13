@@ -12,6 +12,8 @@ import appCss from "../styles.css?url";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { WhatsAppFAB } from "@/components/site/WhatsAppFAB";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import { SITE_URL } from "@/lib/whatsapp";
 
 function NotFoundComponent() {
   return (
@@ -87,6 +89,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Geist:wght@600;700;800&display=swap",
       },
       { rel: "icon", href: "/favicon.ico" },
+      { rel: "alternate", hrefLang: "es-MX", href: SITE_URL },
+      { rel: "alternate", hrefLang: "x-default", href: SITE_URL },
+    ],
+    scripts: [
+      { type: "application/ld+json", children: JSON.stringify(organizationJsonLd()) },
+      { type: "application/ld+json", children: JSON.stringify(websiteJsonLd()) },
+      // Analytics placeholders — pega tus IDs cuando los tengas:
+      // { children: "/* GA4 */ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);} gtag('js',new Date()); gtag('config','G-XXXXXXXXXX');" },
+      // { src: "https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX", async: "" },
     ],
   }),
   shellComponent: RootShell,
