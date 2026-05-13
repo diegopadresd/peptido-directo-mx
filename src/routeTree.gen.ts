@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
+import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
 import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
@@ -91,6 +92,11 @@ const PeptidosCiudadRoute = PeptidosCiudadRouteImport.update({
   path: '/peptidos/$ciudad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagoExitoRoute = PagoExitoRouteImport.update({
+  id: '/pago/exito',
+  path: '/pago/exito',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/pago/exito': typeof PagoExitoRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/pago/exito': typeof PagoExitoRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/pago/exito': typeof PagoExitoRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/pago/exito'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/pago/exito'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/pago/exito'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
@@ -231,6 +243,7 @@ export interface RootRouteChildren {
   ResumenEmpresaRoute: typeof ResumenEmpresaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PagoExitoRoute: typeof PagoExitoRoute
   PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeptidosCiudadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pago/exito': {
+      id: '/pago/exito'
+      path: '/pago/exito'
+      fullPath: '/pago/exito'
+      preLoaderRoute: typeof PagoExitoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/$slug'
@@ -376,6 +396,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResumenEmpresaRoute: ResumenEmpresaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PagoExitoRoute: PagoExitoRoute,
   PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
