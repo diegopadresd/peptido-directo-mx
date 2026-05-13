@@ -12,9 +12,9 @@ export const adminGetDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    const { data, error } = await supabaseAdmin.rpc("admin_dashboard_summary");
+    const { data, error } = await supabaseAdmin.rpc("admin_dashboard_summary" as never);
     if (error) throw new Response(error.message, { status: 500 });
-    return data as {
+    return data as unknown as {
       revenue: { d1: number; d7: number; d30: number };
       counts: { ordersTotal: number; ordersApproved: number; ordersPending: number; cartsActive: number; cartsAbandoned: number };
       avgTicket: number;
