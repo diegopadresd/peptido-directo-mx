@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import type { Product } from "@/data/products";
+import { minBasePrice } from "@/data/products";
 import { ArrowRight } from "lucide-react";
 
 export function ProductCard({ p }: { p: Product }) {
-  const minPrice = p.tiers[p.tiers.length - 1].pricePerVial;
+  const minPrice = minBasePrice(p);
+  const doses = p.variants.map((v) => v.dose).join(" · ");
   return (
     <Link
       to="/productos/$slug"
@@ -13,7 +15,7 @@ export function ProductCard({ p }: { p: Product }) {
       <div className="aspect-square overflow-hidden bg-secondary">
         <img
           src={p.image}
-          alt={`${p.name} ${p.mgPerVial} vial`}
+          alt={`${p.name} vial mayoreo México`}
           width={800}
           height={800}
           loading="lazy"
@@ -22,7 +24,7 @@ export function ProductCard({ p }: { p: Product }) {
       </div>
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-display text-lg font-bold text-foreground">{p.name}</h3>
-        <p className="text-sm text-muted-foreground">{p.mgPerVial} por vial</p>
+        <p className="text-xs text-muted-foreground">{doses}</p>
         <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.shortDesc}</p>
         <div className="mt-auto pt-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Desde</p>

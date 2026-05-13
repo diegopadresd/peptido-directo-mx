@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { products } from "@/data/products";
+import { products, minBasePrice } from "@/data/products";
 import { categories } from "@/data/categories";
 import { ProductCard } from "@/components/site/ProductCard";
 import { buildHead, breadcrumbJsonLd } from "@/lib/seo";
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/productos")({
     buildHead({
       title: "Catálogo Mayoreo - Péptidos al Por Mayor en México",
       description:
-        "Catálogo completo de péptidos al mayoreo en México: BPC-157, semaglutida, tirzepatida, retatrutide, CJC-1295, ipamorelin y más. Mínimo 10 viales.",
+        "Catálogo completo de péptidos al mayoreo en México: BPC-157, semaglutida, tirzepatida, retatrutida, CJC-1295, ipamorelin y más. Mínimo 10 viales. Pago Mercado Pago.",
       canonical: "/productos",
       keywords: ["catálogo péptidos mayoreo", "péptidos al por mayor mexico", "comprar péptidos mayoreo"],
       jsonLd: breadcrumbJsonLd([
@@ -28,8 +28,8 @@ function Catalogo() {
   const filtered = useMemo(() => {
     let list = cat === "todos" ? products : products.filter((p) => p.category === cat);
     list = [...list];
-    if (sort === "asc") list.sort((a, b) => a.tiers[a.tiers.length - 1].pricePerVial - b.tiers[b.tiers.length - 1].pricePerVial);
-    if (sort === "desc") list.sort((a, b) => b.tiers[b.tiers.length - 1].pricePerVial - a.tiers[a.tiers.length - 1].pricePerVial);
+    if (sort === "asc") list.sort((a, b) => minBasePrice(a) - minBasePrice(b));
+    if (sort === "desc") list.sort((a, b) => minBasePrice(b) - minBasePrice(a));
     return list;
   }, [cat, sort]);
 
@@ -39,7 +39,7 @@ function Catalogo() {
         <p className="text-sm font-semibold uppercase tracking-wider text-accent">Catálogo</p>
         <h1 className="mt-2 font-display text-4xl font-extrabold md:text-5xl">Péptidos al Mayoreo</h1>
         <p className="mt-3 text-lg text-muted-foreground">
-          Mínimo 10 viales totales — mezcla libre entre cualquier producto. Precios por vial bajan según volumen.
+          Mínimo 10 viales totales — mezcla libre. Packs de 10 / 20 / 30 con descuento. Pago seguro con Mercado Pago.
         </p>
       </header>
 

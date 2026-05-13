@@ -1,114 +1,141 @@
-# Plan: Péptidos Mayoreo — B2B Wholesale Site
 
-Build a Spanish-language B2B peptide wholesale site on TanStack Start with industrial/clean design (electric blue + cyan), shadcn/ui, and WhatsApp-driven conversion. This phase delivers the full site skeleton, SEO infrastructure, home page, and the supporting pages. Product detail pages get scaffolded with 8 sample peptides; deep per-product copy can be iterated next.
+## Objetivo
 
-Note: replacing "sexual" category with **"Bienestar íntimo"** (PT-141) to avoid blacklist triggers.
+Reemplazar el catálogo demo con la lista real (32 productos / ~45 SKU por dosis), una página por producto con selector de dosis, carrito de mezcla libre (mínimo 10 viales) y pago con Mercado Pago Checkout Pro.
 
 ---
 
-## 1. Design System (`src/styles.css`)
+## 1. Modelo de datos
 
-Replace default tokens with the brand palette in `oklch`:
-- `--background` white, `--muted` light gray (#F7F9FC)
-- `--foreground` charcoal (#1A1A1A)
-- `--primary` deep electric blue (#0A2540)
-- `--accent` bright cyan (#00D4FF)
-- `--success` emerald (#00C896) — new token, register in `@theme inline`
-- `--radius` 0.5rem (8px)
-- Add `font-sans: Inter`, `font-display: Geist` via Google Fonts `<link>` in root head
-- Tabular-nums utility class for prices
+`src/data/products.ts` — reescrito. Cada producto:
 
-## 2. SEO Infrastructure
-
-TanStack Start uses route-level `head()` (not react-helmet). Build a helper instead of react-helmet-async:
-
-- `src/lib/seo.ts` — `buildHead({ title, description, canonical, ogImage, keywords, jsonLd })` returning the `head()` object with meta + script tags. Used by every route.
-- `src/routes/sitemap[.]xml.tsx` — server route generating sitemap from a central `src/data/routes.ts` registry (static pages + product slugs).
-- `src/routes/robots[.]txt.tsx` — server route returning robots.txt with sitemap pointer.
-- `public/og-image.png` — generated 1200×630 brand image.
-- JSON-LD: Organization (home), Product + Offer (each product), FAQPage (FAQ + per-product FAQ), BreadcrumbList (subpages).
-
-## 3. Routes (file-based, flat dot-naming)
-
+```ts
+type DoseVariant = { dose: string; mg: number; basePricePerVial: number };
+type Product = {
+  slug; name; category; shortDesc; longDesc; mechanism; dosing; storage;
+  image; variants: DoseVariant[];   // 1..n dosis
+  faqs; related; bestSeller?; keywords;
+};
 ```
+
+Categorías (slug → nombre):
+- `recuperacion` — Recuperación y reparación
+- `gh-muscular` — Crecimiento muscular / GH
+- `perdida-peso` — Pérdida de peso (GLP-1/GIP)
+- `cognicion` — Cognición y nootrópicos
+- `longevidad` — Anti-aging y longevidad
+- `bronceado` — Bronceado y pigmentación
+- `intimo-hormonal` — Bienestar íntimo y hormonal *(evita "sexual")*
+
+32 productos con sus variantes desde el PDF (BPC-157, TB-500, Wolverine, CJC-1295, CJC+Ipa, Ipamorelin, Tesamorelin, HGH Frag, IGF-1 LR3, Sermorelin, Hexarelin, Semaglutida, Tirzepatida, Retatrutida, Cagrilintide, MOTS-c, 5-Amino-1MQ, AOD-9604, Mazdutide, Semax, Selank, Cerebrolysin, Dihexa, DSIP, GHK-Cu, Epithalon, NAD+, Glutathione, Thymosin α-1, Melanotan I/II, PT-141, Kisspeptin-10, Oxytocin, HMG).
+
+Copy de mecanismo / dosis / almacenamiento adaptado del estilo de brutalrx (research-only, técnico, breve), sin copiar literal.
+
+## 2. Pricing por pack (regla nueva)
+
+Helper en `src/lib/pricing.ts`:
+
+```ts
+export const PACKS = [
+  { qty: 10, multiplier: 10, label: "Pack x10" },
+  { qty: 20, multiplier: 18, label: "Pack x20", badge: "Ahorra 10%" },
+  { qty: 30, multiplier: 25, label: "Pack x30", badge: "Más popular · Ahorra 17%" },
+];
+export const packPrice = (base, qty) => base * PACKS.find(p=>p.qty===qty).multiplier;
+```
+
+- Catálogo y cards muestran **"desde $X MXN / vial"** (precio base mayoreo).
+- PDP muestra los 3 packs con precio total y precio efectivo por vial.
+- Carrito permite mezcla libre con MOQ global de 10 viales (validación cliente + servidor); precio = `base × multiplicador del pack más cercano según cantidad total del SKU`. *(Para mezcla libre con varios SKUs, el descuento se aplica por línea según su propia cantidad; documentado en checkout.)*
+
+## 3. Páginas / rutas
+
+Reescritura del catálogo + PDP, resto se mantiene.
+
+```text
 src/routes/
-  __root.tsx              shell + Header + Footer + WhatsApp FAB + cookie banner
-  index.tsx               Home
-  productos.tsx           Catálogo con filtros
-  productos.$slug.tsx     PDP programmatic
-  como-funciona.tsx
-  empezar-negocio.tsx
-  distribuidor.tsx        Tiered bulk pricing
-  preguntas-frecuentes.tsx
-  contacto.tsx
-  blog.tsx
-  blog.$slug.tsx
-  sitemap[.]xml.tsx
-  robots[.]txt.tsx
+  index.tsx                    — actualizar best sellers (Tirzepatida, Retatrutida, Semaglutida, BPC-157, CJC+Ipa, Wolverine)
+  productos.tsx                — grid filtrable por las 7 categorías; muestra "desde $X/vial"
+  productos.$slug.tsx          — PDP con <DoseSelector/> + <PackSelector/> + <AddToCartButton/>
+  carrito.tsx                  — NUEVO: lista de items, validación MOQ≥10, total, botón "Pagar con Mercado Pago"
+  pago.exito.tsx               — NUEVO: confirmación post-checkout (lee ?payment_id)
+  pago.error.tsx               — NUEVO
+  pago.pendiente.tsx           — NUEVO
+  api/public/mercadopago.webhook.ts — NUEVO: server route, valida x-signature de MP, marca pedido como pagado
+  sitemap[.]xml.tsx            — incluir todas las nuevas slugs
 ```
 
-## 4. Shared Components (`src/components/`)
+`src/lib/cart.ts` — store de carrito con `localStorage` (zustand-lite o useSyncExternalStore manual), items `{productSlug, dose, qty}`.
 
-- `Header.tsx` — logo, nav (Productos, Cómo funciona, Distribuidor, Blog, Contacto), CTA WhatsApp
-- `Footer.tsx` — legal disclaimers (COFEPRIS, research-use), links, social
-- `WhatsAppFAB.tsx` — fixed bottom-right, configurable prefilled message via `src/lib/whatsapp.ts` (`buildWaLink(message)`)
-- `MobileStickyCTA.tsx` — bottom-fixed on PDPs (mobile)
-- `ProductCard.tsx`, `PricingTiers.tsx`, `CategoryFilter.tsx`
-- `TrustBadges.tsx`, `ComparisonTable.tsx`, `StepCards.tsx`, `TestimonialGrid.tsx`, `FAQAccordion.tsx` (uses shadcn Accordion)
-- `CookieBanner.tsx` — LFPDPPP-compliant, localStorage dismiss
-- `Breadcrumbs.tsx` — emits BreadcrumbList JSON-LD
-- `AnalyticsScripts.tsx` — GA4 + Meta Pixel placeholders gated by env IDs (noscript pixel goes in `<body>`, not `<head>`)
+`src/components/site/`:
+- `DoseSelector.tsx` — pills con las dosis disponibles
+- `PackSelector.tsx` — 3 cards (10/20/30) con precio total + badge ahorro
+- `AddToCartButton.tsx`
+- `CartDrawer.tsx` + `CartIcon.tsx` (header)
+- `MercadoPagoButton.tsx`
 
-## 5. Data Layer (`src/data/`)
+## 4. Integración Mercado Pago
 
-- `products.ts` — typed `Product[]` with: slug, name, category, mgPerVial, image, shortDesc, longDesc, mechanism, dosing, storage, tiers (10–24, 25–49, 50–99, 100+), faqs, related.
-- Seed 8 products: BPC-157, Semaglutida, Tirzepatida, CJC-1295, Ipamorelin, BPC+TB500 stack, Retatrutide, Melanotan II.
-- `categories.ts` — Pérdida de peso, Crecimiento muscular, Recuperación, Anti-aging, Bronceado, **Bienestar íntimo**, Cognitivo.
-- `testimonials.ts`, `faqs.ts`, `routes.ts` (sitemap source).
+Requiere **Lovable Cloud** (lo activamos al inicio) y un secret `MERCADOPAGO_ACCESS_TOKEN` (sandbox primero).
 
-## 6. Home Page Sections
+Flujo Checkout Pro (redirect, sin SDK del lado cliente — más simple y robusto en Workers):
 
-Hero → Cómo funciona (3 steps) → Comparison table (retail vs gris vs mayoreo) → Best sellers (6 cards) → Empieza tu negocio teaser → Testimonials → FAQ snippet (5 Q with FAQPage schema) → Final WhatsApp CTA.
+1. **Server function** `createMpPreference` (`src/lib/mercadopago.functions.ts`):
+   - Recibe `{ items: [{slug, dose, qty}] }`.
+   - Recalcula precios server-side (nunca confía en el cliente).
+   - Valida MOQ ≥ 10.
+   - Inserta `orders` (status `pending`) y `order_items` en DB.
+   - POST a `https://api.mercadopago.com/checkout/preferences` con items, `external_reference = order.id`, `back_urls` (/pago/exito, /pago/error, /pago/pendiente), `notification_url = /api/public/mercadopago-webhook`, `auto_return: approved`.
+   - Devuelve `init_point` (live) o `sandbox_init_point`.
 
-## 7. Other Pages (this phase)
+2. **Cliente** redirige a `init_point`.
 
-- **/productos** — grid + category filter + price sort (client state)
-- **/productos/$slug** — H1 "[Nombre] Mayoreo - Precio Distribuidor México", tier table, technical specs, mechanism, dosing w/ research-use disclaimer, related, per-product FAQ + WhatsApp quote CTA prefilled with product
-- **/como-funciona** — model explanation, shipping timeline, payment methods (transferencia/OXXO/USDT)
-- **/empezar-negocio** — earnings calculator (simple inputs → output), what-you-get bullets, 3-step start, WA CTA
-- **/distribuidor** — escalated tier pricing for 50+ resellers
-- **/preguntas-frecuentes** — full FAQ with FAQPage schema
-- **/contacto** — WhatsApp primary, email secondary, hours
-- **/blog** + **/blog/$slug** — placeholder index + 1 sample post for SEO scaffolding
+3. **Webhook** `/api/public/mercadopago-webhook`:
+   - Verifica header `x-signature` HMAC con `MERCADOPAGO_WEBHOOK_SECRET`.
+   - Para topic `payment`: GET `https://api.mercadopago.com/v1/payments/{id}` → actualiza order por `external_reference`.
+   - Estados: `approved` → `paid`, `rejected` → `failed`, etc.
 
-## 8. Images
+**Tablas Supabase** (migración):
+- `orders(id uuid pk, created_at, status text, total_mxn int, customer_name, customer_email, customer_phone, customer_address jsonb, mp_preference_id, mp_payment_id, external_reference uuid)`
+- `order_items(id, order_id fk, product_slug, dose, qty, unit_price_mxn, line_total_mxn)`
+- RLS: insert público vía server fn (service role bypass); select restringido (no exponer).
 
-Generate via imagegen (fast tier):
-- 1× hero background (industrial/B2B)
-- 1× og-image.png (brand card 1200×630, premium tier for text)
-- 8× product vial images (consistent style, transparent or white bg)
-- 3× testimonial avatars (or initials, decide during build)
+Página de **checkout previo** (`/carrito` paso 2) recoge nombre, email, WhatsApp y dirección de envío antes de crear preferencia.
 
-## 9. Performance
+## 5. SEO
 
-- `loading="lazy"` on all non-hero images
-- Width/height on all `<img>` to avoid CLS
-- Preconnect Google Fonts in root head
-- Mobile-first Tailwind classes; tap targets ≥44px
+- `head()` por PDP: `title = "<Nombre> Mayoreo México - Desde $X/vial | Péptidos Mayoreo"`, description con dosis disponibles.
+- JSON-LD `Product` con `AggregateOffer` (lowPrice = base, highPrice = base×25, offerCount = 3 packs × n dosis).
+- Sitemap regenerado con las ~32 nuevas slugs.
+- Breadcrumbs en cada PDP.
+- Canonicals correctos (una URL por producto, dosis vía query no indexable o todas en la misma página → ya cubierto).
 
-## 10. Out of scope (next iterations)
+## 6. UX / componentes header
 
-- Deep editorial copy per product (8 placeholders shipped, refined later)
-- Real blog posts (1 sample only)
-- Backend (Lovable Cloud) — not needed; everything is static + WhatsApp handoff
-- Real GA4 / Meta Pixel IDs (placeholders only)
+- Añadir ícono de carrito con contador (header).
+- Banner sticky superior: "Pedido mínimo 10 viales · Pago seguro con Mercado Pago · Envío 15-25 días".
+- WhatsApp FAB se mantiene como soporte secundario; el CTA primario en PDP/carrito ahora es **"Agregar al carrito"** + **"Pagar con Mercado Pago"**.
+
+## 7. Aviso legal
+
+Todas las páginas y JSON-LD mantienen el disclaimer **"For Research Use Only · No para uso humano"**, replicando el tono de brutalrx.
 
 ---
 
-## Technical notes
+## Fuera de alcance (lo confirmamos después)
 
-- TanStack Start file-based routing; no react-router-dom, no react-helmet.
-- Server routes for `sitemap.xml` / `robots.txt` use the `[.]` escape in filename.
-- WhatsApp number stored in `src/lib/whatsapp.ts` as a single constant for easy swap.
-- All colors via semantic tokens — no hardcoded hex in components.
-- Each route's `head()` returns unique title/description/og + JSON-LD as needed.
+- Cuentas de usuario / historial de pedidos (los pedidos quedan ligados solo a email).
+- Cálculo automático de envío (se cobra envío fijo o gratis según monto, ya configurable como constante).
+- Producción real de MP: arrancamos en **sandbox**; pasar a producción solo cambia el access token.
+
+## Orden de implementación
+
+1. Activar Lovable Cloud + crear migración `orders` / `order_items`.
+2. Reescribir `products.ts` con los 32 productos del PDF + `pricing.ts`.
+3. Refactor `productos.tsx` + `productos.$slug.tsx` con DoseSelector / PackSelector.
+4. Carrito (store + drawer + página `/carrito` con form de envío).
+5. Server fn `createMpPreference` + página de éxito/error/pendiente.
+6. Webhook MP + verificación de firma.
+7. Pedir secret `MERCADOPAGO_ACCESS_TOKEN` (y `MERCADOPAGO_WEBHOOK_SECRET`).
+8. Actualizar header (carrito), home (best sellers reales), sitemap.
+9. QA: build + invocar server fn en sandbox.
