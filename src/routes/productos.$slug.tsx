@@ -84,6 +84,9 @@ function ProductPage() {
             alt={`${p.name} vial mayoreo México`}
             width={800}
             height={800}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         </div>
