@@ -49,7 +49,7 @@ function Home() {
             </h1>
             <p className="mt-5 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
               Del laboratorio en China directo a tu puerta. Compra mínima de 10 viales con 50% de descuento.
-              Sin intermediarios, sin markup, sin BS.
+              Sin intermediarios, sin markup, sin rodeos.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-accent text-primary hover:bg-accent/90">
@@ -63,7 +63,7 @@ function Home() {
             </div>
             <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
               {[
-                { icon: Truck, label: "Envío 15-25 días" },
+                { icon: Truck, label: "Envío 10-20 días" },
                 { icon: CreditCard, label: "Pago en MXN" },
                 { icon: ShieldCheck, label: "Pureza ≥99%" },
                 { icon: Users, label: "+500 clientes" },
@@ -82,13 +82,13 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">¿Cómo Funciona?</h2>
-            <p className="mt-3 text-lg text-muted-foreground">3 pasos. Sin pendejadas. Sin contratos.</p>
+            <p className="mt-3 text-lg text-muted-foreground">3 pasos. Sin rodeos. Sin contratos.</p>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               { icon: Package, n: "01", t: "Eliges tus péptidos", d: "Mínimo 10 viales totales. Mezcla libre entre cualquier producto del catálogo." },
               { icon: CreditCard, n: "02", t: "Pagas en MXN", d: "Transferencia SPEI, OXXO o USDT. Pago 100% en pesos mexicanos." },
-              { icon: HomeIcon, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu dirección. 15-25 días." },
+              { icon: HomeIcon, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu dirección. 10-20 días." },
             ].map((s) => (
               <div key={s.n} className="rounded-lg border border-border bg-card p-8 transition-shadow hover:shadow-md">
                 <div className="flex items-center justify-between">
@@ -123,7 +123,7 @@ function Home() {
               <tbody className="divide-y divide-border">
                 {[
                   ["Precio por vial BPC-157", "$650 MXN", "$420 MXN", "$280 MXN"],
-                  ["Tiempo de entrega", "Inmediato", "3-7 días", "15-25 días"],
+                  ["Tiempo de entrega", "Inmediato", "3-7 días", "10-20 días"],
                   ["Pureza certificada", "Variable", "Variable", "≥99% HPLC"],
                   ["Soporte WhatsApp", "No", "Limitado", "Sí, prioritario"],
                   ["Reposición si aduana", "No", "No", "Sí (1 vez)"],

@@ -5,7 +5,7 @@ export const homeFaqs = [
   },
   {
     q: "¿Cuánto tarda el envío desde China?",
-    a: "Entre 15 y 25 días hábiles a cualquier parte de México. Te enviamos número de rastreo en cuanto el paquete sale del laboratorio.",
+    a: "Entre 10 y 20 días hábiles a cualquier parte de México. Te enviamos número de rastreo en cuanto el paquete sale del laboratorio.",
   },
   {
     q: "¿Qué pasa si aduana detiene mi paquete?",

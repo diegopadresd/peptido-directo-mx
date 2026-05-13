@@ -8,7 +8,7 @@ export const Route = createFileRoute("/como-funciona")({
   head: () =>
     buildHead({
       title: "Cómo Funciona - Modelo de Mayoreo Directo de China",
-      description: "Aprende cómo compramos péptidos directo de fábrica en China y los enviamos a tu puerta en México con 50% menos. Pago en MXN, envío 15-25 días.",
+      description: "Aprende cómo compramos péptidos directo de fábrica en China y los enviamos a tu puerta en México con 50% menos. Pago en MXN, envío 10-20 días.",
       canonical: "/como-funciona",
       keywords: ["péptidos directo de china", "como comprar péptidos mayoreo", "envío péptidos méxico"],
       jsonLd: breadcrumbJsonLd([{ name: "Inicio", url: "/" }, { name: "Cómo funciona", url: "/como-funciona" }]),
@@ -29,7 +29,7 @@ function ComoFunciona() {
           { icon: Package, t: "1. Eliges productos y cantidad", d: "Mínimo 10 viales totales — puedes mezclar cualquier producto del catálogo. Cotizamos por WhatsApp con precio final en MXN incluyendo envío." },
           { icon: CreditCard, t: "2. Pagas en pesos", d: "Aceptamos transferencia SPEI, depósito en OXXO o USDT (TRC20). Te pasamos los datos al confirmar el pedido. No hay checkout en el sitio porque manejamos cada cotización personalizada." },
           { icon: Plane, t: "3. Sale del laboratorio en China", d: "En menos de 48 horas tu pedido sale del laboratorio empacado discreto. Te enviamos número de rastreo para que sigas el envío en todo momento." },
-          { icon: Home, t: "4. Llega a tu puerta en 15-25 días", d: "Envío DDP (Delivered Duty Paid): nosotros nos encargamos de los trámites. Llega a la dirección que indiques en cualquier estado de México." },
+          { icon: Home, t: "4. Llega a tu puerta en 10-20 días", d: "Envío DDP (Delivered Duty Paid): nosotros nos encargamos de los trámites. Llega a la dirección que indiques en cualquier estado de México." },
           { icon: ShieldCheck, t: "5. Garantía de reposición", d: "En el raro caso de incautación en aduana (>95% éxito histórico), reenviamos sin costo (válido una vez por cliente)." },
         ].map((s) => (
           <div key={s.t} className="flex gap-4 rounded-lg border border-border bg-card p-6">

@@ -51,7 +51,7 @@ export const products: Product[] = [
     variants: [v("5 mg", 5, 810), v("10 mg", 10, 810)],
     faqs: [
       { q: "¿Por qué BPC-157 5 mg y 10 mg cuestan igual?", a: "Es una promoción del laboratorio: el vial de 10 mg duplica el contenido al mismo precio. Ideal para ciclos largos." },
-      { q: "¿Requiere refrigeración para envío?", a: "No. Se envía liofilizado y es estable a temperatura ambiente durante el tránsito de 15–25 días." },
+      { q: "¿Requiere refrigeración para envío?", a: "No. Se envía liofilizado y es estable a temperatura ambiente durante el tránsito de 10–20 días." },
     ],
     related: ["bpc-tb500-wolverine", "tb-500"],
     bestSeller: true,
