@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
+import { Route as PagoFalloRouteImport } from './routes/pago.fallo'
 import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
@@ -92,6 +93,11 @@ const PeptidosCiudadRoute = PeptidosCiudadRouteImport.update({
   path: '/peptidos/$ciudad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagoFalloRoute = PagoFalloRouteImport.update({
+  id: '/pago/fallo',
+  path: '/pago/fallo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PagoExitoRoute = PagoExitoRouteImport.update({
   id: '/pago/exito',
   path: '/pago/exito',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
+  '/pago/fallo': typeof PagoFalloRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
+  '/pago/fallo': typeof PagoFalloRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
+  '/pago/fallo': typeof PagoFalloRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/pago/exito'
+    | '/pago/fallo'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/pago/exito'
+    | '/pago/fallo'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/blog/$slug'
     | '/pago/exito'
+    | '/pago/fallo'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PagoExitoRoute: typeof PagoExitoRoute
+  PagoFalloRoute: typeof PagoFalloRoute
   PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeptidosCiudadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pago/fallo': {
+      id: '/pago/fallo'
+      path: '/pago/fallo'
+      fullPath: '/pago/fallo'
+      preLoaderRoute: typeof PagoFalloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pago/exito': {
       id: '/pago/exito'
       path: '/pago/exito'
@@ -397,6 +417,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PagoExitoRoute: PagoExitoRoute,
+  PagoFalloRoute: PagoFalloRoute,
   PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
@@ -406,3 +427,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
