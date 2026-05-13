@@ -8,7 +8,7 @@ export const Route = createFileRoute("/admin/")({ component: Dashboard });
 
 function Dashboard() {
   const fn = useServerFn(adminGetDashboard);
-  const { data, isLoading } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => fn() });
+  const { data, isLoading } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => fn(), staleTime: 60_000 });
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   return (
     <div className="space-y-6">
