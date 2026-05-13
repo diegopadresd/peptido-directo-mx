@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
+import { Route as PagoPendienteRouteImport } from './routes/pago.pendiente'
 import { Route as PagoFalloRouteImport } from './routes/pago.fallo'
 import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -93,6 +94,11 @@ const PeptidosCiudadRoute = PeptidosCiudadRouteImport.update({
   path: '/peptidos/$ciudad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagoPendienteRoute = PagoPendienteRouteImport.update({
+  id: '/pago/pendiente',
+  path: '/pago/pendiente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PagoFalloRoute = PagoFalloRouteImport.update({
   id: '/pago/fallo',
   path: '/pago/fallo',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
   '/pago/fallo': typeof PagoFalloRoute
+  '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
   '/pago/fallo': typeof PagoFalloRoute
+  '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
   '/pago/fallo': typeof PagoFalloRoute
+  '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/pago/exito'
     | '/pago/fallo'
+    | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/pago/exito'
     | '/pago/fallo'
+    | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/pago/exito'
     | '/pago/fallo'
+    | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PagoExitoRoute: typeof PagoExitoRoute
   PagoFalloRoute: typeof PagoFalloRoute
+  PagoPendienteRoute: typeof PagoPendienteRoute
   PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeptidosCiudadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pago/pendiente': {
+      id: '/pago/pendiente'
+      path: '/pago/pendiente'
+      fullPath: '/pago/pendiente'
+      preLoaderRoute: typeof PagoPendienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pago/fallo': {
       id: '/pago/fallo'
       path: '/pago/fallo'
@@ -418,6 +438,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   PagoExitoRoute: PagoExitoRoute,
   PagoFalloRoute: PagoFalloRoute,
+  PagoPendienteRoute: PagoPendienteRoute,
   PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
