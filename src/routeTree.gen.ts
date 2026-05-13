@@ -23,6 +23,7 @@ import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -94,6 +95,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogRoute,
 } as any)
+const ApiCheckoutMercadopagoRoute = ApiCheckoutMercadopagoRouteImport.update({
+  id: '/api/checkout/mercadopago',
+  path: '/api/checkout/mercadopago',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
+  '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
+  '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
+  '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
+    | '/api/checkout/mercadopago'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
+    | '/api/checkout/mercadopago'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
+    | '/api/checkout/mercadopago'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
+  ApiCheckoutMercadopagoRoute: typeof ApiCheckoutMercadopagoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/api/checkout/mercadopago': {
+      id: '/api/checkout/mercadopago'
+      path: '/api/checkout/mercadopago'
+      fullPath: '/api/checkout/mercadopago'
+      preLoaderRoute: typeof ApiCheckoutMercadopagoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -338,7 +358,18 @@ const rootRouteChildren: RootRouteChildren = {
   PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
+  ApiCheckoutMercadopagoRoute: ApiCheckoutMercadopagoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
