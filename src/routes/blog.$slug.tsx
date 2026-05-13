@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { buildHead, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
-import { postBySlug, posts } from "@/data/blog";
-import { whatsappLink } from "@/lib/whatsapp";
+import { postBySlug, posts, type BlogPost, type BlogSection } from "@/data/blog";
+import { buildWaLink } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/blog/$slug")({
   loader: ({ params }) => {
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/blog/$slug")({
           { name: "Blog", url: "/blog" },
           { name: p.title, url: `/blog/${p.slug}` },
         ]),
-        ...(p.faq ? [faqJsonLd(p.faq.map((f) => ({ question: f.q, answer: f.a })))] : []),
+        ...(p.faq ? [faqJsonLd(p.faq)] : []),
       ],
     });
   },
@@ -48,8 +48,8 @@ export const Route = createFileRoute("/blog/$slug")({
 function Post() {
   const { post } = Route.useLoaderData();
   const related = (post.related ?? [])
-    .map((slug) => posts.find((p) => p.slug === slug))
-    .filter(Boolean) as typeof posts;
+    .map((slug: string) => posts.find((p) => p.slug === slug))
+    .filter((p): p is BlogPost => Boolean(p));
 
   return (
     <article className="container mx-auto max-w-3xl px-4 py-12 md:py-20">
@@ -67,19 +67,19 @@ function Post() {
       </header>
 
       <div className="mt-10 space-y-10">
-        {post.sections.map((s, i) => (
+        {post.sections.map((s: BlogSection, i: number) => (
           <section key={i}>
             {s.heading && (
               <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">{s.heading}</h2>
             )}
-            {s.paragraphs?.map((p, j) => (
+            {s.paragraphs?.map((p: string, j: number) => (
               <p key={j} className="mt-4 text-base leading-relaxed text-foreground/90">
                 {p}
               </p>
             ))}
             {s.list && (
               <ul className="mt-4 list-disc space-y-2 pl-6 text-base leading-relaxed text-foreground/90">
-                {s.list.map((li, k) => (
+                {s.list.map((li: string, k: number) => (
                   <li key={k}>{li}</li>
                 ))}
               </ul>
@@ -92,7 +92,7 @@ function Post() {
         <section className="mt-14 border-t border-border pt-10">
           <h2 className="font-display text-2xl font-bold md:text-3xl">Preguntas frecuentes</h2>
           <dl className="mt-6 space-y-5">
-            {post.faq.map((f, i) => (
+            {post.faq.map((f: { q: string; a: string }, i: number) => (
               <div key={i}>
                 <dt className="font-semibold text-foreground">{f.q}</dt>
                 <dd className="mt-1 text-foreground/80">{f.a}</dd>
@@ -108,7 +108,7 @@ function Post() {
           MOQ 10 viales mezclados. Pago por Mercado Pago. Envío nacional con cadena de frío.
         </p>
         <a
-          href={whatsappLink("Hola, vengo del blog y quiero recibir el catálogo mayoreo.")}
+          href={buildWaLink("Hola, vengo del blog y quiero recibir el catálogo mayoreo.")}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
