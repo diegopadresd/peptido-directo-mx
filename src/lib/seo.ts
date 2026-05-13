@@ -14,7 +14,7 @@ type SeoInput = {
 
 export function buildHead(input: SeoInput) {
   const canonical = input.canonical ? `${SITE_URL}${input.canonical}` : undefined;
-  const ogImage = input.ogImage ?? `${SITE_URL}/og-image.png`;
+  const ogImage = input.ogImage ?? `${SITE_URL}/og-image.jpg`;
   if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
     if (input.title.length > 60) console.warn(`[seo] title >60 chars (${input.title.length}): ${input.title}`);
     if (input.description.length < 140 || input.description.length > 170) {
@@ -75,7 +75,7 @@ export function organizationJsonLd() {
     "@type": "Organization",
     name: "Péptidos Mayoreo",
     url: SITE_URL,
-    logo: `${SITE_URL}/og-image.png`,
+    logo: `${SITE_URL}/og-image.jpg`,
     sameAs: [],
     description:
       "Distribuidor mayorista de péptidos en México. Mínimo 10 viales, pago seguro con Mercado Pago, envío nacional.",
@@ -112,7 +112,7 @@ export function localBusinessJsonLd(params: {
     "@type": "LocalBusiness",
     name: `Péptidos Mayoreo - ${params.city}`,
     url: `${SITE_URL}${params.url}`,
-    image: `${SITE_URL}/og-image.png`,
+    image: `${SITE_URL}/og-image.jpg`,
     priceRange: "$$",
     areaServed: {
       "@type": "City",

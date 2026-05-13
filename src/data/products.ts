@@ -1,6 +1,6 @@
 // Auto-generated catalog (precios = referencia mercado MX × 0.5 por vial, packs ×10/×18/×25).
 // Descripciones originales escritas desde literatura farmacológica pública.
-import generic from "@/assets/vial-generic.jpg";
+import generic from "@/assets/vial-generic.webp";
 
 export type DoseVariant = {
   dose: string;
