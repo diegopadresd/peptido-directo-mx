@@ -1,141 +1,83 @@
+## Plan: Reglas de carrito + lenguaje + envío + rediseño visual estilo RunAds.ai
 
-## Objetivo
+### 1. Carrito: 1 producto = 1 paquete (sin mezclar viales)
 
-Reemplazar el catálogo demo con la lista real (32 productos / ~45 SKU por dosis), una página por producto con selector de dosis, carrito de mezcla libre (mínimo 10 viales) y pago con Mercado Pago Checkout Pro.
+Cambio de modelo: el carrito **no permite mezclar compuestos**. Cada línea del carrito es **un único compuesto + una única dosis + un pack fijo (10/20/30 viales)**.
 
----
+- `src/data/products.ts`: sin cambios estructurales.
+- `src/lib/pricing.ts`: PACKS sigue igual (`{10,x10}`, `{20,x18}`, `{30,x25}`).
+- **Carrito**: en lugar de un carrito multi-item tipo e-commerce, será un **"pedido único"**:
+  - El usuario entra a un PDP, elige dosis, elige pack (10/20/30) y hace click en "Comprar ahora".
+  - Va directo a `/pago` con ese único item (sin drawer multi-producto, sin mezclar SKUs).
+  - Si quiere otro compuesto, debe completar otra orden por separado (mensaje claro: "Cada pedido es de un solo compuesto. Para combinar, contáctanos por WhatsApp.").
+- Componentes a simplificar:
+  - `CartDrawer` → eliminado o reducido a un mini-resumen del item actual.
+  - `AddToCartButton` → renombrado a `BuyNowButton`, navega a `/pago?slug=...&dose=...&qty=10`.
+  - `/carrito` → eliminado o redirige a `/pago` con los params.
+  - `/pago` lee los params, recalcula precio server-side y crea la preferencia MP.
+- Validación server-side en `createMpPreference`: rechaza payloads con más de un `product_slug` distinto.
+- DB `order_items`: sigue con la estructura, pero en la práctica cada `order` tendrá exactamente 1 row.
 
-## 1. Modelo de datos
+### 2. Lenguaje: quitar groserías
 
-`src/data/products.ts` — reescrito. Cada producto:
+Reemplazar "pendejadas" (y similares) en todo el copy por alternativas neutras:
+- "sin pendejadas" → **"sin rodeos"**, **"sin vueltas"**, **"directo al grano"**.
+- Pasada con `rg` por todo `src/` (componentes, datos, FAQs, blog, copy de productos) para reemplazos consistentes.
 
-```ts
-type DoseVariant = { dose: string; mg: number; basePricePerVial: number };
-type Product = {
-  slug; name; category; shortDesc; longDesc; mechanism; dosing; storage;
-  image; variants: DoseVariant[];   // 1..n dosis
-  faqs; related; bestSeller?; keywords;
-};
-```
+### 3. Envío: 10–20 días en lugar de 15–25
 
-Categorías (slug → nombre):
-- `recuperacion` — Recuperación y reparación
-- `gh-muscular` — Crecimiento muscular / GH
-- `perdida-peso` — Pérdida de peso (GLP-1/GIP)
-- `cognicion` — Cognición y nootrópicos
-- `longevidad` — Anti-aging y longevidad
-- `bronceado` — Bronceado y pigmentación
-- `intimo-hormonal` — Bienestar íntimo y hormonal *(evita "sexual")*
+Reemplazo global "15-25" / "15 a 25" → **"10-20"** / **"10 a 20"** en:
+- Header banner / sticky bar
+- Home (hero, cómo funciona, FAQs)
+- `/como-funciona`, `/preguntas-frecuentes`, `/empezar-negocio`, `/distribuidor`
+- PDPs (badge de envío)
+- Footer
+- JSON-LD (`shippingDetails.deliveryTime`)
+- Meta descriptions
 
-32 productos con sus variantes desde el PDF (BPC-157, TB-500, Wolverine, CJC-1295, CJC+Ipa, Ipamorelin, Tesamorelin, HGH Frag, IGF-1 LR3, Sermorelin, Hexarelin, Semaglutida, Tirzepatida, Retatrutida, Cagrilintide, MOTS-c, 5-Amino-1MQ, AOD-9604, Mazdutide, Semax, Selank, Cerebrolysin, Dihexa, DSIP, GHK-Cu, Epithalon, NAD+, Glutathione, Thymosin α-1, Melanotan I/II, PT-141, Kisspeptin-10, Oxytocin, HMG).
+### 4. Rediseño visual: vibe RunAds.ai
 
-Copy de mecanismo / dosis / almacenamiento adaptado del estilo de brutalrx (research-only, técnico, breve), sin copiar literal.
+RunAds.ai es **blanco brillante + azul vivo + tipografía display negra muy bold + mucho espacio en blanco + pills suaves azul-claro + botones redondeados con flecha**. Aplicar al sitio entero (no es un cambio de un solo componente):
 
-## 2. Pricing por pack (regla nueva)
+**Tokens (`src/styles.css`)** — actualizar `:root`:
+- `--background`: blanco puro `oklch(1 0 0)`
+- `--foreground`: casi negro `oklch(0.145 0 0)`
+- `--primary`: azul RunAds `oklch(0.55 0.22 260)` (~#155EEF)
+- `--primary-foreground`: blanco
+- `--accent`: azul muy claro pill `oklch(0.96 0.03 255)`
+- `--muted`: gris muy claro `oklch(0.97 0.005 255)`
+- `--muted-foreground`: gris medio `oklch(0.5 0.02 255)`
+- `--border`: `oklch(0.93 0.01 255)`
+- `--radius`: `0.75rem` (botones más redondeados, tipo pill en CTAs principales)
+- Nuevo `--gradient-hero`: sutil blanco a azul-claro top-left.
+- Nuevo `--shadow-soft`: `0 1px 3px oklch(0 0 0 / 0.04)` y `--shadow-card`: `0 10px 40px -10px oklch(0.55 0.22 260 / 0.15)`.
 
-Helper en `src/lib/pricing.ts`:
+**Tipografía**:
+- Display: **Inter** o **Geist** muy bold (700–800) para H1/H2, tracking ajustado tipo `-0.02em`.
+- Body: misma familia, peso 400/500.
+- Importar via Google Fonts en `__root.tsx` head.
 
-```ts
-export const PACKS = [
-  { qty: 10, multiplier: 10, label: "Pack x10" },
-  { qty: 20, multiplier: 18, label: "Pack x20", badge: "Ahorra 10%" },
-  { qty: 30, multiplier: 25, label: "Pack x30", badge: "Más popular · Ahorra 17%" },
-];
-export const packPrice = (base, qty) => base * PACKS.find(p=>p.qty===qty).multiplier;
-```
+**Componentes a refrescar (sin cambiar funcionalidad)**:
+- **Header**: fondo blanco, logo a la izquierda, nav centrado, botones "Iniciar sesión" texto + "Comprar ahora" pill azul a la derecha. Border-bottom súper sutil.
+- **Hero (home)**: H1 negro masivo en 2 líneas con la 2ª línea en azul (mimic "Launch Google Ads in minutes. Fully managed by AI."). Pill azul-claro arriba con badge ("Envío directo desde China · 10-20 días"). 2 CTAs: primario azul redondeado con flecha → y secundario ghost con ▶ "Cómo funciona". A la derecha, mockup/foto producto en card con shadow suave.
+- **Sections**: alternar fondo blanco / `--muted` muy claro. Headers de sección centrados con pill arriba ("BONUS · CATÁLOGO · ETC").
+- **Cards de producto**: blanco, border 1px sutil, radius 12px, hover lift + shadow azul suave. Precio "desde $X/vial" en negro bold.
+- **PDP**: layout 2 columnas, imagen izquierda en card, derecha selector de dosis + 3 cards de pack (10/20/30) con la opción "más popular" (20) con border azul. CTA "Comprar ahora" azul pill full-width.
+- **Footer**: blanco/muted, links en columnas, branding.
+- **Botones primarios**: `rounded-full` con icono `ArrowRight` al final.
+- **Pills/badges**: `bg-accent text-primary rounded-full px-3 py-1 text-xs font-medium`.
+- **WhatsApp FAB**: mantener pero estilo más minimal (verde estándar).
 
-- Catálogo y cards muestran **"desde $X MXN / vial"** (precio base mayoreo).
-- PDP muestra los 3 packs con precio total y precio efectivo por vial.
-- Carrito permite mezcla libre con MOQ global de 10 viales (validación cliente + servidor); precio = `base × multiplicador del pack más cercano según cantidad total del SKU`. *(Para mezcla libre con varios SKUs, el descuento se aplica por línea según su propia cantidad; documentado en checkout.)*
+Estructura de páginas se mantiene (no rehacemos rutas). Solo cambia el look & feel.
 
-## 3. Páginas / rutas
+### 5. Orden de ejecución
 
-Reescritura del catálogo + PDP, resto se mantiene.
+1. Refactor de carrito → "pedido único" + `/carrito` eliminado, `BuyNowButton`, validación server-side.
+2. Reemplazos globales de copy: groserías + "15-25" → "10-20".
+3. Update de tokens en `src/styles.css` + fuente.
+4. Refresh visual de Header, Hero, ProductCard, PDP, Footer, FAQ, secciones.
+5. QA en preview: home, 1 PDP, flujo "Comprar ahora" → `/pago`.
 
-```text
-src/routes/
-  index.tsx                    — actualizar best sellers (Tirzepatida, Retatrutida, Semaglutida, BPC-157, CJC+Ipa, Wolverine)
-  productos.tsx                — grid filtrable por las 7 categorías; muestra "desde $X/vial"
-  productos.$slug.tsx          — PDP con <DoseSelector/> + <PackSelector/> + <AddToCartButton/>
-  carrito.tsx                  — NUEVO: lista de items, validación MOQ≥10, total, botón "Pagar con Mercado Pago"
-  pago.exito.tsx               — NUEVO: confirmación post-checkout (lee ?payment_id)
-  pago.error.tsx               — NUEVO
-  pago.pendiente.tsx           — NUEVO
-  api/public/mercadopago.webhook.ts — NUEVO: server route, valida x-signature de MP, marca pedido como pagado
-  sitemap[.]xml.tsx            — incluir todas las nuevas slugs
-```
-
-`src/lib/cart.ts` — store de carrito con `localStorage` (zustand-lite o useSyncExternalStore manual), items `{productSlug, dose, qty}`.
-
-`src/components/site/`:
-- `DoseSelector.tsx` — pills con las dosis disponibles
-- `PackSelector.tsx` — 3 cards (10/20/30) con precio total + badge ahorro
-- `AddToCartButton.tsx`
-- `CartDrawer.tsx` + `CartIcon.tsx` (header)
-- `MercadoPagoButton.tsx`
-
-## 4. Integración Mercado Pago
-
-Requiere **Lovable Cloud** (lo activamos al inicio) y un secret `MERCADOPAGO_ACCESS_TOKEN` (sandbox primero).
-
-Flujo Checkout Pro (redirect, sin SDK del lado cliente — más simple y robusto en Workers):
-
-1. **Server function** `createMpPreference` (`src/lib/mercadopago.functions.ts`):
-   - Recibe `{ items: [{slug, dose, qty}] }`.
-   - Recalcula precios server-side (nunca confía en el cliente).
-   - Valida MOQ ≥ 10.
-   - Inserta `orders` (status `pending`) y `order_items` en DB.
-   - POST a `https://api.mercadopago.com/checkout/preferences` con items, `external_reference = order.id`, `back_urls` (/pago/exito, /pago/error, /pago/pendiente), `notification_url = /api/public/mercadopago-webhook`, `auto_return: approved`.
-   - Devuelve `init_point` (live) o `sandbox_init_point`.
-
-2. **Cliente** redirige a `init_point`.
-
-3. **Webhook** `/api/public/mercadopago-webhook`:
-   - Verifica header `x-signature` HMAC con `MERCADOPAGO_WEBHOOK_SECRET`.
-   - Para topic `payment`: GET `https://api.mercadopago.com/v1/payments/{id}` → actualiza order por `external_reference`.
-   - Estados: `approved` → `paid`, `rejected` → `failed`, etc.
-
-**Tablas Supabase** (migración):
-- `orders(id uuid pk, created_at, status text, total_mxn int, customer_name, customer_email, customer_phone, customer_address jsonb, mp_preference_id, mp_payment_id, external_reference uuid)`
-- `order_items(id, order_id fk, product_slug, dose, qty, unit_price_mxn, line_total_mxn)`
-- RLS: insert público vía server fn (service role bypass); select restringido (no exponer).
-
-Página de **checkout previo** (`/carrito` paso 2) recoge nombre, email, WhatsApp y dirección de envío antes de crear preferencia.
-
-## 5. SEO
-
-- `head()` por PDP: `title = "<Nombre> Mayoreo México - Desde $X/vial | Péptidos Mayoreo"`, description con dosis disponibles.
-- JSON-LD `Product` con `AggregateOffer` (lowPrice = base, highPrice = base×25, offerCount = 3 packs × n dosis).
-- Sitemap regenerado con las ~32 nuevas slugs.
-- Breadcrumbs en cada PDP.
-- Canonicals correctos (una URL por producto, dosis vía query no indexable o todas en la misma página → ya cubierto).
-
-## 6. UX / componentes header
-
-- Añadir ícono de carrito con contador (header).
-- Banner sticky superior: "Pedido mínimo 10 viales · Pago seguro con Mercado Pago · Envío 15-25 días".
-- WhatsApp FAB se mantiene como soporte secundario; el CTA primario en PDP/carrito ahora es **"Agregar al carrito"** + **"Pagar con Mercado Pago"**.
-
-## 7. Aviso legal
-
-Todas las páginas y JSON-LD mantienen el disclaimer **"For Research Use Only · No para uso humano"**, replicando el tono de brutalrx.
-
----
-
-## Fuera de alcance (lo confirmamos después)
-
-- Cuentas de usuario / historial de pedidos (los pedidos quedan ligados solo a email).
-- Cálculo automático de envío (se cobra envío fijo o gratis según monto, ya configurable como constante).
-- Producción real de MP: arrancamos en **sandbox**; pasar a producción solo cambia el access token.
-
-## Orden de implementación
-
-1. Activar Lovable Cloud + crear migración `orders` / `order_items`.
-2. Reescribir `products.ts` con los 32 productos del PDF + `pricing.ts`.
-3. Refactor `productos.tsx` + `productos.$slug.tsx` con DoseSelector / PackSelector.
-4. Carrito (store + drawer + página `/carrito` con form de envío).
-5. Server fn `createMpPreference` + página de éxito/error/pendiente.
-6. Webhook MP + verificación de firma.
-7. Pedir secret `MERCADOPAGO_ACCESS_TOKEN` (y `MERCADOPAGO_WEBHOOK_SECRET`).
-8. Actualizar header (carrito), home (best sellers reales), sitemap.
-9. QA: build + invocar server fn en sandbox.
+### Fuera de alcance
+- Mercado Pago real (sigue pendiente del secret en sandbox; lo enchufamos cuando lo apruebes).
+- Cambios al schema de DB (la estructura permite 1 item por orden sin migración).
