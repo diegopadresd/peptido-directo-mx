@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          id: number
+          meta: Json | null
+          name: string
+          path: string | null
+          product_slug: string | null
+          session_id: string
+          value_mxn: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          meta?: Json | null
+          name: string
+          path?: string | null
+          product_slug?: string | null
+          session_id: string
+          value_mxn?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          meta?: Json | null
+          name?: string
+          path?: string | null
+          product_slug?: string | null
+          session_id?: string
+          value_mxn?: number | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           admin_notification_email: string | null
@@ -233,6 +266,45 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          created_at: string
+          device: string | null
+          id: number
+          path: string
+          referrer_host: string | null
+          session_id: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          id?: number
+          path: string
+          referrer_host?: string | null
+          session_id: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          id?: number
+          path?: string
+          referrer_host?: string | null
+          session_id?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -281,12 +353,37 @@ export type Database = {
     }
     Functions: {
       admin_analytics: { Args: { _days?: number }; Returns: Json }
+      admin_dashboard_summary: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      track_event: {
+        Args: {
+          _meta: Json
+          _name: string
+          _path: string
+          _product_slug: string
+          _session: string
+          _value_mxn: number
+        }
+        Returns: undefined
+      }
+      track_pageview: {
+        Args: {
+          _device: string
+          _path: string
+          _referrer: string
+          _session: string
+          _user_agent: string
+          _utm_campaign: string
+          _utm_medium: string
+          _utm_source: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
