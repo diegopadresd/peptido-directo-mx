@@ -44,6 +44,9 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
       unitPrice: variant.basePricePerVial,
       lineTotal: total,
     });
+    import("@/lib/analytics/track").then(({ trackEvent }) =>
+      trackEvent("add_to_cart", { productSlug: product.slug, valueMxn: total, meta: { dose: variant.dose, qty } })
+    );
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   }

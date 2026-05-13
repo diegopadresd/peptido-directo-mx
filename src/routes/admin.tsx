@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, ShoppingBag, Users, ShoppingCart, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Users, ShoppingCart, Settings, LogOut, BarChart3 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin · Péptidos Mayoreo" }, { name: "robots", content: "noindex" }] }),
@@ -41,6 +41,7 @@ function AdminLayout() {
 
   const links = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { to: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
     { to: "/admin/carritos", label: "Carritos abandonados", icon: ShoppingCart },
     { to: "/admin/clientes", label: "Clientes", icon: Users },

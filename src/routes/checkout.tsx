@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Loader2, CreditCard } from "lucide-react";
 import { useCart } from "@/lib/cart/store";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMxn } from "@/lib/pricing";
 import { MX_STATES } from "@/lib/mx-states";
+import { trackEvent } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout · Péptidos Mayoreo" }, { name: "robots", content: "noindex" }] }),
@@ -40,6 +41,10 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  useEffect(() => {
+    if (items.length > 0) trackEvent("begin_checkout", { valueMxn: subtotal, meta: { items: items.length } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (items.length === 0) {
     return (

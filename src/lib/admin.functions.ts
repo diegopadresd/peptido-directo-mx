@@ -12,36 +12,35 @@ export const adminGetDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    const since30 = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-    const since7  = new Date(Date.now() - 7  * 24 * 3600 * 1000).toISOString();
-    const since1  = new Date(Date.now() - 1  * 24 * 3600 * 1000).toISOString();
-    const [{ data: orders }, { count: cartsActive }, { count: cartsAbandoned }] = await Promise.all([
-      supabaseAdmin.from("orders").select("id, status, total_mxn, created_at, customer_email").gte("created_at", since30).order("created_at", { ascending: false }),
-      supabaseAdmin.from("carts").select("id", { count: "exact", head: true }).eq("status","active"),
-      supabaseAdmin.from("carts").select("id", { count: "exact", head: true }).eq("status","abandoned"),
-    ]);
-    const all = orders ?? [];
-    const approved = all.filter(o => o.status === "approved");
-    const sum = (arr: typeof all, since: string) => arr.filter(o => o.created_at >= since).reduce((a, o) => a + (o.total_mxn ?? 0), 0);
-    const dailyMap: Record<string, { count: number; revenue: number }> = {};
-    approved.forEach((o) => {
-      const day = o.created_at.slice(0, 10);
-      dailyMap[day] = dailyMap[day] || { count: 0, revenue: 0 };
-      dailyMap[day].count += 1;
-      dailyMap[day].revenue += o.total_mxn ?? 0;
-    });
-    const daily = Object.entries(dailyMap).sort(([a],[b]) => a.localeCompare(b)).map(([day, v]) => ({ day, ...v }));
-    return {
-      revenue: { d1: sum(approved, since1), d7: sum(approved, since7), d30: sum(approved, since30) },
-      counts: {
-        ordersTotal: all.length,
-        ordersApproved: approved.length,
-        ordersPending: all.filter(o => o.status === "pending" || o.status === "in_process").length,
-        cartsActive: cartsActive ?? 0,
-        cartsAbandoned: cartsAbandoned ?? 0,
-      },
-      avgTicket: approved.length ? Math.round(approved.reduce((a,o) => a + (o.total_mxn ?? 0), 0) / approved.length) : 0,
-      daily,
+    const { data, error } = await supabaseAdmin.rpc("admin_dashboard_summary" as never);
+    if (error) throw new Response(error.message, { status: 500 });
+    return data as unknown as {
+      revenue: { d1: number; d7: number; d30: number };
+      counts: { ordersTotal: number; ordersApproved: number; ordersPending: number; cartsActive: number; cartsAbandoned: number };
+      avgTicket: number;
+      visits: { pv_d1: number; pv_d7: number; pv_d30: number; sess_d1: number; sess_d7: number; sess_d30: number };
+      daily: { day: string; count: number; revenue: number }[];
+    };
+  });
+
+const AnalyticsSchema = z.object({ days: z.number().int().min(1).max(365).default(30) }).default({ days: 30 });
+export const adminGetAnalytics = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AnalyticsSchema.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: out, error } = await supabaseAdmin.rpc("admin_analytics", { _days: data.days });
+    if (error) throw new Response(error.message, { status: 500 });
+    return out as {
+      daily: { day: string; views: number; sessions: number }[];
+      topPages: { path: string; views: number; sessions: number }[];
+      topReferrers: { host: string; visits: number }[];
+      devices: { device: string; visits: number }[];
+      utm: { source: string; medium: string; campaign: string; visits: number }[];
+      topProducts: { slug: string; views: number }[];
+      addToCart: { slug: string; count: number }[];
+      searches: { q: string; count: number }[];
+      funnel: Record<string, number>;
     };
   });
 
