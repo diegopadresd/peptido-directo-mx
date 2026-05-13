@@ -100,7 +100,7 @@ function Home() {
               <div key={s.n} className="rounded-2xl border border-border bg-card p-7 shadow-soft transition hover:border-primary/30 hover:shadow-card">
                 <div className="flex items-center justify-between">
                   <span className="grid h-11 w-11 place-items-center rounded-full bg-accent text-primary"><s.icon className="h-5 w-5" /></span>
-                  <span className="font-display text-3xl font-extrabold text-muted-foreground/30">{s.n}</span>
+                  <span className="font-display text-3xl font-extrabold text-muted-foreground">{s.n}</span>
                 </div>
                 <h3 className="mt-5 font-display text-xl font-extrabold tracking-tight">{s.t}</h3>
                 <p className="mt-2 text-muted-foreground">{s.d}</p>
