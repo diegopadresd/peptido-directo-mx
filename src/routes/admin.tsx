@@ -16,15 +16,22 @@ function AdminLayout() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate({ to: "/login" }); return; }
-      const { data, error } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    async function check(userId: string | null) {
+      if (cancelled) return;
+      if (!userId) { navigate({ to: "/login" }); return; }
+      const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
       if (cancelled) return;
       if (error || !data) { navigate({ to: "/" }); return; }
       setAllowed(true); setReady(true);
-    })();
-    return () => { cancelled = true; };
+    }
+    // Listen first to avoid race with session restore
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+      check(session?.user?.id ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      check(session?.user?.id ?? null);
+    });
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [navigate]);
 
   if (!ready) {
