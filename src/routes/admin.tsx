@@ -8,12 +8,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-async function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+async function withTimeout<T>(promise: PromiseLike<T>, ms: number, fallback: T | null): Promise<T | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
       promise,
-      new Promise<T>((resolve) => {
+      new Promise<T | null>((resolve) => {
         timer = setTimeout(() => resolve(fallback), ms);
       }),
     ]);
