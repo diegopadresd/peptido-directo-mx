@@ -118,3 +118,7 @@ function OrderDetail() {
     </div>
   );
 }
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
+}
