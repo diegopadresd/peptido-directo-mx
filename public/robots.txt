@@ -1,43 +1,24 @@
-# robots.txt para peptidosmayoreo.com
+# robots.txt — peptidosmayoreo.com
 # Última actualización: 2026-05-13
 
-# Reglas generales — todos los crawlers
+# Default: todos los crawlers permitidos excepto donde se indique
 User-agent: *
 Allow: /
-Disallow: /admin/
 Disallow: /api/
+Disallow: /admin/
 Disallow: /*?utm_*
 Disallow: /*?fbclid=*
 Disallow: /*?gclid=*
+Disallow: /*?ref=*
 
-# Google
-User-agent: Googlebot
-Allow: /
-
-User-agent: Googlebot-Image
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-# Bing y otros buscadores
-User-agent: Bingbot
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: YandexBot
-Allow: /
-
-# AI crawlers — permitir para AEO
+# AI search & training crawlers — permitidos para AEO
 User-agent: GPTBot
 Allow: /
 
-User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
 Allow: /
 
-User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
 Allow: /
 
 User-agent: ClaudeBot
@@ -46,28 +27,46 @@ Allow: /
 User-agent: Claude-Web
 Allow: /
 
+User-agent: anthropic-ai
+Allow: /
+
 User-agent: PerplexityBot
 Allow: /
 
 User-agent: Perplexity-User
 Allow: /
 
-User-agent: Applebot-Extended
+User-agent: Google-Extended
 Allow: /
 
-User-agent: CCBot
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Applebot-Extended
 Allow: /
 
 User-agent: Bytespider
 Allow: /
 
-User-agent: Amazonbot
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
 Allow: /
 
 User-agent: Meta-ExternalAgent
 Allow: /
 
-# Bloquear scrapers conocidos abusivos
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+# Bloqueo a herramientas de espionaje SEO de competencia
 User-agent: SemrushBot
 Disallow: /
 
@@ -81,6 +80,9 @@ User-agent: DotBot
 Disallow: /
 
 User-agent: PetalBot
+Disallow: /
+
+User-agent: BLEXBot
 Disallow: /
 
 # Sitemap
