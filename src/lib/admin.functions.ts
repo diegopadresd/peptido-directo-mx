@@ -12,7 +12,7 @@ export const adminGetDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    const { data, error } = await supabaseAdmin.rpc("admin_dashboard_summary" as never);
+    const { data, error } = await context.supabase.rpc("admin_dashboard_summary" as never);
     if (error) throw new Response(error.message, { status: 500 });
     return data as unknown as {
       revenue: { d1: number; d7: number; d30: number };
@@ -29,7 +29,7 @@ export const adminGetAnalytics = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => AnalyticsSchema.parse(d ?? {}))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { data: out, error } = await supabaseAdmin.rpc("admin_analytics", { _days: data.days });
+    const { data: out, error } = await context.supabase.rpc("admin_analytics", { _days: data.days });
     if (error) throw new Response(error.message, { status: 500 });
     return out as {
       daily: { day: string; views: number; sessions: number }[];
