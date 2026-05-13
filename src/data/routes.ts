@@ -1,5 +1,6 @@
 import { products } from "./products";
 import { cities } from "./cities";
+import { allBlogSlugs } from "./blog";
 
 export const staticRoutes = [
   "/",
@@ -13,7 +14,7 @@ export const staticRoutes = [
   "/resumen-empresa",
 ];
 
-export const blogSlugs = ["como-empezar-negocio-peptidos-mexico"];
+export const blogSlugs = allBlogSlugs;
 
 export const allRoutes = () => [
   ...staticRoutes,
