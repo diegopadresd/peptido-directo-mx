@@ -105,7 +105,7 @@ function ProductPage() {
             </span>
           </div>
           <h1 className="mt-4 font-display text-3xl font-extrabold uppercase tracking-tight text-foreground sm:text-4xl md:text-6xl">
-            {p.name}
+            Péptidos {p.name} al Mayoreo
           </h1>
           {p.tags && p.tags.length > 0 && (
             <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-primary">

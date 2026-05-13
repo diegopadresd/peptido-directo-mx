@@ -65,8 +65,9 @@ function Empezar() {
           <p className="mt-3 text-center text-muted-foreground">Calcula tu ganancia mensual con BPC-157 como ejemplo.</p>
           <div className="mx-auto mt-10 grid max-w-3xl gap-6 rounded-xl border border-border bg-card p-8 md:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold">Viales que vendes al mes</label>
+              <label htmlFor="calc-vials" className="text-sm font-semibold">Viales que vendes al mes</label>
               <input
+                id="calc-vials"
                 type="range"
                 min={10}
                 max={200}
@@ -78,8 +79,9 @@ function Empezar() {
               <p className="mt-1 tabular text-2xl font-bold text-primary">{vials} viales</p>
             </div>
             <div>
-              <label className="text-sm font-semibold">Precio de reventa por vial (MXN)</label>
+              <label htmlFor="calc-price" className="text-sm font-semibold">Precio de reventa por vial (MXN)</label>
               <input
+                id="calc-price"
                 type="range"
                 min={500}
                 max={1500}

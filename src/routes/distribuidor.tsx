@@ -44,7 +44,7 @@ function Distribuidor() {
             {t.highlight && (
               <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">Más popular</span>
             )}
-            <h3 className="mt-3 font-display text-2xl font-bold">{t.name}</h3>
+            <h2 className="mt-3 font-display text-2xl font-bold">{t.name}</h2>
             <p className="text-sm text-muted-foreground">{t.min}</p>
             <p className="mt-4 tabular text-3xl font-extrabold text-primary">{t.price}</p>
             <p className="mt-2 text-sm text-muted-foreground">{t.desc}</p>

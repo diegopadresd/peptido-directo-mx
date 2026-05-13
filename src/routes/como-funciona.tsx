@@ -37,7 +37,7 @@ function ComoFunciona() {
               <s.icon className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-display text-xl font-bold">{s.t}</h3>
+              <h2 className="font-display text-xl font-bold">{s.t}</h2>
               <p className="mt-1 text-muted-foreground">{s.d}</p>
             </div>
           </div>
