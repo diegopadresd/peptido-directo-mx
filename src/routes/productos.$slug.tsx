@@ -70,6 +70,7 @@ function ProductPage() {
   const related = p.related
     .map((s: string) => getProduct(s))
     .filter(Boolean) as typeof products;
+  useEffect(() => { trackEvent("view_product", { productSlug: p.slug }); }, [p.slug]);
 
   return (
     <>
