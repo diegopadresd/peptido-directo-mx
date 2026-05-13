@@ -7,7 +7,7 @@ export const Route = createFileRoute("/blog")({
     buildHead({
       title: "Blog Péptidos Mayoreo México — Guías para distribuidores",
       description:
-        "Guías, comparativas y tutoriales para distribuidores y revendedores de péptidos en México: semaglutida, tirzepatida, retatrutida, BPC-157, GHK-Cu, precios y logística.",
+        "Guías y tutoriales para distribuidores de péptidos en México: semaglutida, tirzepatida, retatrutida, BPC-157, GHK-Cu, precios y logística.",
       canonical: "/blog",
       jsonLd: [
         breadcrumbJsonLd([

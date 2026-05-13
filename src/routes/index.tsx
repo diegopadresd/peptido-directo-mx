@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
     buildHead({
       title: "Péptidos Mayoreo - Distribuidor Directo de Fábrica en México",
       description:
-        "Compra péptidos al mayoreo en México con 50% de descuento. Mínimo 10 viales por compuesto, pago Mercado Pago, envío 10-20 días. BPC-157, semaglutida, tirzepatida y más.",
+        "Compra péptidos al mayoreo en México con 50% de descuento. Mínimo 10 viales, pago Mercado Pago, envío 10-20 días. BPC-157, semaglutida, tirzepatida.",
       canonical: "/",
       keywords: ["péptidos mayoreo", "peptidos al por mayor mexico", "distribuidor de péptidos méxico", "comprar péptidos mayoreo"],
       jsonLd: [organizationJsonLd(), faqJsonLd(homeFaqs)],
