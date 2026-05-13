@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { CreditCard, MessageCircle, Loader2 } from "lucide-react";
 import type { Product } from "@/data/products";
 import { PACKS, packTotal, formatMxn } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,36 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
   const wa = buildWaLink(
     `Hola, quiero comprar ${product.name} ${variant.dose} — pack de ${qty} viales (${formatMxn(total)}). ¿Confirmamos disponibilidad y pago por Mercado Pago?`,
   );
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handlePay() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/checkout/mercadopago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productSlug: product.slug,
+          productName: product.name,
+          dose: variant.dose,
+          qty,
+          unitPrice: variant.basePricePerVial,
+          total,
+        }),
+      });
+      const data = (await res.json()) as { init_point?: string; error?: string };
+      if (!res.ok || !data.init_point) {
+        throw new Error(data.error || "No se pudo iniciar el pago");
+      }
+      window.location.href = data.init_point;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error inesperado");
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-7">
@@ -113,11 +143,25 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
 
       {/* CTAs */}
       <div className="flex flex-col gap-2">
-        <Button asChild size="lg" className="h-12 w-full rounded-full bg-primary text-primary-foreground shadow-card hover:bg-primary/90">
-          <a href={wa} target="_blank" rel="noopener">
-            Comprar ahora <ArrowRight className="ml-1.5 h-4 w-4" />
-          </a>
+        <Button
+          size="lg"
+          onClick={handlePay}
+          disabled={loading}
+          className="h-12 w-full rounded-full bg-primary text-primary-foreground shadow-card hover:bg-primary/90"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Redirigiendo a Mercado Pago…
+            </>
+          ) : (
+            <>
+              <CreditCard className="mr-1.5 h-4 w-4" /> Pagar con Mercado Pago
+            </>
+          )}
         </Button>
+        {error && (
+          <p className="text-center text-xs text-destructive">{error}</p>
+        )}
         <Button asChild variant="ghost" className="h-11 w-full rounded-full text-foreground hover:bg-accent">
           <a href={wa} target="_blank" rel="noopener">
             <MessageCircle className="mr-1.5 h-4 w-4" /> Solicitar por WhatsApp
