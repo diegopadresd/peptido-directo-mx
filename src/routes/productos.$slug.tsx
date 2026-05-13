@@ -3,7 +3,7 @@ import { ArrowLeft, ShieldCheck, Beaker, Snowflake, Truck } from "lucide-react";
 import { getProduct, products, minBasePrice } from "@/data/products";
 import { categories } from "@/data/categories";
 import { PricingTiers } from "@/components/site/PricingTiers";
-import { PackPicker } from "@/components/site/PackPicker";
+import { ConcentrationVolumePicker } from "@/components/site/ConcentrationVolumePicker";
 import { ProductCard } from "@/components/site/ProductCard";
 import { FAQAccordion } from "@/components/site/FAQAccordion";
 import { PACKS, packTotal } from "@/lib/pricing";
@@ -88,15 +88,26 @@ function ProductPage() {
           />
         </div>
         <div>
-          {cat && (
-            <span className="inline-flex items-center rounded-full bg-accent px-3 py-1 text-xs font-semibold text-primary">
-              {cat.name}
+          <div className="flex flex-wrap items-center gap-3">
+            {cat && (
+              <span className="inline-flex items-center rounded-full border border-primary bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary">
+                {cat.name}
+              </span>
+            )}
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Research-only · Síntesis de alta pureza
             </span>
-          )}
-          <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+          </div>
+          <h1 className="mt-4 font-display text-4xl font-extrabold uppercase tracking-tight text-foreground md:text-6xl">
             {p.name}
           </h1>
-          <p className="mt-3 text-base text-muted-foreground">{p.shortDesc}</p>
+          {p.tags && p.tags.length > 0 && (
+            <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-primary">
+              {p.tags.join(" · ")}
+            </p>
+          )}
+          <p className="mt-4 text-base text-muted-foreground">{p.shortDesc}</p>
+          <div className="mt-5 h-px w-12 bg-border" />
 
           <div className="mt-5 flex items-baseline gap-2">
             <span className="text-sm text-muted-foreground">Desde</span>
@@ -107,7 +118,7 @@ function ProductPage() {
           </div>
 
           <div className="mt-6">
-            <PackPicker product={p} />
+            <ConcentrationVolumePicker product={p} />
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
