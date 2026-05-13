@@ -120,7 +120,7 @@ function CiudadPage() {
           Clientes en {city.name}
         </h2>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {city.testimonials.map((t) => (
+          {city.testimonials.map((t: { name: string; role: string; quote: string }) => (
             <figure key={t.name} className="rounded-xl border border-border bg-card p-6">
               <blockquote className="text-sm text-foreground">&ldquo;{t.quote}&rdquo;</blockquote>
               <figcaption className="mt-3 text-xs text-muted-foreground">

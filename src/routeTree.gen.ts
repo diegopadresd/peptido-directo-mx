@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ResumenEmpresaRouteImport } from './routes/resumen-empresa'
 import { Route as PreguntasFrecuentesRouteImport } from './routes/preguntas-frecuentes'
 import { Route as EmpezarNegocioRouteImport } from './routes/empezar-negocio'
 import { Route as DistribuidorRouteImport } from './routes/distribuidor'
@@ -20,6 +21,7 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
+import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -30,6 +32,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResumenEmpresaRoute = ResumenEmpresaRouteImport.update({
+  id: '/resumen-empresa',
+  path: '/resumen-empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PreguntasFrecuentesRoute = PreguntasFrecuentesRouteImport.update({
@@ -77,6 +84,11 @@ const ProductosSlugRoute = ProductosSlugRouteImport.update({
   path: '/productos/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PeptidosCiudadRoute = PeptidosCiudadRouteImport.update({
+  id: '/peptidos/$ciudad',
+  path: '/peptidos/$ciudad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -91,9 +103,11 @@ export interface FileRoutesByFullPath {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
+  '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
 }
@@ -105,9 +119,11 @@ export interface FileRoutesByTo {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
+  '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
 }
@@ -120,9 +136,11 @@ export interface FileRoutesById {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
+  '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
 }
@@ -136,9 +154,11 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/preguntas-frecuentes'
+    | '/resumen-empresa'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
   fileRoutesByTo: FileRoutesByTo
@@ -150,9 +170,11 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/preguntas-frecuentes'
+    | '/resumen-empresa'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
   id:
@@ -164,9 +186,11 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/preguntas-frecuentes'
+    | '/resumen-empresa'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
   fileRoutesById: FileRoutesById
@@ -179,8 +203,10 @@ export interface RootRouteChildren {
   DistribuidorRoute: typeof DistribuidorRoute
   EmpezarNegocioRoute: typeof EmpezarNegocioRoute
   PreguntasFrecuentesRoute: typeof PreguntasFrecuentesRoute
+  ResumenEmpresaRoute: typeof ResumenEmpresaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
 }
@@ -199,6 +225,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resumen-empresa': {
+      id: '/resumen-empresa'
+      path: '/resumen-empresa'
+      fullPath: '/resumen-empresa'
+      preLoaderRoute: typeof ResumenEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/preguntas-frecuentes': {
@@ -264,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductosSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/peptidos/$ciudad': {
+      id: '/peptidos/$ciudad'
+      path: '/peptidos/$ciudad'
+      fullPath: '/peptidos/$ciudad'
+      preLoaderRoute: typeof PeptidosCiudadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/$slug'
@@ -292,8 +332,10 @@ const rootRouteChildren: RootRouteChildren = {
   DistribuidorRoute: DistribuidorRoute,
   EmpezarNegocioRoute: EmpezarNegocioRoute,
   PreguntasFrecuentesRoute: PreguntasFrecuentesRoute,
+  ResumenEmpresaRoute: ResumenEmpresaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
 }
