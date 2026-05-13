@@ -34,7 +34,7 @@ export async function trackPageview(path: string) {
   // Skip self-referrers
   const refClean = ref && !ref.startsWith(window.location.origin) ? ref : "";
   try {
-    await supabase.rpc("track_pageview", {
+    await supabase.rpc("track_pageview" as never, {
       _session: sid,
       _path: path,
       _referrer: refClean,
@@ -43,7 +43,7 @@ export async function trackPageview(path: string) {
       _utm_medium: url.searchParams.get("utm_medium") ?? "",
       _utm_campaign: url.searchParams.get("utm_campaign") ?? "",
       _user_agent: navigator.userAgent ?? "",
-    });
+    } as never);
   } catch { /* silent */ }
 }
 
@@ -52,13 +52,13 @@ export async function trackEvent(name: string, opts: { path?: string; productSlu
   const sid = sessionId();
   if (!sid) return;
   try {
-    await supabase.rpc("track_event", {
+    await supabase.rpc("track_event" as never, {
       _session: sid,
       _name: name,
       _path: opts.path ?? window.location.pathname,
       _product_slug: opts.productSlug ?? "",
       _value_mxn: opts.valueMxn ?? null,
       _meta: (opts.meta ?? null) as never,
-    });
+    } as never);
   } catch { /* silent */ }
 }
