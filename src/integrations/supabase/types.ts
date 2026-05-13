@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          admin_notification_email: string | null
+          id: number
+          send_customer_email: boolean
+          updated_at: string
+        }
+        Insert: {
+          admin_notification_email?: string | null
+          id?: number
+          send_customer_email?: boolean
+          updated_at?: string
+        }
+        Update: {
+          admin_notification_email?: string | null
+          id?: number
+          send_customer_email?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      carts: {
+        Row: {
+          cart_token: string | null
+          converted_order_id: string | null
+          created_at: string
+          customer_name: string | null
+          email: string | null
+          id: string
+          items: Json
+          last_seen_at: string
+          phone: string | null
+          status: string
+          subtotal_mxn: number
+          updated_at: string
+        }
+        Insert: {
+          cart_token?: string | null
+          converted_order_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          email?: string | null
+          id?: string
+          items?: Json
+          last_seen_at?: string
+          phone?: string | null
+          status?: string
+          subtotal_mxn?: number
+          updated_at?: string
+        }
+        Update: {
+          cart_token?: string | null
+          converted_order_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          email?: string | null
+          id?: string
+          items?: Json
+          last_seen_at?: string
+          phone?: string | null
+          status?: string
+          subtotal_mxn?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_events: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          order_id: string
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          order_id: string
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          order_id?: string
+          payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           dose: string
@@ -57,43 +155,123 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
+          carrier: string | null
+          cart_id: string | null
           created_at: string
           customer_address: Json
           customer_email: string
           customer_name: string
           customer_phone: string
+          external_reference: string | null
           id: string
           mp_payment_id: string | null
           mp_preference_id: string | null
+          mp_status_detail: string | null
           notes: string | null
+          notified_at: string | null
+          shipped_at: string | null
+          shipping_status: string
           status: string
           total_mxn: number
+          tracking_number: string | null
+          updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
+          carrier?: string | null
+          cart_id?: string | null
           created_at?: string
           customer_address: Json
           customer_email: string
           customer_name: string
           customer_phone: string
+          external_reference?: string | null
           id?: string
           mp_payment_id?: string | null
           mp_preference_id?: string | null
+          mp_status_detail?: string | null
           notes?: string | null
+          notified_at?: string | null
+          shipped_at?: string | null
+          shipping_status?: string
           status?: string
           total_mxn: number
+          tracking_number?: string | null
+          updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
+          carrier?: string | null
+          cart_id?: string | null
           created_at?: string
           customer_address?: Json
           customer_email?: string
           customer_name?: string
           customer_phone?: string
+          external_reference?: string | null
           id?: string
           mp_payment_id?: string | null
           mp_preference_id?: string | null
+          mp_status_detail?: string | null
           notes?: string | null
+          notified_at?: string | null
+          shipped_at?: string | null
+          shipping_status?: string
           status?: string
           total_mxn?: number
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -102,10 +280,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -232,6 +416,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
