@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, ShieldCheck, Beaker, Snowflake, Truck } from "lucide-react";
+import { useEffect } from "react";
 import { getProduct, products, minBasePrice } from "@/data/products";
+import { trackEvent } from "@/lib/analytics/track";
 import { categories } from "@/data/categories";
 import { PricingTiers } from "@/components/site/PricingTiers";
 import { ConcentrationVolumePicker } from "@/components/site/ConcentrationVolumePicker";
