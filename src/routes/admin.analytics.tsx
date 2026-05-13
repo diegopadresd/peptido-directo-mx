@@ -3,15 +3,17 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { adminGetAnalytics } from "@/lib/admin.functions";
+import { callAdminFn, formatAdminError } from "@/lib/admin-client";
 
 export const Route = createFileRoute("/admin/analytics")({ component: AnalyticsPage });
 
 function AnalyticsPage() {
   const fn = useServerFn(adminGetAnalytics);
   const [days, setDays] = useState(30);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin", "analytics", days],
-    queryFn: () => fn({ data: { days } }),
+    queryFn: () => callAdminFn(fn, { days }),
+    retry: false,
   });
 
   return (
@@ -28,7 +30,7 @@ function AnalyticsPage() {
         </div>
       </div>
 
-      {isLoading || !data ? <p className="text-sm text-muted-foreground">Cargando…</p> : (
+      {isError ? <AdminError message={formatAdminError(error)} /> : isLoading ? <p className="text-sm text-muted-foreground">Cargando…</p> : !data ? <AdminError message={formatAdminError(null)} /> : (
         <>
           <Funnel f={data.funnel} />
 
@@ -62,6 +64,10 @@ function AnalyticsPage() {
       )}
     </div>
   );
+}
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
 }
 
 function Funnel({ f }: { f: Record<string, number> }) {

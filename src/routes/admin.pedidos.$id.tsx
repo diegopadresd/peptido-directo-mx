@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminGetOrder, adminUpdateOrder } from "@/lib/admin.functions";
+import { callAdminFn, formatAdminError } from "@/lib/admin-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +17,7 @@ function OrderDetail() {
   const fn = useServerFn(adminGetOrder);
   const upd = useServerFn(adminUpdateOrder);
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ["admin","order", id], queryFn: () => fn({ data: { id } }) });
+  const { data, isLoading, isError, error } = useQuery({ queryKey: ["admin","order", id], queryFn: () => callAdminFn(fn, { id }), retry: false });
 
   const [shippingStatus, setShippingStatus] = useState("pendiente");
   const [carrier, setCarrier] = useState("Estafeta");
@@ -33,6 +34,7 @@ function OrderDetail() {
     }
   }, [data]);
 
+  if (isError) return <AdminError message={formatAdminError(error)} />;
   if (isLoading || !data?.order) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   const o = data.order;
   const a = (o.customer_address ?? {}) as Record<string, string>;
@@ -44,7 +46,7 @@ function OrderDetail() {
   async function save() {
     setSaving(true);
     try {
-      await upd({ data: { id, shipping_status: shippingStatus as "pendiente"|"empacado"|"enviado"|"entregado"|"cancelado", carrier: carrier as "Estafeta"|"DHL"|"FedEx"|"Otro", tracking_number: tracking, admin_notes: adminNotes } });
+      await callAdminFn(upd, { id, shipping_status: shippingStatus as "pendiente"|"empacado"|"enviado"|"entregado"|"cancelado", carrier: carrier as "Estafeta"|"DHL"|"FedEx"|"Otro", tracking_number: tracking, admin_notes: adminNotes });
       await qc.invalidateQueries({ queryKey: ["admin","order", id] });
     } finally { setSaving(false); }
   }
@@ -115,4 +117,8 @@ function OrderDetail() {
       </section>
     </div>
   );
+}
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
 }

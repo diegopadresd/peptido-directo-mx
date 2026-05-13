@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminListOrders } from "@/lib/admin.functions";
+import { callAdminFn, formatAdminError } from "@/lib/admin-client";
 import { Input } from "@/components/ui/input";
 import { formatMxn } from "@/lib/pricing";
 
@@ -12,14 +13,16 @@ function Pedidos() {
   const fn = useServerFn(adminListOrders);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
-  const { data } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["admin","orders", search, status],
-    queryFn: () => fn({ data: { search: search || undefined, status: status || undefined, limit: 100 } }),
+    queryFn: () => callAdminFn(fn, { search: search || undefined, status: status || undefined, limit: 100 }),
+    retry: false,
   });
   const rows = data?.orders ?? [];
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Pedidos</h1>
+      {isError && <AdminError message={formatAdminError(error)} />}
       <div className="flex flex-wrap gap-2">
         <Input placeholder="Buscar por nombre, email, tel…" value={search} onChange={(e)=>setSearch(e.target.value)} className="max-w-xs" />
         <select value={status} onChange={(e)=>setStatus(e.target.value)} className="rounded-md border border-input bg-background px-3 text-sm">
@@ -52,6 +55,10 @@ function Pedidos() {
       </div>
     </div>
   );
+}
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
 }
 
 function Badge({ status }: { status: string }) {
