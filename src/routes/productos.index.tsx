@@ -10,7 +10,7 @@ export const Route = createFileRoute("/productos/")({
     buildHead({
       title: "Catálogo Mayoreo - Péptidos al Por Mayor en México",
       description:
-        "Catálogo completo de péptidos al mayoreo en México: BPC-157, semaglutida, tirzepatida, retatrutida, CJC-1295, ipamorelin y más. Mínimo 10 viales. Pago Mercado Pago.",
+        "Catálogo de péptidos al mayoreo en México: BPC-157, semaglutida, tirzepatida, retatrutida, CJC-1295, ipamorelin. Mínimo 10 viales. Pago Mercado Pago.",
       canonical: "/productos",
       keywords: ["catálogo péptidos mayoreo", "péptidos al por mayor mexico", "comprar péptidos mayoreo"],
       jsonLd: breadcrumbJsonLd([
