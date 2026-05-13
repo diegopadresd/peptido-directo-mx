@@ -1,87 +1,58 @@
-# Fase 1 — Infraestructura SEO/GEO
+## Fase 3 — Performance & Lighthouse
 
-## Nota técnica importante (leer antes de aprobar)
+Objetivo: subir Lighthouse Performance ≥90 y SEO=100 sin tocar copy ni features. Trabajo 100% en assets, head() y atributos de imagen.
 
-El proyecto está en **TanStack Start con SSR**, no en Vite+React puro. Ya tiene un sistema de SEO server-side completo y mejor que `react-helmet-async`:
+### 1. Convertir imágenes a WebP
 
-- `head()` por ruta con `meta`, `links`, `scripts` (JSON-LD) — emitido en el HTML inicial, 100% crawleable sin prerender extra.
-- `<HeadContent />` ya montado en `__root.tsx`.
-- Helpers `buildHead`, `organizationJsonLd`, `breadcrumbJsonLd`, `faqJsonLd` en `src/lib/seo.ts`.
-- Server routes `sitemap.xml` y `robots.txt` ya funcionando.
+- `public/og-image.png` (1.5MB) → `public/og-image.webp` + `og-image.jpg` fallback (~150–250KB). Actualizar `og:image`/`twitter:image` en `__root.tsx` y rutas que lo overridean.
+- `src/assets/vial-*.jpg` y `hero-bg.jpg` (15–47KB c/u) → `.webp` con cwebp (q=82). Vite los inlinea/hashea igual.
+- AVIF se omite: ganancia marginal vs WebP en este rango de tamaños y duplica build.
 
-**Instalar `react-helmet-async` aquí sería un downgrade**: rompe el SSR nativo de TanStack, duplica tags, y compite con `HeadContent`. Voy a cumplir el 100% de los requisitos usando el sistema nativo (mismas props, misma cobertura, mejor rendering). Si insistes en `react-helmet-async`, dímelo y replanteo, pero perderemos SSR limpio.
+### 2. Atributos de `<img>`
 
-Lo mismo con `/public/sitemap.xml` y `/public/robots.txt` estáticos: ya tenemos versiones **dinámicas** server-rendered en `/sitemap.xml` y `/robots.txt`, que es estrictamente superior porque incluyen productos y rutas nuevas automáticamente.
+Auditar cada `<img>` en `components/` y `routes/`:
+- Hero / primer producto visible: `loading="eager"` + `fetchpriority="high"` + `decoding="async"`.
+- Resto (grids de productos, blog cards, footer): `loading="lazy"` + `decoding="async"`.
+- Todas: `width` y `height` explícitos para evitar CLS.
+- Confirmar `alt` descriptivo con keyword (ej. `alt="Vial BPC-157 5mg mayoreo México"`).
 
----
+### 3. Fuentes
 
-## Lo que se hace en esta fase
+Hoy se cargan vía `<link>` Google Fonts con `display=swap` (bien) pero bloquean render por CSS externo. Cambios:
+- Mantener `preconnect` a `fonts.gstatic.com`.
+- Agregar `<link rel="preload" as="style">` al CSS de Google Fonts para subir prioridad.
+- Reducir pesos: Inter 400/600/700 (quitar 500 y 800), Geist 700/800 (quitar 600). Menos bytes de fuente, mismo render.
 
-### 1. Robots.txt — bots de IA explícitos
-Reemplazar `src/routes/robots[.]txt.tsx` con allowlist explícita para Googlebot, Bingbot, GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended, CCBot, anthropic-ai, cohere-ai. Mantener `Sitemap:` apuntando al dinámico.
+### 4. Recursos críticos en `<head>`
 
-### 2. Sitemap — segmentado y con metadata
-Reescribir `src/routes/sitemap[.]xml.tsx`:
-- `<lastmod>`, `<changefreq>`, `<priority>` por URL.
-- Incluir: estáticas, `/productos/[slug]` (de `data/products`), `/blog/[slug]` (de blog data), y `/peptidos/[ciudad]` (10 ciudades nuevas).
-- Si en el futuro >500 URLs, dividir; por ahora un solo sitemap (tenemos ~80).
-- Añadir endpoint `/sitemap-index.xml` opcional como puerta para escalar.
+En `__root.tsx`:
+- `<link rel="preload" as="image">` para `hero-bg.webp` (LCP del home).
+- `<link rel="dns-prefetch">` para wa.me y mercadopago.
 
-### 3. Root `head()` — defaults limpios y verificación
-En `src/routes/__root.tsx`:
-- `html lang="es-MX"` (ya está vía meta, lo movemos al elemento html).
-- `<link rel="canonical">` por defecto vía cada `buildHead`.
-- `<link rel="alternate" hreflang="es-MX">` y `x-default`.
-- Quitar el title genérico actual del root (cada ruta lo sobreescribe — confirmar que no hay duplicados).
-- Placeholders comentados para Google Search Console, GA4, Bing Webmaster, Meta Pixel, Microsoft Clarity (sin IDs reales — listos para pegar).
-- `Organization` + `WebSite` + `SearchAction` JSON-LD a nivel root (aparecen en todas las páginas, correcto para schema.org).
+### 5. Cache headers
 
-### 4. `buildHead` — extender con campos faltantes
-En `src/lib/seo.ts`:
-- Soporte `noindex` → `<meta name="robots" content="noindex,nofollow">`.
-- Soporte `alternateLanguages: [{lang, url}]` → genera `<link rel="alternate" hreflang>`.
-- `og:url` automático desde canonical.
-- Validación dev-only: warning en consola si title >60 o description fuera de 140-170.
-- `ogImage` por defecto absoluto a `/og-image.png` (ya hecho, verificar).
+Verificar que `/sitemap.xml` y `/robots.txt` respondan con `Cache-Control: public, max-age=3600`. Hoy no setean header de cache.
 
-### 5. Ciudades programáticas
-- Nueva ruta `src/routes/peptidos.$ciudad.tsx` con loader que valida slug contra `src/data/cities.ts`.
-- 10 ciudades: CDMX, Guadalajara, Monterrey, Tijuana, Puebla, Querétaro, Mérida, León, Hermosillo, Cancún.
-- Cada ciudad: estado, tiempo de entrega estimado, párrafo intro único, 2 testimonios (recyclados de `data/testimonials` filtrados o generados), FAQ regional, top 6 productos embebidos. ~600 palabras únicas.
-- Schema `LocalBusiness` con `areaServed` por ciudad + `BreadcrumbList`.
-- Linkeadas desde footer.
+### 6. JSON-LD: deduplicar
 
-### 6. Producto individual — reforzar PDP existente
-- Title pattern: `{Nombre} {dosis-min}–{dosis-max} Mayoreo México | Distribuidor desde ${precio}`.
-- Añadir secciones H2 que faltan (Mecanismo, Especificaciones, Cómo Comprar, FAQ específico) si no están — revisar caso por caso.
-- Patrón AEO: párrafo "definición" estilo `{Producto} es {definición factual}` al inicio.
-- `Product` schema ya existe, agregar `BreadcrumbList` y `FAQPage`.
+Hoy `Organization` y `WebSite` se emiten en root; `LocalBusiness` en cada ciudad; `Product` en cada PDP. Verificar que no haya dobles en rutas anidadas (root + child concatena scripts). Si aparece duplicado, mover Organization/WebSite solo a `/` y dejar el resto en su ruta.
 
-### 7. Resumen empresa (página AEO)
-Nueva ruta `src/routes/resumen-empresa.tsx`: datos clave en formato citable por LLMs (nombre, MOQ, ciudades servidas, métodos de pago Mercado Pago, tiempos de entrega, política de garantía). Schema `Organization` + `AboutPage`.
+### 7. Auditoría final
 
-### 8. Footer
-Agregar bloque de links: ciudades top, categorías top, resumen empresa, blog. Anchor text con keyword.
-
-### 9. Verificación al final de la fase
-Levantar dev y revisar 5 páginas representativas (home, /productos, /productos/retatrutida, /peptidos/cdmx, /blog) y reportar:
-- Title length, description length, H1 único.
-- JSON-LD válido (parsear).
-- Robots/sitemap accesibles (HTTP 200).
-- Hreflang presente.
+Correr Lighthouse contra preview en home, /productos, /productos/retatrutida, /peptidos/cdmx, /blog, /blog/semaglutida-vs-tirzepatida-cual-vender. Reportar Performance, SEO, Best Practices, Accessibility con antes/después y los hallazgos accionables que queden.
 
 ---
 
-## Lo que se difiere a fases siguientes (no en esta fase)
-
-- **Fase 2 (Contenido)**: 12 blog posts pillar (1500–3000 palabras c/u). Es trabajo de redacción largo, mejor en lote separado.
-- **Fase 3 (Performance)**: WebP/AVIF, preload de fuentes, auditoría Lighthouse formal. Conviene hacerlo después de que el contenido esté en su lugar.
-- **GA4/GSC reales**: solo placeholders en esta fase. Los IDs los pegas tú cuando tengas las cuentas.
+### Fuera de alcance (queda para fase futura)
+- Self-hosting de fuentes con subset latin (gana ~150ms LCP, requiere bundling de woff2 en `/public`).
+- Service worker / PWA.
+- Code-splitting agresivo por ruta (TanStack ya lo hace por archivo).
+- Reemplazo de framer-motion por CSS animations.
 
 ---
 
-## Confirmaciones que necesito antes de implementar
+### Confirmaciones antes de implementar
 
-1. **Stack de SEO**: ¿OK usar el sistema nativo TanStack `head()` (recomendado) en lugar de `react-helmet-async`?
-2. **Dominio canonical**: ¿El definitivo es `https://peptidosmayoreo.com`? Lo necesito para canonical/OG/sitemap.
-3. **Ciudades programáticas**: ¿OK crear las 10 con contenido auto-generado base (~600 palabras c/u con datos plausibles de tiempos de envío) o prefieres que primero solo cree la plantilla y tú me pasas el copy real ciudad por ciudad?
+1. **OG image**: ¿OK que regenere `og-image` a 1200×630 WebP+JPG (queda <200KB) reusando branding actual, o tienes una versión nueva que prefieres subir?
+2. **Pesos de fuentes**: ¿OK reducir a Inter 400/600/700 + Geist 700/800? Si usas otro peso en algún lugar, dímelo.
+3. **Lighthouse**: ¿Lo corro contra el preview de Lovable o esperas a tener `peptidosmayoreo.com` apuntado y lo medimos en producción?
