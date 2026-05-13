@@ -34,6 +34,7 @@ import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin.configuracion'
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminCarritosRouteImport } from './routes/admin.carritos'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
 import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
 import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
@@ -164,6 +165,11 @@ const AdminCarritosRoute = AdminCarritosRouteImport.update({
   path: '/carritos',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicMercadopagoWebhookRoute =
   ApiPublicMercadopagoWebhookRouteImport.update({
     id: '/api/public/mercadopago-webhook',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
@@ -295,6 +304,7 @@ export interface FileRouteTypes {
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
+    | '/admin/analytics'
     | '/admin/carritos'
     | '/admin/clientes'
     | '/admin/configuracion'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
+    | '/admin/analytics'
     | '/admin/carritos'
     | '/admin/clientes'
     | '/admin/configuracion'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
+    | '/admin/analytics'
     | '/admin/carritos'
     | '/admin/clientes'
     | '/admin/configuracion'
@@ -576,6 +588,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCarritosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/mercadopago-webhook': {
       id: '/api/public/mercadopago-webhook'
       path: '/api/public/mercadopago-webhook'
@@ -620,6 +639,7 @@ const AdminPedidosRouteWithChildren = AdminPedidosRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminCarritosRoute: typeof AdminCarritosRoute
   AdminClientesRoute: typeof AdminClientesRoute
   AdminConfiguracionRoute: typeof AdminConfiguracionRoute
@@ -628,6 +648,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminCarritosRoute: AdminCarritosRoute,
   AdminClientesRoute: AdminClientesRoute,
   AdminConfiguracionRoute: AdminConfiguracionRoute,
