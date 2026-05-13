@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResumenEmpresaRouteImport } from './routes/resumen-empresa'
 import { Route as PreguntasFrecuentesRouteImport } from './routes/preguntas-frecuentes'
@@ -40,6 +41,11 @@ import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkou
 import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
 import { Route as AdminPedidosIdRouteImport } from './routes/admin.pedidos.$id'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/admin/analytics'
     | '/admin/carritos'
     | '/admin/clientes'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/admin/analytics'
     | '/admin/carritos'
     | '/admin/clientes'
@@ -367,6 +378,7 @@ export interface FileRouteTypes {
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
+    | '/sitemap.xml'
     | '/admin/analytics'
     | '/admin/carritos'
     | '/admin/clientes'
@@ -400,6 +412,7 @@ export interface RootRouteChildren {
   PreguntasFrecuentesRoute: typeof PreguntasFrecuentesRoute
   ResumenEmpresaRoute: typeof ResumenEmpresaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   PagoExitoRoute: typeof PagoExitoRoute
   PagoFalloRoute: typeof PagoFalloRoute
   PagoPendienteRoute: typeof PagoPendienteRoute
@@ -413,6 +426,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -682,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   PreguntasFrecuentesRoute: PreguntasFrecuentesRoute,
   ResumenEmpresaRoute: ResumenEmpresaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   PagoExitoRoute: PagoExitoRoute,
   PagoFalloRoute: PagoFalloRoute,
   PagoPendienteRoute: PagoPendienteRoute,
