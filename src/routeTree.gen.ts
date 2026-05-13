@@ -22,7 +22,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductosIndexRouteImport } from './routes/productos.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
+import { Route as PagoPendienteRouteImport } from './routes/pago.pendiente'
+import { Route as PagoFalloRouteImport } from './routes/pago.fallo'
+import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
+import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -89,10 +94,36 @@ const PeptidosCiudadRoute = PeptidosCiudadRouteImport.update({
   path: '/peptidos/$ciudad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagoPendienteRoute = PagoPendienteRouteImport.update({
+  id: '/pago/pendiente',
+  path: '/pago/pendiente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagoFalloRoute = PagoFalloRouteImport.update({
+  id: '/pago/fallo',
+  path: '/pago/fallo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PagoExitoRoute = PagoExitoRouteImport.update({
+  id: '/pago/exito',
+  path: '/pago/exito',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => BlogRoute,
+} as any)
+const ApiPublicMercadopagoWebhookRoute =
+  ApiPublicMercadopagoWebhookRouteImport.update({
+    id: '/api/public/mercadopago-webhook',
+    path: '/api/public/mercadopago-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiCheckoutMercadopagoRoute = ApiCheckoutMercadopagoRouteImport.update({
+  id: '/api/checkout/mercadopago',
+  path: '/api/checkout/mercadopago',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -107,9 +138,14 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/pago/exito': typeof PagoExitoRoute
+  '/pago/fallo': typeof PagoFalloRoute
+  '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
+  '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,9 +159,14 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/pago/exito': typeof PagoExitoRoute
+  '/pago/fallo': typeof PagoFalloRoute
+  '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
+  '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,9 +181,14 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/pago/exito': typeof PagoExitoRoute
+  '/pago/fallo': typeof PagoFalloRoute
+  '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
+  '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -158,9 +204,14 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/pago/exito'
+    | '/pago/fallo'
+    | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
+    | '/api/checkout/mercadopago'
+    | '/api/public/mercadopago-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -174,9 +225,14 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/pago/exito'
+    | '/pago/fallo'
+    | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
+    | '/api/checkout/mercadopago'
+    | '/api/public/mercadopago-webhook'
   id:
     | '__root__'
     | '/'
@@ -190,9 +246,14 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/blog/$slug'
+    | '/pago/exito'
+    | '/pago/fallo'
+    | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
+    | '/api/checkout/mercadopago'
+    | '/api/public/mercadopago-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -206,9 +267,14 @@ export interface RootRouteChildren {
   ResumenEmpresaRoute: typeof ResumenEmpresaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  PagoExitoRoute: typeof PagoExitoRoute
+  PagoFalloRoute: typeof PagoFalloRoute
+  PagoPendienteRoute: typeof PagoPendienteRoute
   PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
+  ApiCheckoutMercadopagoRoute: typeof ApiCheckoutMercadopagoRoute
+  ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -304,12 +370,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeptidosCiudadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pago/pendiente': {
+      id: '/pago/pendiente'
+      path: '/pago/pendiente'
+      fullPath: '/pago/pendiente'
+      preLoaderRoute: typeof PagoPendienteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pago/fallo': {
+      id: '/pago/fallo'
+      path: '/pago/fallo'
+      fullPath: '/pago/fallo'
+      preLoaderRoute: typeof PagoFalloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pago/exito': {
+      id: '/pago/exito'
+      path: '/pago/exito'
+      fullPath: '/pago/exito'
+      preLoaderRoute: typeof PagoExitoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
+    }
+    '/api/public/mercadopago-webhook': {
+      id: '/api/public/mercadopago-webhook'
+      path: '/api/public/mercadopago-webhook'
+      fullPath: '/api/public/mercadopago-webhook'
+      preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checkout/mercadopago': {
+      id: '/api/checkout/mercadopago'
+      path: '/api/checkout/mercadopago'
+      fullPath: '/api/checkout/mercadopago'
+      preLoaderRoute: typeof ApiCheckoutMercadopagoRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -335,10 +436,25 @@ const rootRouteChildren: RootRouteChildren = {
   ResumenEmpresaRoute: ResumenEmpresaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  PagoExitoRoute: PagoExitoRoute,
+  PagoFalloRoute: PagoFalloRoute,
+  PagoPendienteRoute: PagoPendienteRoute,
   PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
+  ApiCheckoutMercadopagoRoute: ApiCheckoutMercadopagoRoute,
+  ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
