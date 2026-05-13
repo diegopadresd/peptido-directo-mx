@@ -49,7 +49,7 @@ function Post() {
   const { post } = Route.useLoaderData();
   const related = (post.related ?? [])
     .map((slug: string) => posts.find((p) => p.slug === slug))
-    .filter((p): p is BlogPost => Boolean(p));
+    .filter((p: BlogPost | undefined): p is BlogPost => Boolean(p));
 
   return (
     <article className="container mx-auto max-w-3xl px-4 py-12 md:py-20">
@@ -121,7 +121,7 @@ function Post() {
         <section className="mt-14 border-t border-border pt-10">
           <h2 className="font-display text-xl font-bold">Sigue leyendo</h2>
           <ul className="mt-5 space-y-3">
-            {related.map((r) => (
+            {related.map((r: BlogPost) => (
               <li key={r.slug}>
                 <Link
                   to="/blog/$slug"
