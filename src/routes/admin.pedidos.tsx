@@ -6,7 +6,7 @@ import { adminListOrders } from "@/lib/admin.functions";
 import { Input } from "@/components/ui/input";
 import { formatMxn } from "@/lib/pricing";
 
-export const Route = createFileRoute("/_admin/pedidos")({ component: Pedidos });
+export const Route = createFileRoute("/admin/pedidos")({ component: Pedidos });
 
 function Pedidos() {
   const fn = useServerFn(adminListOrders);

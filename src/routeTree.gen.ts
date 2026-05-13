@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResumenEmpresaRouteImport } from './routes/resumen-empresa'
 import { Route as PreguntasFrecuentesRouteImport } from './routes/preguntas-frecuentes'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as EmpezarNegocioRouteImport } from './routes/empezar-negocio'
 import { Route as DistribuidorRouteImport } from './routes/distribuidor'
 import { Route as ContactoRouteImport } from './routes/contacto'
@@ -20,17 +21,24 @@ import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarritoRouteImport } from './routes/carrito'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductosIndexRouteImport } from './routes/productos.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductosSlugRouteImport } from './routes/productos.$slug'
 import { Route as PeptidosCiudadRouteImport } from './routes/peptidos.$ciudad'
 import { Route as PagoPendienteRouteImport } from './routes/pago.pendiente'
 import { Route as PagoFalloRouteImport } from './routes/pago.fallo'
 import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminConfiguracionRouteImport } from './routes/admin.configuracion'
+import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
+import { Route as AdminCarritosRouteImport } from './routes/admin.carritos'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
 import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
 import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
+import { Route as AdminPedidosIdRouteImport } from './routes/admin.pedidos.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -50,6 +58,11 @@ const ResumenEmpresaRoute = ResumenEmpresaRouteImport.update({
 const PreguntasFrecuentesRoute = PreguntasFrecuentesRouteImport.update({
   id: '/preguntas-frecuentes',
   path: '/preguntas-frecuentes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpezarNegocioRoute = EmpezarNegocioRouteImport.update({
@@ -87,6 +100,11 @@ const BlogRoute = BlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -96,6 +114,11 @@ const ProductosIndexRoute = ProductosIndexRouteImport.update({
   id: '/productos/',
   path: '/productos/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ProductosSlugRoute = ProductosSlugRouteImport.update({
   id: '/productos/$slug',
@@ -127,6 +150,26 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogRoute,
 } as any)
+const AdminPedidosRoute = AdminPedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClientesRoute = AdminClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCarritosRoute = AdminCarritosRouteImport.update({
+  id: '/carritos',
+  path: '/carritos',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicMercadopagoWebhookRoute =
   ApiPublicMercadopagoWebhookRouteImport.update({
     id: '/api/public/mercadopago-webhook',
@@ -143,9 +186,15 @@ const ApiCheckoutCreateOrderRoute = ApiCheckoutCreateOrderRouteImport.update({
   path: '/api/checkout/create-order',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPedidosIdRoute = AdminPedidosIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminPedidosRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/carrito': typeof CarritoRoute
   '/checkout': typeof CheckoutRoute
@@ -153,17 +202,24 @@ export interface FileRoutesByFullPath {
   '/contacto': typeof ContactoRoute
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
+  '/login': typeof LoginRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/carritos': typeof AdminCarritosRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
   '/pago/fallo': typeof PagoFalloRoute
   '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/productos/': typeof ProductosIndexRoute
+  '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
@@ -177,17 +233,24 @@ export interface FileRoutesByTo {
   '/contacto': typeof ContactoRoute
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
+  '/login': typeof LoginRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/carritos': typeof AdminCarritosRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
   '/pago/fallo': typeof PagoFalloRoute
   '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/productos': typeof ProductosIndexRoute
+  '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
@@ -195,6 +258,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
   '/carrito': typeof CarritoRoute
   '/checkout': typeof CheckoutRoute
@@ -202,17 +266,24 @@ export interface FileRoutesById {
   '/contacto': typeof ContactoRoute
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
+  '/login': typeof LoginRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/carritos': typeof AdminCarritosRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
   '/pago/fallo': typeof PagoFalloRoute
   '/pago/pendiente': typeof PagoPendienteRoute
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/productos/': typeof ProductosIndexRoute
+  '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
@@ -221,6 +292,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/blog'
     | '/carrito'
     | '/checkout'
@@ -228,17 +300,24 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/distribuidor'
     | '/empezar-negocio'
+    | '/login'
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/admin/carritos'
+    | '/admin/clientes'
+    | '/admin/configuracion'
+    | '/admin/pedidos'
     | '/blog/$slug'
     | '/pago/exito'
     | '/pago/fallo'
     | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
+    | '/admin/'
     | '/productos/'
+    | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
     | '/api/public/mercadopago-webhook'
@@ -252,23 +331,31 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/distribuidor'
     | '/empezar-negocio'
+    | '/login'
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/admin/carritos'
+    | '/admin/clientes'
+    | '/admin/configuracion'
+    | '/admin/pedidos'
     | '/blog/$slug'
     | '/pago/exito'
     | '/pago/fallo'
     | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
+    | '/admin'
     | '/productos'
+    | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
     | '/api/public/mercadopago-webhook'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/blog'
     | '/carrito'
     | '/checkout'
@@ -276,17 +363,24 @@ export interface FileRouteTypes {
     | '/contacto'
     | '/distribuidor'
     | '/empezar-negocio'
+    | '/login'
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/admin/carritos'
+    | '/admin/clientes'
+    | '/admin/configuracion'
+    | '/admin/pedidos'
     | '/blog/$slug'
     | '/pago/exito'
     | '/pago/fallo'
     | '/pago/pendiente'
     | '/peptidos/$ciudad'
     | '/productos/$slug'
+    | '/admin/'
     | '/productos/'
+    | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
     | '/api/public/mercadopago-webhook'
@@ -294,6 +388,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
   CarritoRoute: typeof CarritoRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -301,6 +396,7 @@ export interface RootRouteChildren {
   ContactoRoute: typeof ContactoRoute
   DistribuidorRoute: typeof DistribuidorRoute
   EmpezarNegocioRoute: typeof EmpezarNegocioRoute
+  LoginRoute: typeof LoginRoute
   PreguntasFrecuentesRoute: typeof PreguntasFrecuentesRoute
   ResumenEmpresaRoute: typeof ResumenEmpresaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
@@ -344,6 +440,13 @@ declare module '@tanstack/react-router' {
       path: '/preguntas-frecuentes'
       fullPath: '/preguntas-frecuentes'
       preLoaderRoute: typeof PreguntasFrecuentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empezar-negocio': {
@@ -395,6 +498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -408,6 +518,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/productos/'
       preLoaderRoute: typeof ProductosIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/productos/$slug': {
       id: '/productos/$slug'
@@ -451,6 +568,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/admin/pedidos': {
+      id: '/admin/pedidos'
+      path: '/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AdminPedidosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracion': {
+      id: '/admin/configuracion'
+      path: '/configuracion'
+      fullPath: '/admin/configuracion'
+      preLoaderRoute: typeof AdminConfiguracionRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/clientes': {
+      id: '/admin/clientes'
+      path: '/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AdminClientesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/carritos': {
+      id: '/admin/carritos'
+      path: '/carritos'
+      fullPath: '/admin/carritos'
+      preLoaderRoute: typeof AdminCarritosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/mercadopago-webhook': {
       id: '/api/public/mercadopago-webhook'
       path: '/api/public/mercadopago-webhook'
@@ -472,8 +617,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutCreateOrderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/pedidos/$id': {
+      id: '/admin/pedidos/$id'
+      path: '/$id'
+      fullPath: '/admin/pedidos/$id'
+      preLoaderRoute: typeof AdminPedidosIdRouteImport
+      parentRoute: typeof AdminPedidosRoute
+    }
   }
 }
+
+interface AdminPedidosRouteChildren {
+  AdminPedidosIdRoute: typeof AdminPedidosIdRoute
+}
+
+const AdminPedidosRouteChildren: AdminPedidosRouteChildren = {
+  AdminPedidosIdRoute: AdminPedidosIdRoute,
+}
+
+const AdminPedidosRouteWithChildren = AdminPedidosRoute._addFileChildren(
+  AdminPedidosRouteChildren,
+)
+
+interface AdminRouteChildren {
+  AdminCarritosRoute: typeof AdminCarritosRoute
+  AdminClientesRoute: typeof AdminClientesRoute
+  AdminConfiguracionRoute: typeof AdminConfiguracionRoute
+  AdminPedidosRoute: typeof AdminPedidosRouteWithChildren
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCarritosRoute: AdminCarritosRoute,
+  AdminClientesRoute: AdminClientesRoute,
+  AdminConfiguracionRoute: AdminConfiguracionRoute,
+  AdminPedidosRoute: AdminPedidosRouteWithChildren,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface BlogRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
@@ -487,6 +669,7 @@ const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,
   CarritoRoute: CarritoRoute,
   CheckoutRoute: CheckoutRoute,
@@ -494,6 +677,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactoRoute: ContactoRoute,
   DistribuidorRoute: DistribuidorRoute,
   EmpezarNegocioRoute: EmpezarNegocioRoute,
+  LoginRoute: LoginRoute,
   PreguntasFrecuentesRoute: PreguntasFrecuentesRoute,
   ResumenEmpresaRoute: ResumenEmpresaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
@@ -511,3 +695,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatMxn } from "@/lib/pricing";
 import { Copy, Printer } from "lucide-react";
 
-export const Route = createFileRoute("/_admin/pedidos/$id")({ component: OrderDetail });
+export const Route = createFileRoute("/admin/pedidos/$id")({ component: OrderDetail });
 
 function OrderDetail() {
   const { id } = Route.useParams();
