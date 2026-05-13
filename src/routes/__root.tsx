@@ -72,11 +72,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#0A2540" },
       { name: "author", content: "Péptidos Mayoreo" },
       { httpEquiv: "Content-Language", content: "es-MX" },
-      { property: "og:image", content: `${SITE_URL}/og-image.jpg` },
-      { property: "og:image:width", content: "1200" },
-      { property: "og:image:height", content: "630" },
-      { name: "twitter:image", content: `${SITE_URL}/og-image.jpg` },
-      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
     links: [
