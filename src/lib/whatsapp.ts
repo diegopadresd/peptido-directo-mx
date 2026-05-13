@@ -1,4 +1,4 @@
-export const WHATSAPP_NUMBER = "525555555555"; // placeholder — reemplazar
+export const WHATSAPP_NUMBER = "526623378663";
 export const SITE_URL = "https://peptidosmayoreo.com";
 
 export function buildWaLink(message: string) {
