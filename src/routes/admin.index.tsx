@@ -22,6 +22,10 @@ function Dashboard() {
         <Stat label="Pedidos pendientes" value={String(data.counts.ordersPending)} />
         <Stat label="Carritos activos" value={String(data.counts.cartsActive)} />
         <Stat label="Carritos abandonados" value={String(data.counts.cartsAbandoned)} />
+        <Stat label="Visitas hoy" value={String(data.visits?.pv_d1 ?? 0)} />
+        <Stat label="Visitas 7d" value={String(data.visits?.pv_d7 ?? 0)} />
+        <Stat label="Visitas 30d" value={String(data.visits?.pv_d30 ?? 0)} />
+        <Stat label="Sesiones 30d" value={String(data.visits?.sess_d30 ?? 0)} />
       </div>
       <div className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Pedidos pagados (últimos 30 días)</h2>
