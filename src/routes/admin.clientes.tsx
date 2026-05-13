@@ -2,17 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminListCustomers } from "@/lib/admin.functions";
+import { callAdminFn, formatAdminError } from "@/lib/admin-client";
 import { formatMxn } from "@/lib/pricing";
 
 export const Route = createFileRoute("/admin/clientes")({ component: Clientes });
 
 function Clientes() {
   const fn = useServerFn(adminListCustomers);
-  const { data } = useQuery({ queryKey: ["admin","customers"], queryFn: () => fn() });
+  const { data, isError, error } = useQuery({ queryKey: ["admin","customers"], queryFn: () => callAdminFn(fn), retry: false });
   const list = data?.customers ?? [];
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Clientes</h1>
+      {isError && <AdminError message={formatAdminError(error)} />}
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider">
@@ -33,4 +35,8 @@ function Clientes() {
       </div>
     </div>
   );
+}
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
 }
