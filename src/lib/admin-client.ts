@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type AdminServerFn<TResult> = (options?: { data?: unknown; headers?: HeadersInit }) => Promise<TResult>;
+type AdminServerFn<TResult> = (options?: any) => Promise<TResult>;
 
 export async function getAdminAuthHeaders() {
   const { data, error } = await supabase.auth.getSession();
@@ -17,4 +17,9 @@ export async function callAdminFn<TResult>(fn: AdminServerFn<TResult>, data?: un
   const headers = await getAdminAuthHeaders();
   const options = data === undefined ? { headers } : { data, headers };
   return fn(options);
+}
+
+export function formatAdminError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return "No se pudo cargar el panel admin. Intenta iniciar sesión otra vez.";
 }
