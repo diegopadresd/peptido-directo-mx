@@ -11,6 +11,7 @@ export const Route = createFileRoute("/admin")({
 function AdminLayout() {
   const [ready, setReady] = useState(false);
   const [allowed, setAllowed] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -18,11 +19,25 @@ function AdminLayout() {
     let cancelled = false;
     async function check(userId: string | null) {
       if (cancelled) return;
-      if (!userId) { navigate({ to: "/login" }); return; }
+      setReady(false);
+      setAccessError(null);
+      if (!userId) {
+        setAllowed(false);
+        setReady(true);
+        navigate({ to: "/login" });
+        return;
+      }
       const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
       if (cancelled) return;
-      if (error || !data) { navigate({ to: "/" }); return; }
-      setAllowed(true); setReady(true);
+      if (error || !data) {
+        setAllowed(false);
+        setAccessError("Esta cuenta no tiene acceso al panel admin.");
+        setReady(true);
+        navigate({ to: "/" });
+        return;
+      }
+      setAllowed(true);
+      setReady(true);
     }
     // Listen first to avoid race with session restore
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
@@ -37,7 +52,7 @@ function AdminLayout() {
   if (!ready) {
     return <div className="grid min-h-[60vh] place-items-center text-sm text-muted-foreground">Verificando acceso…</div>;
   }
-  if (!allowed) return null;
+  if (!allowed) return <div className="grid min-h-[60vh] place-items-center text-sm text-muted-foreground">{accessError ?? "Acceso no autorizado."}</div>;
 
   const links = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
