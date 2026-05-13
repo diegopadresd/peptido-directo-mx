@@ -30,38 +30,51 @@ function AnalyticsPage() {
         </div>
       </div>
 
-      {isError ? <AdminError message={formatAdminError(error)} /> : isLoading ? <p className="text-sm text-muted-foreground">Cargando…</p> : !data ? <AdminError message={formatAdminError(null)} /> : (
+      {isError ? <AdminError message={formatAdminError(error)} /> : isLoading ? <p className="text-sm text-muted-foreground">Cargando…</p> : !data ? <AdminError message={formatAdminError(null)} /> : (() => {
+        const d = {
+          funnel: data.funnel ?? {},
+          topPages: data.topPages ?? [],
+          topReferrers: data.topReferrers ?? [],
+          devices: data.devices ?? [],
+          utm: data.utm ?? [],
+          topProducts: data.topProducts ?? [],
+          addToCart: data.addToCart ?? [],
+          searches: data.searches ?? [],
+          daily: data.daily ?? [],
+        };
+        return (
         <>
-          <Funnel f={data.funnel} />
+          <Funnel f={d.funnel} />
 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card title="Páginas más vistas">
-              <Table rows={data.topPages.map((r) => ({ k: r.path, v: `${r.views} (${r.sessions} sesiones)` }))} empty="Aún sin datos" />
+              <Table rows={d.topPages.map((r) => ({ k: r.path, v: `${r.views} (${r.sessions} sesiones)` }))} empty="Aún sin datos" />
             </Card>
             <Card title="Referrers">
-              <Table rows={data.topReferrers.map((r) => ({ k: r.host, v: String(r.visits) }))} empty="Aún sin datos" />
+              <Table rows={d.topReferrers.map((r) => ({ k: r.host, v: String(r.visits) }))} empty="Aún sin datos" />
             </Card>
             <Card title="Dispositivos">
-              <Table rows={data.devices.map((r) => ({ k: r.device, v: String(r.visits) }))} empty="Aún sin datos" />
+              <Table rows={d.devices.map((r) => ({ k: r.device, v: String(r.visits) }))} empty="Aún sin datos" />
             </Card>
             <Card title="UTM (campañas)">
-              <Table rows={data.utm.map((r) => ({ k: `${r.source}/${r.medium}/${r.campaign}`, v: String(r.visits) }))} empty="Sin tráfico con UTM" />
+              <Table rows={d.utm.map((r) => ({ k: `${r.source}/${r.medium}/${r.campaign}`, v: String(r.visits) }))} empty="Sin tráfico con UTM" />
             </Card>
             <Card title="Productos más vistos">
-              <Table rows={data.topProducts.map((r) => ({ k: r.slug, v: String(r.views) }))} empty="Aún sin datos" />
+              <Table rows={d.topProducts.map((r) => ({ k: r.slug, v: String(r.views) }))} empty="Aún sin datos" />
             </Card>
             <Card title="Más añadidos al carrito">
-              <Table rows={data.addToCart.map((r) => ({ k: r.slug, v: String(r.count) }))} empty="Aún sin datos" />
+              <Table rows={d.addToCart.map((r) => ({ k: r.slug, v: String(r.count) }))} empty="Aún sin datos" />
             </Card>
             <Card title="Búsquedas">
-              <Table rows={data.searches.map((r) => ({ k: r.q, v: String(r.count) }))} empty="Aún sin datos" />
+              <Table rows={d.searches.map((r) => ({ k: r.q, v: String(r.count) }))} empty="Aún sin datos" />
             </Card>
             <Card title="Vistas por día">
-              <Table rows={data.daily.map((r) => ({ k: r.day, v: `${r.views} vistas · ${r.sessions} sesiones` }))} empty="Aún sin datos" />
+              <Table rows={d.daily.map((r) => ({ k: r.day, v: `${r.views} vistas · ${r.sessions} sesiones` }))} empty="Aún sin datos" />
             </Card>
           </div>
         </>
-      )}
+        );
+      })()}
     </div>
   );
 }
