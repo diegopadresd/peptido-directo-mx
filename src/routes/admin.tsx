@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LayoutDashboard, ShoppingBag, Users, ShoppingCart, Settings, LogOut, BarChart3 } from "lucide-react";
@@ -7,6 +7,20 @@ export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin · Péptidos Mayoreo" }, { name: "robots", content: "noindex" }] }),
   component: AdminLayout,
 });
+
+async function withTimeout<T>(promise: PromiseLike<T>, ms: number, fallback: T | null): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T | null>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 function AdminLayout() {
   const [ready, setReady] = useState(false);
@@ -17,38 +31,46 @@ function AdminLayout() {
 
   useEffect(() => {
     let cancelled = false;
-    let requestId = 0;
-    async function check(userId: string | null) {
-      const currentRequest = ++requestId;
-      if (cancelled) return;
+    async function check(userId?: string | null) {
       setAccessError(null);
-      if (!userId) {
-        if (cancelled || currentRequest !== requestId) return;
+      setReady(false);
+      const resolvedUserId = userId === undefined
+        ? (await withTimeout(supabase.auth.getUser(), 8000, null))?.data.user?.id ?? null
+        : userId;
+      if (cancelled) return;
+      if (!resolvedUserId) {
         setAllowed(false);
         setReady(true);
         navigate({ to: "/login" });
         return;
       }
-      const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-      if (cancelled || currentRequest !== requestId) return;
+      const roleResult = await withTimeout(
+        supabase.rpc("has_role", { _user_id: resolvedUserId, _role: "admin" }),
+        8000,
+        null,
+      );
+      if (cancelled) return;
+      if (!roleResult) {
+        setAllowed(false);
+        setAccessError("No se pudo verificar el acceso admin. Recarga o inicia sesión otra vez.");
+        setReady(true);
+        return;
+      }
+      const { data, error } = roleResult;
       if (error || !data) {
         setAllowed(false);
         setAccessError("Esta cuenta no tiene acceso al panel admin.");
         setReady(true);
-        navigate({ to: "/" });
         return;
       }
       setAllowed(true);
       setReady(true);
     }
-    // Listen first to avoid race with session restore
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION") return;
       check(session?.user?.id ?? null);
     });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      check(session?.user?.id ?? null);
-    });
+    check();
     return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [navigate]);
 

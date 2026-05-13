@@ -14,9 +14,8 @@ export async function getAdminAuthHeaders() {
 }
 
 export async function callAdminFn<TResult>(fn: AdminServerFn<TResult>, data?: unknown) {
-  const headers = await getAdminAuthHeaders();
-  const options = data === undefined ? { headers } : { data, headers };
-  return fn(options);
+  await getAdminAuthHeaders();
+  return data === undefined ? fn() : fn({ data });
 }
 
 export function formatAdminError(error: unknown) {
