@@ -5,7 +5,7 @@ import { categories } from "@/data/categories";
 import { ProductCard } from "@/components/site/ProductCard";
 import { buildHead, breadcrumbJsonLd } from "@/lib/seo";
 
-export const Route = createFileRoute("/productos")({
+export const Route = createFileRoute("/productos/")({
   head: () =>
     buildHead({
       title: "Catálogo Mayoreo - Péptidos al Por Mayor en México",
