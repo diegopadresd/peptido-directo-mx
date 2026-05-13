@@ -47,11 +47,11 @@ function Home() {
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               Catálogo activo · Envíos 10-20 días a todo México
             </Pill>
-            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground md:text-7xl">
+            <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-7xl">
               Péptidos al mayoreo. <br />
               <span className="text-primary">Directo de fábrica.</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+            <p className="mx-auto mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg md:text-xl">
               Cada vez que alguien busca péptidos, le compran al primero que aparece. Si no eres tú, le estás regalando ventas a tu competencia. Nosotros te lo resolvemos en minutos.
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
@@ -88,7 +88,7 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <Pill><Sparkles className="h-3 w-3" /> Cómo funciona</Pill>
-            <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">3 pasos. Sin rodeos.</h2>
+            <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">3 pasos. Sin rodeos.</h2>
             <p className="mt-3 text-lg text-muted-foreground">Sin contratos, sin permisos complicados, sin BS.</p>
           </div>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
@@ -115,11 +115,11 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <Pill>Comparativa</Pill>
-            <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Por qué mayoreo te sale mejor</h2>
+            <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">Por qué mayoreo te sale mejor</h2>
             <p className="mt-3 text-lg text-muted-foreground">Datos reales, sin maquillaje.</p>
           </div>
-          <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-            <table className="w-full text-left">
+          <div className="mx-auto mt-12 max-w-4xl overflow-x-auto rounded-2xl border border-border bg-card shadow-soft">
+            <table className="w-full min-w-[640px] text-left">
               <thead className="bg-muted">
                 <tr>
                   <th className="px-5 py-4 text-sm font-semibold">Concepto</th>
@@ -155,7 +155,7 @@ function Home() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <Pill>Catálogo</Pill>
-              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Más vendidos</h2>
+              <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">Más vendidos</h2>
               <p className="mt-2 text-muted-foreground">Lo que están moviendo nuestros distribuidores.</p>
             </div>
             <Button asChild variant="ghost" className="rounded-full">
@@ -174,7 +174,7 @@ function Home() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <Pill><TrendingUp className="h-3 w-3" /> Programa Distribuidor</Pill>
-              <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">
+              <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
                 Convierte $11,250 MXN <br /> en <span className="text-primary">$27,000</span>. Cada mes.
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
@@ -232,7 +232,7 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <Pill>Casos reales</Pill>
-            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Distribuidores activos</h2>
+            <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">Distribuidores activos</h2>
             <p className="mt-3 text-muted-foreground">Lo que dicen quienes ya están moviendo producto.</p>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -259,7 +259,7 @@ function Home() {
         <div className="container mx-auto max-w-3xl px-4">
           <div className="text-center">
             <Pill>Dudas frecuentes</Pill>
-            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Preguntas frecuentes</h2>
+            <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">Preguntas frecuentes</h2>
           </div>
           <div className="mt-10 rounded-2xl border border-border bg-card p-2 md:p-4 shadow-soft">
             <FAQAccordion items={homeFaqs} />
@@ -283,7 +283,7 @@ function Home() {
             />
             <div className="relative">
               <Beaker className="mx-auto h-12 w-12 text-primary" />
-              <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">¿Listo para tu primer pedido?</h2>
+              <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">¿Listo para tu primer pedido?</h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
                 Pack mínimo de 10 viales del mismo compuesto. Cotización inmediata por WhatsApp.
               </p>
