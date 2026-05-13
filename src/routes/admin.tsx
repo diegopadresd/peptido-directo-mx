@@ -17,18 +17,20 @@ function AdminLayout() {
 
   useEffect(() => {
     let cancelled = false;
+    let requestId = 0;
     async function check(userId: string | null) {
+      const currentRequest = ++requestId;
       if (cancelled) return;
-      setReady(false);
       setAccessError(null);
       if (!userId) {
+        if (cancelled || currentRequest !== requestId) return;
         setAllowed(false);
         setReady(true);
         navigate({ to: "/login" });
         return;
       }
       const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-      if (cancelled) return;
+      if (cancelled || currentRequest !== requestId) return;
       if (error || !data) {
         setAllowed(false);
         setAccessError("Esta cuenta no tiene acceso al panel admin.");
@@ -40,7 +42,8 @@ function AdminLayout() {
       setReady(true);
     }
     // Listen first to avoid race with session restore
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return;
       check(session?.user?.id ?? null);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
