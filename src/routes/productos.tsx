@@ -27,11 +27,19 @@ function Catalogo() {
 
   const filtered = useMemo(() => {
     let list = cat === "todos" ? products : products.filter((p) => p.category === cat);
+    list = list.filter((p) => p.inStock);
     list = [...list];
     if (sort === "asc") list.sort((a, b) => minBasePrice(a) - minBasePrice(b));
     if (sort === "desc") list.sort((a, b) => minBasePrice(b) - minBasePrice(a));
     return list;
   }, [cat, sort]);
+
+  const outOfStock = useMemo(
+    () =>
+      (cat === "todos" ? products : products.filter((p) => p.category === cat))
+        .filter((p) => !p.inStock),
+    [cat],
+  );
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
@@ -77,6 +85,21 @@ function Catalogo() {
       </div>
       {filtered.length === 0 && (
         <p className="mt-10 text-center text-muted-foreground">No hay productos en esta categoría aún.</p>
+      )}
+
+      {outOfStock.length > 0 && (
+        <section className="mt-20">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Reserva 4-6 semanas</p>
+              <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight md:text-3xl">Próxima reposición</h2>
+            </div>
+            <span className="text-sm text-muted-foreground">{outOfStock.length} compuestos</span>
+          </div>
+          <div className="mt-6 grid gap-6 opacity-60 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {outOfStock.map((p) => <ProductCard key={p.slug} p={p} />)}
+          </div>
+        </section>
       )}
     </div>
   );
