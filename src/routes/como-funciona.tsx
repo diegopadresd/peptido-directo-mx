@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Package, CreditCard, Plane, Home, ShieldCheck, MessageCircle } from "lucide-react";
+import { Package, CreditCard, Truck, Home, ShieldCheck, MessageCircle } from "lucide-react";
 import { buildHead, breadcrumbJsonLd } from "@/lib/seo";
 import { Button } from "@/components/ui/button";
 import { buildWaLink } from "@/lib/whatsapp";
@@ -7,10 +7,10 @@ import { buildWaLink } from "@/lib/whatsapp";
 export const Route = createFileRoute("/como-funciona")({
   head: () =>
     buildHead({
-      title: "Cómo Funciona - Modelo de Mayoreo Directo de China",
-      description: "Aprende cómo compramos péptidos directo de fábrica en China y los enviamos a tu puerta en México con 50% menos. Pago en MXN, envío 10-20 días.",
+      title: "Cómo Funciona - Mayoreo de Péptidos en México",
+      description: "Cotización por WhatsApp, pago seguro con Mercado Pago y envío nacional. Mínimo 10 viales, mezcla libre del catálogo.",
       canonical: "/como-funciona",
-      keywords: ["péptidos directo de china", "como comprar péptidos mayoreo", "envío péptidos méxico"],
+      keywords: ["péptidos mayoreo méxico", "como comprar péptidos mayoreo", "mercado pago péptidos"],
       jsonLd: breadcrumbJsonLd([{ name: "Inicio", url: "/" }, { name: "Cómo funciona", url: "/como-funciona" }]),
     }),
   component: ComoFunciona,
@@ -21,16 +21,16 @@ function ComoFunciona() {
     <div className="container mx-auto max-w-4xl px-4 py-12 md:py-20">
       <h1 className="font-display text-4xl font-extrabold md:text-5xl">Cómo Funciona el Modelo</h1>
       <p className="mt-4 text-lg text-muted-foreground">
-        Sin intermediarios, sin almacenes intermedios, sin markup retail. Compras directo del laboratorio que produce y nosotros nos encargamos de la logística.
+        Compras al mayoreo con precio por vial, cotización rápida por WhatsApp y pago seguro con Mercado Pago. Envío nacional a todo México.
       </p>
 
       <div className="mt-12 space-y-6">
         {[
-          { icon: Package, t: "1. Eliges productos y cantidad", d: "Mínimo 10 viales totales — puedes mezclar cualquier producto del catálogo. Cotizamos por WhatsApp con precio final en MXN incluyendo envío." },
-          { icon: CreditCard, t: "2. Pagas en pesos", d: "Aceptamos transferencia SPEI, depósito en OXXO o USDT (TRC20). Te pasamos los datos al confirmar el pedido. No hay checkout en el sitio porque manejamos cada cotización personalizada." },
-          { icon: Plane, t: "3. Sale del laboratorio en China", d: "En menos de 48 horas tu pedido sale del laboratorio empacado discreto. Te enviamos número de rastreo para que sigas el envío en todo momento." },
-          { icon: Home, t: "4. Llega a tu puerta en 10-20 días", d: "Envío DDP (Delivered Duty Paid): nosotros nos encargamos de los trámites. Llega a la dirección que indiques en cualquier estado de México." },
-          { icon: ShieldCheck, t: "5. Garantía de reposición", d: "En el raro caso de incautación en aduana (>95% éxito histórico), reenviamos sin costo (válido una vez por cliente)." },
+          { icon: Package, t: "1. Eliges productos y cantidad", d: "Mínimo 10 viales totales — puedes mezclar cualquier producto del catálogo. Nos escribes por WhatsApp con tu lista y te confirmamos disponibilidad y precio final en MXN." },
+          { icon: CreditCard, t: "2. Pagas con Mercado Pago", d: "Te enviamos un link de pago de Mercado Pago con el monto exacto de tu cotización. Puedes pagar con tarjeta de crédito o débito, SPEI o efectivo en OXXO. Recibes comprobante automático al confirmar el pago." },
+          { icon: Truck, t: "3. Preparamos y enviamos tu pedido", d: "Una vez confirmado el pago, preparamos el pedido y lo enviamos por paquetería con número de guía para que rastrees el envío en todo momento." },
+          { icon: Home, t: "4. Llega a tu puerta", d: "Entregamos a la dirección que indiques en cualquier estado de México. Tiempos estimados de 3 a 7 días hábiles según ubicación." },
+          { icon: ShieldCheck, t: "5. Garantía de entrega", d: "Si tu paquete se extravía con la paquetería, lo reponemos sin costo. Cobertura sujeta a guía con seguimiento activo." },
         ].map((s) => (
           <div key={s.t} className="flex gap-4 rounded-lg border border-border bg-card p-6">
             <div className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
