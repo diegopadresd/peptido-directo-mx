@@ -30,6 +30,7 @@ import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
 import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
+import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -137,6 +138,11 @@ const ApiCheckoutMercadopagoRoute = ApiCheckoutMercadopagoRouteImport.update({
   path: '/api/checkout/mercadopago',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCheckoutCreateOrderRoute = ApiCheckoutCreateOrderRouteImport.update({
+  id: '/api/checkout/create-order',
+  path: '/api/checkout/create-order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
+  '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos': typeof ProductosIndexRoute
+  '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/peptidos/$ciudad': typeof PeptidosCiudadRoute
   '/productos/$slug': typeof ProductosSlugRoute
   '/productos/': typeof ProductosIndexRoute
+  '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
+    | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
     | '/api/public/mercadopago-webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos'
+    | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
     | '/api/public/mercadopago-webhook'
   id:
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/peptidos/$ciudad'
     | '/productos/$slug'
     | '/productos/'
+    | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
     | '/api/public/mercadopago-webhook'
   fileRoutesById: FileRoutesById
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   PeptidosCiudadRoute: typeof PeptidosCiudadRoute
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
+  ApiCheckoutCreateOrderRoute: typeof ApiCheckoutCreateOrderRoute
   ApiCheckoutMercadopagoRoute: typeof ApiCheckoutMercadopagoRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutMercadopagoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checkout/create-order': {
+      id: '/api/checkout/create-order'
+      path: '/api/checkout/create-order'
+      fullPath: '/api/checkout/create-order'
+      preLoaderRoute: typeof ApiCheckoutCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -484,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   PeptidosCiudadRoute: PeptidosCiudadRoute,
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
+  ApiCheckoutCreateOrderRoute: ApiCheckoutCreateOrderRoute,
   ApiCheckoutMercadopagoRoute: ApiCheckoutMercadopagoRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }
