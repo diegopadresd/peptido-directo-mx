@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin/analytics")({ component: AnalyticsP
 function AnalyticsPage() {
   const fn = useServerFn(adminGetAnalytics);
   const [days, setDays] = useState(30);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin", "analytics", days],
     queryFn: () => callAdminFn(fn, { days }),
     retry: false,
@@ -30,7 +30,7 @@ function AnalyticsPage() {
         </div>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted-foreground">Cargando…</p> : !data ? <AdminError message={formatAdminError(null)} /> : (
+      {isError ? <AdminError message={formatAdminError(error)} /> : isLoading ? <p className="text-sm text-muted-foreground">Cargando…</p> : !data ? <AdminError message={formatAdminError(null)} /> : (
         <>
           <Funnel f={data.funnel} />
 
