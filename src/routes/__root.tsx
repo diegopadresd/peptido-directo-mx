@@ -12,7 +12,6 @@ import appCss from "../styles.css?url";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { WhatsAppFAB } from "@/components/site/WhatsAppFAB";
-import { CookieBanner } from "@/components/site/CookieBanner";
 
 function NotFoundComponent() {
   return (
@@ -111,7 +110,6 @@ function RootComponent() {
         </main>
         <Footer />
         <WhatsAppFAB />
-        <CookieBanner />
       </div>
     </QueryClientProvider>
   );
