@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { notifyAdminNewOrder } from "@/lib/email/notify.server";
 
 export const Route = createFileRoute("/api/public/mercadopago-webhook")({
   server: {
@@ -44,19 +46,45 @@ export const Route = createFileRoute("/api/public/mercadopago-webhook")({
             metadata?: Record<string, unknown>;
           };
 
-          console.log("[MP webhook] payment", {
-            id: payment.id,
+          console.log("[MP webhook] payment", { id: payment.id, status: payment.status, ref: payment.external_reference });
+
+          const orderId = payment.external_reference;
+          if (!orderId) return new Response("no ref", { status: 200 });
+
+          const { data: existing } = await supabaseAdmin.from("orders")
+            .select("id, status, notified_at, total_mxn, customer_name, customer_email, customer_phone, customer_address, notes, external_reference")
+            .eq("id", orderId).maybeSingle();
+          if (!existing) return new Response("order not found", { status: 200 });
+
+          await supabaseAdmin.from("orders").update({
             status: payment.status,
-            status_detail: payment.status_detail,
-            amount: payment.transaction_amount,
-            ref: payment.external_reference,
-            metadata: payment.metadata,
-            payer_email: payment.payer?.email,
+            mp_payment_id: String(payment.id),
+            mp_status_detail: payment.status_detail,
+            total_mxn: Math.round(payment.transaction_amount),
+          }).eq("id", orderId);
+
+          await supabaseAdmin.from("order_events").insert({
+            order_id: orderId,
+            event: `mp_${payment.status}`,
+            payload: { payment_id: payment.id, status_detail: payment.status_detail, amount: payment.transaction_amount },
           });
 
-          // TODO: persist to DB / send WhatsApp notification when an orders
-          // table is added. For now we just log so the user can confirm in
-          // server logs that the webhook fires correctly.
+          if (payment.status === "approved" && !existing.notified_at) {
+            const { data: items } = await supabaseAdmin.from("order_items")
+              .select("product_name, dose, qty, line_total_mxn").eq("order_id", orderId);
+            await notifyAdminNewOrder({
+              id: existing.id,
+              external_reference: existing.external_reference,
+              total_mxn: Math.round(payment.transaction_amount),
+              customer_name: existing.customer_name,
+              customer_email: existing.customer_email,
+              customer_phone: existing.customer_phone,
+              customer_address: existing.customer_address as Record<string, unknown>,
+              notes: existing.notes,
+              items: items ?? [],
+            });
+            await supabaseAdmin.from("orders").update({ notified_at: new Date().toISOString() }).eq("id", orderId);
+          }
 
           return new Response("ok", { status: 200 });
         } catch (err) {

@@ -4,6 +4,7 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoFull from "@/assets/peptidos-mayoreo-logo.svg";
 import logoMark from "@/assets/peptidos-mayoreo-mark.svg";
+import { CartButton } from "@/components/site/CartDrawer";
 
 const nav = [
   { to: "/productos", label: "Productos" },
@@ -35,7 +36,8 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <CartButton />
           <Button asChild size="sm" className="hidden h-9 rounded-full bg-primary px-4 text-primary-foreground hover:bg-primary/90 md:inline-flex">
             <Link to="/productos">
               Comprar ahora <ArrowRight className="ml-1 h-3.5 w-3.5" />

@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
-import { CreditCard, MessageCircle, Loader2 } from "lucide-react";
+import { CreditCard, MessageCircle, Loader2, ShoppingCart, Check } from "lucide-react";
 import type { Product } from "@/data/products";
 import { PACKS, packTotal, formatMxn } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 import { buildWaLink } from "@/lib/whatsapp";
+import { useCart } from "@/lib/cart/store";
 
 function VialDots({ count }: { count: number }) {
   // Show up to 30 dots in a wrapping row
@@ -31,6 +32,21 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const addItem = useCart((s) => s.addItem);
+  const [added, setAdded] = useState(false);
+
+  function handleAddToCart() {
+    addItem({
+      productSlug: product.slug,
+      productName: product.name,
+      dose: variant.dose,
+      qty,
+      unitPrice: variant.basePricePerVial,
+      lineTotal: total,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1600);
+  }
 
   async function handlePay() {
     setLoading(true);
@@ -145,9 +161,26 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
       <div className="flex flex-col gap-2">
         <Button
           size="lg"
+          onClick={handleAddToCart}
+          variant="default"
+          className="h-12 w-full rounded-full bg-primary text-primary-foreground shadow-card hover:bg-primary/90"
+        >
+          {added ? (
+            <>
+              <Check className="mr-1.5 h-4 w-4" /> Agregado al carrito
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="mr-1.5 h-4 w-4" /> Agregar al carrito
+            </>
+          )}
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
           onClick={handlePay}
           disabled={loading}
-          className="h-12 w-full rounded-full bg-primary text-primary-foreground shadow-card hover:bg-primary/90"
+          className="h-12 w-full rounded-full border-2"
         >
           {loading ? (
             <>
@@ -155,7 +188,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
             </>
           ) : (
             <>
-              <CreditCard className="mr-1.5 h-4 w-4" /> Pagar con Mercado Pago
+              <CreditCard className="mr-1.5 h-4 w-4" /> Pagar este producto ahora
             </>
           )}
         </Button>
@@ -168,7 +201,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
           </a>
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
-          Pedido de un solo compuesto · pago por Mercado Pago · envío 10-20 días
+          Pago seguro con Mercado Pago · envío 3-7 días hábiles
         </p>
       </div>
     </div>
