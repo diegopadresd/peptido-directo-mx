@@ -130,7 +130,7 @@ function Home() {
               </thead>
               <tbody className="divide-y divide-border">
                 {[
-                  ["Precio por vial BPC-157", "$650 MXN", "$420 MXN", "$280 MXN"],
+                  ["Precio por vial BPC-157 5mg", "$650 MXN", "$520 MXN", "$375 MXN"],
                   ["Tiempo de entrega", "Inmediato", "3-7 días", "10-20 días"],
                   ["Pureza certificada", "Variable", "Variable", "≥99% HPLC"],
                   ["Soporte WhatsApp", "No", "Limitado", "Sí, prioritario"],
@@ -175,7 +175,7 @@ function Home() {
             <div>
               <Pill><TrendingUp className="h-3 w-3" /> Programa Distribuidor</Pill>
               <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">
-                Convierte $5,000 MXN <br /> en <span className="text-primary">$15,000</span>. Cada mes.
+                Convierte $11,250 MXN <br /> en <span className="text-primary">$27,000</span>. Cada mes.
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
                 Sin inventario propio, sin permisos complicados. Márgenes de 200-300%. Te damos catálogo, fotos y soporte.
@@ -200,25 +200,27 @@ function Home() {
                 </Button>
               </div>
             </div>
-            <div className="rounded-3xl border border-border bg-card p-8 shadow-card">
+              <div className="rounded-3xl border border-border bg-card p-8 shadow-card">
               <h3 className="font-display text-xl font-extrabold tracking-tight">Calculadora rápida</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Pack 30 viales BPC-157 5 mg · precio real de catálogo</p>
               <div className="mt-6 space-y-4 text-sm">
                 <div className="flex justify-between border-b border-border pb-3">
                   <span className="text-muted-foreground">Inversión inicial</span>
-                  <span className="tabular font-bold text-foreground">$5,000 MXN</span>
+                  <span className="tabular font-bold text-foreground">$11,250 MXN</span>
                 </div>
                 <div className="flex justify-between border-b border-border pb-3">
-                  <span className="text-muted-foreground">~17 viales BPC-157 al mayoreo</span>
-                  <span className="tabular text-foreground">~$280/vial</span>
+                  <span className="text-muted-foreground">30 viales BPC-157 5 mg (pack mayoreo)</span>
+                  <span className="tabular text-foreground">$375/vial</span>
                 </div>
                 <div className="flex justify-between border-b border-border pb-3">
                   <span className="text-muted-foreground">Reventa a $900 MXN/vial</span>
-                  <span className="tabular font-bold text-foreground">$15,300 MXN</span>
+                  <span className="tabular font-bold text-foreground">$27,000 MXN</span>
                 </div>
                 <div className="flex justify-between pt-2">
                   <span className="font-semibold">Ganancia mensual</span>
-                  <span className="tabular text-3xl font-extrabold text-primary">$10,300</span>
+                  <span className="tabular text-3xl font-extrabold text-primary">$15,750</span>
                 </div>
+                <p className="pt-1 text-[11px] text-muted-foreground">Margen 140% · números reales del catálogo, no proyecciones.</p>
               </div>
             </div>
           </div>
