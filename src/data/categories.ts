@@ -5,11 +5,16 @@ export type Category = {
 };
 
 export const categories: Category[] = [
-  { slug: "perdida-peso", name: "Pérdida de peso", description: "GLP-1, GIP y amilina." },
-  { slug: "gh-muscular", name: "Crecimiento muscular y GH", description: "Secretagogos de GH e IGF-1." },
-  { slug: "recuperacion", name: "Recuperación y reparación", description: "Reparación de tejidos y articulaciones." },
-  { slug: "longevidad", name: "Anti-aging y longevidad", description: "Soporte celular y mitocondrial." },
-  { slug: "bronceado", name: "Bronceado y pigmentación", description: "Estimuladores de melanocortina." },
-  { slug: "intimo-hormonal", name: "Bienestar íntimo y hormonal", description: "Soporte para libido y eje hormonal." },
-  { slug: "cognicion", name: "Cognición y nootrópicos", description: "Péptidos para enfoque y memoria." },
+  { slug: "metabolicos", name: "Metabólicos", description: "GLP-1, GIP, glucagón y moduladores de adipocitos." },
+  { slug: "recuperacion", name: "Recuperación", description: "Reparación de tejidos, articulaciones y músculo." },
+  { slug: "hormonales", name: "Hormonales", description: "Secretagogos de GH, GHRH y eje HPG." },
+  { slug: "biorreguladores", name: "Biorreguladores", description: "Péptidos cortos Khavinson para regulación tejido-específica." },
+  { slug: "piel", name: "Piel y estética", description: "Colágeno, melanocortinas y blends dérmicos." },
+  { slug: "cognitivos", name: "Cognitivos", description: "Nootrópicos y neuroprotección." },
+  { slug: "longevidad", name: "Longevidad", description: "Mitocondrial, NAD+ y senolíticos." },
+  { slug: "muscular", name: "Muscular", description: "Inhibidores de miostatina y MGF." },
+  { slug: "inmune", name: "Inmune", description: "Catelicidinas y moduladores innatos." },
+  { slug: "sexual", name: "Salud sexual", description: "MC4R y oxitocina." },
+  { slug: "bienestar", name: "Bienestar", description: "Sueño y ritmo circadiano." },
+  { slug: "suministros", name: "Suministros", description: "Solventes y agua bacteriostática." },
 ];
