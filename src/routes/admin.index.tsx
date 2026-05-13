@@ -2,14 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { adminGetDashboard } from "@/lib/admin.functions";
+import { callAdminFn, formatAdminError } from "@/lib/admin-client";
 import { formatMxn } from "@/lib/pricing";
 
 export const Route = createFileRoute("/admin/")({ component: Dashboard });
 
 function Dashboard() {
   const fn = useServerFn(adminGetDashboard);
-  const { data, isLoading } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => fn(), staleTime: 60_000 });
+  const { data, isLoading, isError, error } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => callAdminFn(fn), staleTime: 60_000, retry: false });
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  if (isError) return <AdminError message={formatAdminError(error)} />;
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold">Dashboard</h1>
@@ -39,6 +41,10 @@ function Dashboard() {
       </div>
     </div>
   );
+}
+
+function AdminError({ message }: { message: string }) {
+  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
