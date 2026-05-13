@@ -10,8 +10,8 @@ export const Route = createFileRoute("/admin/")({ component: Dashboard });
 function Dashboard() {
   const fn = useServerFn(adminGetDashboard);
   const { data, isLoading, isError, error } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => callAdminFn(fn), staleTime: 60_000, retry: false });
-  if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   if (isError) return <AdminError message={formatAdminError(error)} />;
+  if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold">Dashboard</h1>
