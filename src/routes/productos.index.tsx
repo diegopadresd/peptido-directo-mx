@@ -72,6 +72,7 @@ function Catalogo() {
             value={sort}
             onChange={(e) => setSort(e.target.value as "featured" | "asc" | "desc")}
             className="rounded-md border border-border bg-card px-3 py-2 text-sm"
+            aria-label="Ordenar productos"
           >
             <option value="featured">Destacados</option>
             <option value="asc">Precio: menor a mayor</option>
