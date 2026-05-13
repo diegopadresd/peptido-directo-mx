@@ -149,7 +149,7 @@ function Empezar() {
             <li className="rounded-lg bg-primary-foreground/5 p-5">
               <span className="font-display text-3xl font-extrabold text-accent">03</span>
               <p className="mt-2 font-semibold">Empiezas a vender</p>
-              <p className="text-sm text-primary-foreground/70">Recibes en 15-25 días y revendes con tu margen.</p>
+              <p className="text-sm text-primary-foreground/70">Recibes en 10-20 días y revendes con tu margen.</p>
             </li>
           </ol>
           <div className="mt-10 flex flex-wrap justify-center gap-3">

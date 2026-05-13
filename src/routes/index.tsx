@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Truck, ShieldCheck, Beaker, Users, Package, CreditCard, Home as HomeIcon, Check, MessageCircle, TrendingUp } from "lucide-react";
+import { ArrowRight, Truck, ShieldCheck, Beaker, Users, Package, CreditCard, Home as HomeIcon, Check, MessageCircle, TrendingUp, Sparkles } from "lucide-react";
 import { buildHead, organizationJsonLd, faqJsonLd } from "@/lib/seo";
 import { products } from "@/data/products";
 import { homeFaqs } from "@/data/faqs";
@@ -8,14 +8,13 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { FAQAccordion } from "@/components/site/FAQAccordion";
 import { Button } from "@/components/ui/button";
 import { buildWaLink } from "@/lib/whatsapp";
-import heroBg from "@/assets/hero-bg.jpg";
 
 export const Route = createFileRoute("/")({
   head: () =>
     buildHead({
       title: "Péptidos Mayoreo - Distribuidor Directo de Fábrica en México",
       description:
-        "Compra péptidos al mayoreo en México con 50% de descuento. Mínimo 10 viales, envío directo desde China. BPC-157, semaglutida, tirzepatida y más.",
+        "Compra péptidos al mayoreo en México con 50% de descuento. Mínimo 10 viales por compuesto, pago Mercado Pago, envío 10-20 días. BPC-157, semaglutida, tirzepatida y más.",
       canonical: "/",
       keywords: ["péptidos mayoreo", "peptidos al por mayor mexico", "distribuidor de péptidos méxico", "comprar péptidos mayoreo"],
       jsonLd: [organizationJsonLd(), faqJsonLd(homeFaqs)],
@@ -23,56 +22,63 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-primary">
+      {children}
+    </span>
+  );
+}
+
 function Home() {
   const bestSellers = products.filter((p) => p.bestSeller).slice(0, 6);
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <img
-          src={heroBg}
-          alt=""
+      <section className="relative overflow-hidden bg-background">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "var(--gradient-hero)" }}
           aria-hidden
-          width={1920}
-          height={1080}
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-primary/70" />
-        <div className="container relative mx-auto px-4 py-20 md:py-28">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent">
-              <span className="h-2 w-2 rounded-full bg-success" /> Catálogo activo · Envíos a todo México
-            </span>
-            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
-              Péptidos al Mayoreo. <br />
-              <span className="text-accent">Directo de Fábrica.</span>
+        <div className="container relative mx-auto px-4 pb-20 pt-16 md:pb-28 md:pt-24">
+          <div className="mx-auto max-w-4xl text-center">
+            <Pill>
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              Catálogo activo · Envíos 10-20 días a todo México
+            </Pill>
+            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground md:text-7xl">
+              Péptidos al mayoreo. <br />
+              <span className="text-primary">Directo de fábrica.</span>
             </h1>
-            <p className="mt-5 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
-              Del laboratorio en China directo a tu puerta. Compra mínima de 10 viales con 50% de descuento.
-              Sin intermediarios, sin markup, sin BS.
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+              Cada vez que alguien busca péptidos, le compran al primero que aparece. Si no eres tú, le estás regalando ventas a tu competencia. Nosotros te lo resolvemos en minutos.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-accent text-primary hover:bg-accent/90">
-                <Link to="/productos">Ver Catálogo Mayoreo <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+            <div className="mt-9 flex flex-wrap justify-center gap-3">
+              <Button asChild size="lg" className="h-12 rounded-full bg-primary px-6 text-primary-foreground shadow-card hover:bg-primary/90">
+                <Link to="/productos">Ver catálogo <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
-                <a href={buildWaLink("Hola, quiero hablar con un asesor sobre el catálogo de mayoreo.")} target="_blank" rel="noopener">
-                  <MessageCircle className="mr-1.5 h-4 w-4" /> Hablar con un Asesor
-                </a>
+              <Button asChild size="lg" variant="ghost" className="h-12 rounded-full px-6 text-foreground hover:bg-accent">
+                <Link to="/como-funciona">▶ Cómo funciona</Link>
               </Button>
             </div>
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {[
-                { icon: Truck, label: "Envío 15-25 días" },
-                { icon: CreditCard, label: "Pago en MXN" },
-                { icon: ShieldCheck, label: "Pureza ≥99%" },
-                { icon: Users, label: "+500 clientes" },
-              ].map((b) => (
-                <div key={b.label} className="flex items-center gap-2 text-sm text-primary-foreground/90">
-                  <b.icon className="h-4 w-4 text-accent" /> {b.label}
-                </div>
-              ))}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <span>★★★★★</span>
+              <span>+500 distribuidores activos en México</span>
             </div>
+          </div>
+
+          <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { icon: Truck, label: "Envío 10-20 días" },
+              { icon: CreditCard, label: "Mercado Pago" },
+              { icon: ShieldCheck, label: "Pureza ≥99%" },
+              { icon: Users, label: "+500 clientes" },
+            ].map((b) => (
+              <div key={b.label} className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm shadow-soft">
+                <b.icon className="h-4 w-4 text-primary" /> <span className="font-medium">{b.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -81,21 +87,22 @@ function Home() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">¿Cómo Funciona?</h2>
-            <p className="mt-3 text-lg text-muted-foreground">3 pasos. Sin pendejadas. Sin contratos.</p>
+            <Pill><Sparkles className="h-3 w-3" /> Cómo funciona</Pill>
+            <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">3 pasos. Sin rodeos.</h2>
+            <p className="mt-3 text-lg text-muted-foreground">Sin contratos, sin permisos complicados, sin BS.</p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
             {[
-              { icon: Package, n: "01", t: "Eliges tus péptidos", d: "Mínimo 10 viales totales. Mezcla libre entre cualquier producto del catálogo." },
-              { icon: CreditCard, n: "02", t: "Pagas en MXN", d: "Transferencia SPEI, OXXO o USDT. Pago 100% en pesos mexicanos." },
-              { icon: HomeIcon, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu dirección. 15-25 días." },
+              { icon: Package, n: "01", t: "Eliges tu compuesto", d: "Mínimo 10 viales del mismo péptido y dosis. Cada pedido = 1 compuesto." },
+              { icon: CreditCard, n: "02", t: "Pagas con Mercado Pago", d: "Tarjeta, SPEI o efectivo en OXXO. Todo en MXN, recibo formal." },
+              { icon: HomeIcon, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu puerta. 10-20 días." },
             ].map((s) => (
-              <div key={s.n} className="rounded-lg border border-border bg-card p-8 transition-shadow hover:shadow-md">
+              <div key={s.n} className="rounded-2xl border border-border bg-card p-7 shadow-soft transition hover:border-primary/30 hover:shadow-card">
                 <div className="flex items-center justify-between">
-                  <s.icon className="h-10 w-10 text-accent" />
-                  <span className="font-display text-3xl font-bold text-muted-foreground/30">{s.n}</span>
+                  <span className="grid h-11 w-11 place-items-center rounded-full bg-accent text-primary"><s.icon className="h-5 w-5" /></span>
+                  <span className="font-display text-3xl font-extrabold text-muted-foreground/30">{s.n}</span>
                 </div>
-                <h3 className="mt-4 font-display text-xl font-bold">{s.t}</h3>
+                <h3 className="mt-5 font-display text-xl font-extrabold tracking-tight">{s.t}</h3>
                 <p className="mt-2 text-muted-foreground">{s.d}</p>
               </div>
             ))}
@@ -104,35 +111,36 @@ function Home() {
       </section>
 
       {/* Comparison */}
-      <section className="bg-secondary py-20">
+      <section className="bg-muted/40 py-20">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-bold md:text-4xl">Por Qué Mayoreo Te Sale Mejor</h2>
-            <p className="mt-3 text-lg text-muted-foreground">Comparativa real, sin maquillaje.</p>
+            <Pill>Comparativa</Pill>
+            <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Por qué mayoreo te sale mejor</h2>
+            <p className="mt-3 text-lg text-muted-foreground">Datos reales, sin maquillaje.</p>
           </div>
-          <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+          <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
             <table className="w-full text-left">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-4 text-sm font-semibold">Concepto</th>
-                  <th className="px-4 py-4 text-center text-sm font-semibold">Retail (1 vial)</th>
-                  <th className="px-4 py-4 text-center text-sm font-semibold">Farmacia gris</th>
-                  <th className="px-4 py-4 text-center text-sm font-semibold text-success">Mayoreo (10+)</th>
+                  <th className="px-5 py-4 text-sm font-semibold">Concepto</th>
+                  <th className="px-5 py-4 text-center text-sm font-semibold">Retail (1 vial)</th>
+                  <th className="px-5 py-4 text-center text-sm font-semibold">Farmacia gris</th>
+                  <th className="px-5 py-4 text-center text-sm font-semibold text-primary">Mayoreo (10+)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {[
                   ["Precio por vial BPC-157", "$650 MXN", "$420 MXN", "$280 MXN"],
-                  ["Tiempo de entrega", "Inmediato", "3-7 días", "15-25 días"],
+                  ["Tiempo de entrega", "Inmediato", "3-7 días", "10-20 días"],
                   ["Pureza certificada", "Variable", "Variable", "≥99% HPLC"],
                   ["Soporte WhatsApp", "No", "Limitado", "Sí, prioritario"],
                   ["Reposición si aduana", "No", "No", "Sí (1 vez)"],
                 ].map((row, i) => (
                   <tr key={i}>
-                    <td className="px-4 py-3 text-sm font-medium">{row[0]}</td>
-                    <td className="px-4 py-3 text-center text-sm tabular text-muted-foreground">{row[1]}</td>
-                    <td className="px-4 py-3 text-center text-sm tabular text-muted-foreground">{row[2]}</td>
-                    <td className="px-4 py-3 text-center text-sm tabular font-semibold text-success">{row[3]}</td>
+                    <td className="px-5 py-4 text-sm font-medium">{row[0]}</td>
+                    <td className="px-5 py-4 text-center text-sm tabular text-muted-foreground">{row[1]}</td>
+                    <td className="px-5 py-4 text-center text-sm tabular text-muted-foreground">{row[2]}</td>
+                    <td className="px-5 py-4 text-center text-sm tabular font-bold text-primary">{row[3]}</td>
                   </tr>
                 ))}
               </tbody>
@@ -146,10 +154,11 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="font-display text-3xl font-bold md:text-4xl">Más Vendidos</h2>
-              <p className="mt-2 text-muted-foreground">Los productos que mueven nuestros distribuidores.</p>
+              <Pill>Catálogo</Pill>
+              <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Más vendidos</h2>
+              <p className="mt-2 text-muted-foreground">Lo que están moviendo nuestros distribuidores.</p>
             </div>
-            <Button asChild variant="outline">
+            <Button asChild variant="ghost" className="rounded-full">
               <Link to="/productos">Ver catálogo completo <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
             </Button>
           </div>
@@ -159,58 +168,56 @@ function Home() {
         </div>
       </section>
 
-      {/* Empieza tu negocio */}
-      <section className="bg-primary py-20 text-primary-foreground">
+      {/* Distribuidor */}
+      <section className="bg-muted/40 py-20">
         <div className="container mx-auto px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent">
-                <TrendingUp className="h-3.5 w-3.5" /> Programa Distribuidor
-              </span>
-              <h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">
-                Convierte $5,000 MXN <br /> en <span className="text-accent">$15,000</span>. Cada Mes.
+              <Pill><TrendingUp className="h-3 w-3" /> Programa Distribuidor</Pill>
+              <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">
+                Convierte $5,000 MXN <br /> en <span className="text-primary">$15,000</span>. Cada mes.
               </h2>
-              <p className="mt-4 text-lg text-primary-foreground/80">
+              <p className="mt-4 text-lg text-muted-foreground">
                 Sin inventario propio, sin permisos complicados. Márgenes de 200-300%. Te damos catálogo, fotos y soporte.
               </p>
               <ul className="mt-6 space-y-3">
                 {[
-                  "Precios escalonados desde 50 viales",
+                  "Precios escalonados por pack (10 / 20 / 30 viales)",
                   "Catálogo completo con fotos profesionales",
                   "Descripciones listas para copy-paste",
                   "Soporte WhatsApp prioritario",
                   "Sin contratos ni exclusividad",
                 ].map((b) => (
                   <li key={b} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-success" />
-                    <span>{b}</span>
+                    <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+                    <span className="text-foreground/90">{b}</span>
                   </li>
                 ))}
               </ul>
               <div className="mt-8">
-                <Button asChild size="lg" className="bg-accent text-primary hover:bg-accent/90">
-                  <Link to="/empezar-negocio">Ver Programa Distribuidor <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                <Button asChild size="lg" className="h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Link to="/empezar-negocio">Ver programa distribuidor <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
                 </Button>
               </div>
             </div>
-            <div className="rounded-xl border border-primary-foreground/15 bg-primary-foreground/5 p-8 backdrop-blur">
-              <h3 className="font-display text-xl font-bold">Calculadora rápida</h3>
+            <div className="rounded-3xl border border-border bg-card p-8 shadow-card">
+              <h3 className="font-display text-xl font-extrabold tracking-tight">Calculadora rápida</h3>
               <div className="mt-6 space-y-4 text-sm">
-                <div className="flex justify-between border-b border-primary-foreground/10 pb-3">
-                  <span>Inversión inicial</span>
-                  <span className="tabular font-bold text-accent">$5,000 MXN</span>
+                <div className="flex justify-between border-b border-border pb-3">
+                  <span className="text-muted-foreground">Inversión inicial</span>
+                  <span className="tabular font-bold text-foreground">$5,000 MXN</span>
                 </div>
-                <div className="flex justify-between border-b border-primary-foreground/10 pb-3">
-                  <span>~17 viales BPC-157 a precio mayoreo</span>
-                  <span className="tabular">~$280/vial</span>
+                <div className="flex justify-between border-b border-border pb-3">
+                  <span className="text-muted-foreground">~17 viales BPC-157 al mayoreo</span>
+                  <span className="tabular text-foreground">~$280/vial</span>
                 </div>
-                <div className="flex justify-between border-b border-primary-foreground/10 pb-3">
-                  <span>Reventa a $900 MXN/vial</span>
-                  <span className="tabular font-bold text-success">$15,300 MXN</span>
+                <div className="flex justify-between border-b border-border pb-3">
+                  <span className="text-muted-foreground">Reventa a $900 MXN/vial</span>
+                  <span className="tabular font-bold text-foreground">$15,300 MXN</span>
                 </div>
                 <div className="flex justify-between pt-2">
                   <span className="font-semibold">Ganancia mensual</span>
-                  <span className="tabular text-2xl font-bold text-accent">$10,300</span>
+                  <span className="tabular text-3xl font-extrabold text-primary">$10,300</span>
                 </div>
               </div>
             </div>
@@ -222,15 +229,16 @@ function Home() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-bold md:text-4xl">Distribuidores Activos</h2>
+            <Pill>Casos reales</Pill>
+            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Distribuidores activos</h2>
             <p className="mt-3 text-muted-foreground">Lo que dicen quienes ya están moviendo producto.</p>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {testimonials.map((t) => (
-              <div key={t.name} className="rounded-lg border border-border bg-card p-6">
+              <div key={t.name} className="rounded-2xl border border-border bg-card p-6 shadow-soft">
                 <p className="text-base text-foreground">"{t.quote}"</p>
                 <div className="mt-6 flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-accent text-sm font-bold text-primary">
                     {t.initials}
                   </div>
                   <div>
@@ -245,14 +253,17 @@ function Home() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-secondary py-20">
+      <section className="bg-muted/40 py-20">
         <div className="container mx-auto max-w-3xl px-4">
-          <h2 className="text-center font-display text-3xl font-bold md:text-4xl">Preguntas Frecuentes</h2>
-          <div className="mt-10 rounded-lg border border-border bg-card p-2 md:p-4">
+          <div className="text-center">
+            <Pill>Dudas frecuentes</Pill>
+            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight md:text-5xl">Preguntas frecuentes</h2>
+          </div>
+          <div className="mt-10 rounded-2xl border border-border bg-card p-2 md:p-4 shadow-soft">
             <FAQAccordion items={homeFaqs} />
           </div>
           <div className="mt-6 text-center">
-            <Link to="/preguntas-frecuentes" className="text-sm font-semibold text-primary hover:text-accent">
+            <Link to="/preguntas-frecuentes" className="text-sm font-semibold text-primary hover:underline">
               Ver todas las preguntas →
             </Link>
           </div>
@@ -262,21 +273,28 @@ function Home() {
       {/* Final CTA */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-10 text-center text-primary-foreground md:p-16">
-            <Beaker className="mx-auto h-12 w-12 text-accent" />
-            <h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">¿Listo para tu primer pedido?</h2>
-            <p className="mx-auto mt-4 max-w-xl text-lg text-primary-foreground/80">
-              Mínimo 10 viales. Mezcla libre. Cotización inmediata por WhatsApp.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Button asChild size="lg" className="bg-success text-success-foreground hover:bg-success/90">
-                <a href={buildWaLink("Hola, quiero hacer mi primer pedido al mayoreo. ¿Me ayudas con la cotización?")} target="_blank" rel="noopener">
-                  <MessageCircle className="mr-1.5 h-4 w-4" /> Cotizar por WhatsApp
-                </a>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
-                <Link to="/productos">Ver catálogo</Link>
-              </Button>
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-10 text-center shadow-card md:p-16">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-60"
+              style={{ background: "var(--gradient-hero)" }}
+              aria-hidden
+            />
+            <div className="relative">
+              <Beaker className="mx-auto h-12 w-12 text-primary" />
+              <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">¿Listo para tu primer pedido?</h2>
+              <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
+                Pack mínimo de 10 viales del mismo compuesto. Cotización inmediata por WhatsApp.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Button asChild size="lg" className="h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Link to="/productos">Ver catálogo <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                </Button>
+                <Button asChild size="lg" variant="ghost" className="h-12 rounded-full text-foreground hover:bg-accent">
+                  <a href={buildWaLink("Hola, quiero hacer mi primer pedido al mayoreo. ¿Me ayudas con la cotización?")} target="_blank" rel="noopener">
+                    <MessageCircle className="mr-1.5 h-4 w-4" /> Cotizar por WhatsApp
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
