@@ -4,9 +4,11 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 import { Header } from "@/components/site/Header";
@@ -65,7 +67,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0A2540" },
       { name: "author", content: "Péptidos Mayoreo" },
       { httpEquiv: "Content-Language", content: "es-MX" },
@@ -92,7 +94,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Geist:wght@700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico" },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "alternate icon", href: "/favicon.ico" },
       { rel: "alternate", hrefLang: "es-MX", href: SITE_URL },
       { rel: "alternate", hrefLang: "x-default", href: SITE_URL },
     ],
@@ -129,6 +132,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
+        <ScrollToTop />
         <Header />
         <main className="flex-1">
           <Outlet />
@@ -138,4 +142,16 @@ function RootComponent() {
       </div>
     </QueryClientProvider>
   );
+}
+
+function ScrollToTop() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const hash = useRouterState({ select: (s) => s.location.hash });
+  useEffect(() => {
+    if (hash) return;
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    }
+  }, [pathname, hash]);
+  return null;
 }

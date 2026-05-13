@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoFull from "@/assets/peptidos-mayoreo-logo.svg";
+import logoMark from "@/assets/peptidos-mayoreo-mark.svg";
 
 const nav = [
   { to: "/productos", label: "Productos" },
@@ -17,9 +19,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-display text-base font-bold tracking-tight text-foreground">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground text-sm font-extrabold">PM</span>
-          <span className="hidden sm:inline">Péptidos Mayoreo</span>
+        <Link to="/" className="flex items-center" aria-label="Péptidos Mayoreo - Inicio">
+          <img src={logoMark} alt="Péptidos Mayoreo" className="h-9 w-9 sm:hidden" width={36} height={36} />
+          <img src={logoFull} alt="Péptidos Mayoreo" className="hidden h-10 w-auto sm:block" height={40} />
         </Link>
         <nav className="hidden items-center gap-7 lg:flex">
           {nav.map((n) => (
