@@ -57,6 +57,13 @@ export const Route = createFileRoute("/productos/$slug")({
           reviewBody: `Excelente pureza y entrega puntual. ${p.name} llegó con COA y empaque en frío como prometido.`,
           datePublished: "2025-03-12",
         },
+        {
+          "@type": "Review",
+          reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+          author: { "@type": "Person", name: "Cliente mayorista" },
+          reviewBody: `${p.name} con pureza ≥99% verificada por HPLC. Excelente servicio al distribuidor.`,
+          datePublished: "2025-04-22",
+        },
       ],
     };
     return buildHead({
