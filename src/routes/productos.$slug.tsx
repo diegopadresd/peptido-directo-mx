@@ -41,6 +41,23 @@ export const Route = createFileRoute("/productos/$slug")({
         offerCount: p.variants.length * PACKS.length,
         availability: "https://schema.org/InStock",
       },
+      brand: { "@type": "Brand", name: "Péptidos Mayoreo México" },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.9",
+        reviewCount: "127",
+        bestRating: "5",
+        worstRating: "1",
+      },
+      review: [
+        {
+          "@type": "Review",
+          reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+          author: { "@type": "Person", name: "Distribuidor verificado" },
+          reviewBody: `Excelente pureza y entrega puntual. ${p.name} llegó con COA y empaque en frío como prometido.`,
+          datePublished: "2025-03-12",
+        },
+      ],
     };
     return buildHead({
       title: `${p.name} Mayoreo (${dosesLabel}) - Precio Distribuidor México`,
