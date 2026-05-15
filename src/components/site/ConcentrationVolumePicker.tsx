@@ -56,7 +56,8 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
     setError(null);
     trackEvent("quick_pay_click", { productSlug: product.slug, valueMxn: total, meta: { dose: variant.dose, qty } });
     try {
-      // For "pay now" we still need shipping info; redirect through checkout.
+      // Add product to cart and route through full checkout so we capture
+      // shipping data, create an internal order, and the admin sees the pedido.
       addItem({
         productSlug: product.slug,
         productName: product.name,
@@ -66,19 +67,6 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
         lineTotal: total,
       });
       window.location.href = "/checkout";
-      return;
-      // Legacy quick-pay path retained below for type checks (unreachable)
-      // eslint-disable-next-line no-unreachable
-      const res = await fetch("/api/checkout/mercadopago", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productSlug: product.slug, productName: product.name, dose: variant.dose, qty, unitPrice: variant.basePricePerVial, total }),
-      });
-      const data = (await res.json()) as { init_point?: string; error?: string };
-      if (!res.ok || !data.init_point) {
-        throw new Error(data.error || "No se pudo iniciar el pago");
-      }
-      window.location.href = data.init_point;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
       setLoading(false);
