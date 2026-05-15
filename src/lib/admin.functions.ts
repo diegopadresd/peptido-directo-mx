@@ -8,23 +8,138 @@ async function assertAdmin(userId: string) {
   if (error || !data) throw new Response("Forbidden", { status: 403 });
 }
 
+function isoDaysAgo(days: number) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+async function countSince(table: "page_views" | "analytics_events" | "orders" | "carts", column: string, days: number, extra?: (q: any) => any) {
+  let q = supabaseAdmin.from(table).select("*", { count: "exact", head: true }).gte(column, isoDaysAgo(days));
+  if (extra) q = extra(q);
+  const { count } = await q;
+  return count ?? 0;
+}
+
+async function distinctSessionsSince(days: number, table: "page_views" | "analytics_events") {
+  const { data } = await supabaseAdmin.from(table).select("session_id").gte("created_at", isoDaysAgo(days)).limit(50000);
+  const set = new Set<string>();
+  (data ?? []).forEach((r) => { if (r.session_id) set.add(r.session_id); });
+  return set.size;
+}
+
 export const adminGetDashboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    const { data, error } = await context.supabase.rpc("admin_dashboard_summary" as never);
-    if (error) throw new Response(error.message, { status: 500 });
-    return data as unknown as {
-      revenue: { d1: number; d7: number; d30: number };
-      counts: { ordersTotal: number; ordersApproved: number; ordersPending: number; cartsActive: number; cartsAbandoned: number };
-      avgTicket: number;
-      visits: { pv_d1: number; pv_d7: number; pv_d30: number; sess_d1: number; sess_d7: number; sess_d30: number };
-      daily: { day: string; count: number; revenue: number }[];
-      recentOrders: { id: string; created_at: string; customer_name: string; customer_email: string; total_mxn: number; status: string; shipping_status: string }[];
-      topProducts30d: { slug: string; views: number }[];
-      recentVisits: { path: string; created_at: string; device: string | null; referrer_host: string | null }[];
-      recentEvents: { name: string; product_slug: string | null; value_mxn: number | null; created_at: string }[];
-      health: { lastPageviewAt: string | null; lastEventAt: string | null; lastOrderAt: string | null; lastCartAt: string | null };
+
+    const [
+      pv_d1, pv_d7, pv_d30,
+      sess_d1, sess_d7, sess_d30,
+      ordersTotalRes, ordersApprovedRes, ordersPendingRes,
+      cartsTotalRes, cartsActiveRes,
+      pvTotalRes, evTotalRes, ordersTotalCountRes, cartsTotalCountRes,
+      revenueRowsRes,
+      recentOrdersRes,
+      topProductsRes,
+      recentVisitsRes,
+      recentEventsRes,
+      lastPvRes, lastEvRes, lastOrderRes, lastCartRes,
+      avgTicketRowsRes,
+    ] = await Promise.all([
+      countSince("page_views", "created_at", 1),
+      countSince("page_views", "created_at", 7),
+      countSince("page_views", "created_at", 30),
+      distinctSessionsSince(1, "page_views"),
+      distinctSessionsSince(7, "page_views"),
+      distinctSessionsSince(30, "page_views"),
+      supabaseAdmin.from("orders").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).eq("status", "approved"),
+      supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      supabaseAdmin.from("carts").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("carts").select("*", { count: "exact", head: true }).eq("status", "active").gte("last_seen_at", isoDaysAgo(1 / 24)),
+      supabaseAdmin.from("page_views").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("analytics_events").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("orders").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("carts").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("orders").select("created_at, total_mxn, status").eq("status", "approved").gte("created_at", isoDaysAgo(30)),
+      supabaseAdmin.from("orders").select("id, created_at, customer_name, customer_email, total_mxn, status, shipping_status").order("created_at", { ascending: false }).limit(10),
+      supabaseAdmin.from("analytics_events").select("product_slug").eq("name", "view_product").gte("created_at", isoDaysAgo(30)).not("product_slug", "is", null).limit(10000),
+      supabaseAdmin.from("page_views").select("path, created_at, device, referrer_host").order("created_at", { ascending: false }).limit(10),
+      supabaseAdmin.from("analytics_events").select("name, product_slug, value_mxn, created_at").order("created_at", { ascending: false }).limit(10),
+      supabaseAdmin.from("page_views").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("analytics_events").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("orders").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("carts").select("last_seen_at").order("last_seen_at", { ascending: false }).limit(1).maybeSingle(),
+      supabaseAdmin.from("orders").select("total_mxn").eq("status", "approved"),
+    ]);
+
+    // Revenue buckets
+    const revRows = revenueRowsRes.data ?? [];
+    const now = Date.now();
+    let r1 = 0, r7 = 0, r30 = 0;
+    for (const o of revRows) {
+      const ts = new Date(o.created_at).getTime();
+      const ageDays = (now - ts) / (24 * 60 * 60 * 1000);
+      const v = o.total_mxn ?? 0;
+      if (ageDays <= 1) r1 += v;
+      if (ageDays <= 7) r7 += v;
+      if (ageDays <= 30) r30 += v;
+    }
+
+    // Daily orders
+    const dailyMap = new Map<string, { count: number; revenue: number }>();
+    for (const o of revRows) {
+      const day = o.created_at.slice(0, 10);
+      const cur = dailyMap.get(day) ?? { count: 0, revenue: 0 };
+      cur.count += 1; cur.revenue += o.total_mxn ?? 0;
+      dailyMap.set(day, cur);
+    }
+    const daily = Array.from(dailyMap.entries()).map(([day, v]) => ({ day, ...v })).sort((a, b) => b.day.localeCompare(a.day));
+
+    // Top products
+    const topMap = new Map<string, number>();
+    (topProductsRes.data ?? []).forEach((r) => {
+      if (!r.product_slug) return;
+      topMap.set(r.product_slug, (topMap.get(r.product_slug) ?? 0) + 1);
+    });
+    const topProducts30d = Array.from(topMap.entries()).map(([slug, views]) => ({ slug, views })).sort((a, b) => b.views - a.views).slice(0, 8);
+
+    // Avg ticket
+    const avgRows = avgTicketRowsRes.data ?? [];
+    const avgTicket = avgRows.length > 0 ? Math.round(avgRows.reduce((s, x) => s + (x.total_mxn ?? 0), 0) / avgRows.length) : 0;
+
+    // Carts breakdown (active = seen in last hour, abandoned = total non-converted - active)
+    const cartsActive = cartsActiveRes.count ?? 0;
+    const { count: cartsNonConverted } = await supabaseAdmin.from("carts").select("*", { count: "exact", head: true }).neq("status", "converted");
+    const cartsAbandoned = Math.max(0, (cartsNonConverted ?? 0) - cartsActive);
+
+    return {
+      revenue: { d1: r1, d7: r7, d30: r30 },
+      counts: {
+        ordersTotal: ordersTotalRes.count ?? 0,
+        ordersApproved: ordersApprovedRes.count ?? 0,
+        ordersPending: ordersPendingRes.count ?? 0,
+        cartsActive,
+        cartsAbandoned,
+      },
+      avgTicket,
+      visits: { pv_d1, pv_d7, pv_d30, sess_d1, sess_d7, sess_d30 },
+      daily,
+      recentOrders: recentOrdersRes.data ?? [],
+      topProducts30d,
+      recentVisits: recentVisitsRes.data ?? [],
+      recentEvents: recentEventsRes.data ?? [],
+      health: {
+        lastPageviewAt: lastPvRes.data?.created_at ?? null,
+        lastEventAt: lastEvRes.data?.created_at ?? null,
+        lastOrderAt: lastOrderRes.data?.created_at ?? null,
+        lastCartAt: lastCartRes.data?.last_seen_at ?? null,
+      },
+      raw: {
+        pageViewsTotal: pvTotalRes.count ?? 0,
+        analyticsEventsTotal: evTotalRes.count ?? 0,
+        ordersTotalRaw: ordersTotalCountRes.count ?? 0,
+        cartsTotalRaw: cartsTotalCountRes.count ?? 0,
+      },
     };
   });
 
@@ -34,19 +149,92 @@ export const adminGetAnalytics = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => AnalyticsSchema.parse(d ?? {}))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const { data: out, error } = await context.supabase.rpc("admin_analytics", { _days: data.days });
-    if (error) throw new Response(error.message, { status: 500 });
-    return out as {
-      daily: { day: string; views: number; sessions: number }[];
-      topPages: { path: string; views: number; sessions: number }[];
-      topReferrers: { host: string; visits: number }[];
-      devices: { device: string; visits: number }[];
-      utm: { source: string; medium: string; campaign: string; visits: number }[];
-      topProducts: { slug: string; views: number }[];
-      addToCart: { slug: string; count: number }[];
-      searches: { q: string; count: number }[];
-      funnel: Record<string, number>;
+    const since = isoDaysAgo(data.days);
+
+    const [pvRes, evRes, ordersTotalRes, ordersApprovedRes] = await Promise.all([
+      supabaseAdmin.from("page_views").select("path, session_id, created_at, device, referrer_host, utm_source, utm_medium, utm_campaign").gte("created_at", since).limit(50000),
+      supabaseAdmin.from("analytics_events").select("name, product_slug, session_id, meta, created_at").gte("created_at", since).limit(50000),
+      supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).gte("created_at", since),
+      supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).eq("status", "approved").gte("created_at", since),
+    ]);
+
+    const pvs = pvRes.data ?? [];
+    const evs = evRes.data ?? [];
+
+    // Daily
+    const dailyMap = new Map<string, { views: number; sessions: Set<string> }>();
+    for (const v of pvs) {
+      const day = v.created_at.slice(0, 10);
+      const cur = dailyMap.get(day) ?? { views: 0, sessions: new Set() };
+      cur.views += 1; if (v.session_id) cur.sessions.add(v.session_id);
+      dailyMap.set(day, cur);
+    }
+    const daily = Array.from(dailyMap.entries()).map(([day, x]) => ({ day, views: x.views, sessions: x.sessions.size })).sort((a, b) => a.day.localeCompare(b.day));
+
+    // Top pages
+    const pageMap = new Map<string, { views: number; sessions: Set<string> }>();
+    for (const v of pvs) {
+      const cur = pageMap.get(v.path) ?? { views: 0, sessions: new Set() };
+      cur.views += 1; if (v.session_id) cur.sessions.add(v.session_id);
+      pageMap.set(v.path, cur);
+    }
+    const topPages = Array.from(pageMap.entries()).map(([path, x]) => ({ path, views: x.views, sessions: x.sessions.size })).sort((a, b) => b.views - a.views).slice(0, 25);
+
+    // Referrers
+    const refMap = new Map<string, number>();
+    for (const v of pvs) refMap.set(v.referrer_host || "(directo)", (refMap.get(v.referrer_host || "(directo)") ?? 0) + 1);
+    const topReferrers = Array.from(refMap.entries()).map(([host, visits]) => ({ host, visits })).sort((a, b) => b.visits - a.visits).slice(0, 15);
+
+    // Devices
+    const devMap = new Map<string, number>();
+    for (const v of pvs) devMap.set(v.device || "desconocido", (devMap.get(v.device || "desconocido") ?? 0) + 1);
+    const devices = Array.from(devMap.entries()).map(([device, visits]) => ({ device, visits }));
+
+    // UTM
+    const utmMap = new Map<string, number>();
+    for (const v of pvs) {
+      if (!v.utm_source) continue;
+      const k = `${v.utm_source}||${v.utm_medium ?? "-"}||${v.utm_campaign ?? "-"}`;
+      utmMap.set(k, (utmMap.get(k) ?? 0) + 1);
+    }
+    const utm = Array.from(utmMap.entries()).map(([k, visits]) => { const [source, medium, campaign] = k.split("||"); return { source, medium, campaign, visits }; }).sort((a, b) => b.visits - a.visits).slice(0, 20);
+
+    // Top products viewed
+    const tpMap = new Map<string, number>();
+    for (const e of evs) if (e.name === "view_product" && e.product_slug) tpMap.set(e.product_slug, (tpMap.get(e.product_slug) ?? 0) + 1);
+    const topProducts = Array.from(tpMap.entries()).map(([slug, views]) => ({ slug, views })).sort((a, b) => b.views - a.views).slice(0, 20);
+
+    // Add to cart
+    const atcMap = new Map<string, number>();
+    for (const e of evs) if (e.name === "add_to_cart" && e.product_slug) atcMap.set(e.product_slug, (atcMap.get(e.product_slug) ?? 0) + 1);
+    const addToCart = Array.from(atcMap.entries()).map(([slug, count]) => ({ slug, count })).sort((a, b) => b.count - a.count).slice(0, 20);
+
+    // Searches
+    const sMap = new Map<string, number>();
+    for (const e of evs) {
+      if (e.name !== "search") continue;
+      const q = (e.meta as Record<string, unknown> | null)?.q;
+      if (typeof q === "string" && q) sMap.set(q.toLowerCase(), (sMap.get(q.toLowerCase()) ?? 0) + 1);
+    }
+    const searches = Array.from(sMap.entries()).map(([q, count]) => ({ q, count })).sort((a, b) => b.count - a.count).slice(0, 20);
+
+    // Funnel
+    function distinct(name: string) {
+      const s = new Set<string>();
+      for (const e of evs) if (e.name === name && e.session_id) s.add(e.session_id);
+      return s.size;
+    }
+    const sessions = new Set<string>(); for (const v of pvs) if (v.session_id) sessions.add(v.session_id);
+    const funnel = {
+      sessions: sessions.size,
+      view_product: distinct("view_product"),
+      add_to_cart: distinct("add_to_cart"),
+      begin_checkout: distinct("begin_checkout"),
+      orders_pending: ordersTotalRes.count ?? 0,
+      orders_approved: ordersApprovedRes.count ?? 0,
     };
+
+    return { daily, topPages, topReferrers, devices, utm, topProducts, addToCart, searches, funnel };
   });
 
 const ListSchema = z.object({
@@ -96,13 +284,7 @@ export const adminUpdateOrder = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateOrderSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
-    const update: {
-      shipping_status?: string;
-      shipped_at?: string;
-      tracking_number?: string;
-      carrier?: string;
-      admin_notes?: string;
-    } = {};
+    const update: { shipping_status?: string; shipped_at?: string; tracking_number?: string; carrier?: string; admin_notes?: string } = {};
     if (data.shipping_status) update.shipping_status = data.shipping_status;
     if (data.shipping_status === "enviado") update.shipped_at = new Date().toISOString();
     if (data.tracking_number !== undefined) update.tracking_number = data.tracking_number;
