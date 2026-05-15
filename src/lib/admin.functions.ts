@@ -20,6 +20,11 @@ export const adminGetDashboard = createServerFn({ method: "GET" })
       avgTicket: number;
       visits: { pv_d1: number; pv_d7: number; pv_d30: number; sess_d1: number; sess_d7: number; sess_d30: number };
       daily: { day: string; count: number; revenue: number }[];
+      recentOrders: { id: string; created_at: string; customer_name: string; customer_email: string; total_mxn: number; status: string; shipping_status: string }[];
+      topProducts30d: { slug: string; views: number }[];
+      recentVisits: { path: string; created_at: string; device: string | null; referrer_host: string | null }[];
+      recentEvents: { name: string; product_slug: string | null; value_mxn: number | null; created_at: string }[];
+      health: { lastPageviewAt: string | null; lastEventAt: string | null; lastOrderAt: string | null; lastCartAt: string | null };
     };
   });
 
