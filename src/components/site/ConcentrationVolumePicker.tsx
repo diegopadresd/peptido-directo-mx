@@ -5,6 +5,7 @@ import { PACKS, packTotal, formatMxn } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 import { buildWaLink } from "@/lib/whatsapp";
 import { useCart } from "@/lib/cart/store";
+import { trackEvent } from "@/lib/analytics/track";
 
 function VialDots({ count }: { count: number }) {
   // Show up to 30 dots in a wrapping row
@@ -33,6 +34,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const addItem = useCart((s) => s.addItem);
+  const cartToken = useCart((s) => s.cartToken);
   const [added, setAdded] = useState(false);
 
   function handleAddToCart() {
@@ -44,9 +46,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
       unitPrice: variant.basePricePerVial,
       lineTotal: total,
     });
-    import("@/lib/analytics/track").then(({ trackEvent }) =>
-      trackEvent("add_to_cart", { productSlug: product.slug, valueMxn: total, meta: { dose: variant.dose, qty } })
-    );
+    trackEvent("add_to_cart", { productSlug: product.slug, valueMxn: total, meta: { dose: variant.dose, qty } });
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);
   }
@@ -54,18 +54,25 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
   async function handlePay() {
     setLoading(true);
     setError(null);
+    trackEvent("quick_pay_click", { productSlug: product.slug, valueMxn: total, meta: { dose: variant.dose, qty } });
     try {
+      // For "pay now" we still need shipping info; redirect through checkout.
+      addItem({
+        productSlug: product.slug,
+        productName: product.name,
+        dose: variant.dose,
+        qty,
+        unitPrice: variant.basePricePerVial,
+        lineTotal: total,
+      });
+      window.location.href = "/checkout";
+      return;
+      // Legacy quick-pay path retained below for type checks (unreachable)
+      // eslint-disable-next-line no-unreachable
       const res = await fetch("/api/checkout/mercadopago", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productSlug: product.slug,
-          productName: product.name,
-          dose: variant.dose,
-          qty,
-          unitPrice: variant.basePricePerVial,
-          total,
-        }),
+        body: JSON.stringify({ productSlug: product.slug, productName: product.name, dose: variant.dose, qty, unitPrice: variant.basePricePerVial, total }),
       });
       const data = (await res.json()) as { init_point?: string; error?: string };
       if (!res.ok || !data.init_point) {
