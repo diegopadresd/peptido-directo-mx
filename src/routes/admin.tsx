@@ -8,72 +8,43 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-async function withTimeout<T>(promise: PromiseLike<T>, ms: number, fallback: T | null): Promise<T | null> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<T | null>((resolve) => {
-        timer = setTimeout(() => resolve(fallback), ms);
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
+type Status = "loading" | "no-session" | "no-role" | "error" | "ok";
 
 function AdminLayout() {
-  const [ready, setReady] = useState(false);
-  const [allowed, setAllowed] = useState(false);
-  const [accessError, setAccessError] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>("loading");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     let cancelled = false;
     async function check() {
-      setAccessError(null);
-      setReady(false);
-      const sessionResult = await withTimeout(supabase.auth.getSession(), 8000, null);
-      const resolvedUserId = sessionResult?.data.session?.user?.id ?? null;
-      if (cancelled) return;
-      if (!resolvedUserId) {
-        setAllowed(false);
-        setReady(true);
-        navigate({ to: "/login" });
-        return;
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData.session?.user?.id;
+        if (!userId) { if (!cancelled) setStatus("no-session"); return; }
+        const { data: isAdmin, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+        if (cancelled) return;
+        if (error) { setErrorMsg(error.message); setStatus("error"); return; }
+        setStatus(isAdmin ? "ok" : "no-role");
+      } catch (e) {
+        if (cancelled) return;
+        setErrorMsg(e instanceof Error ? e.message : "Error desconocido");
+        setStatus("error");
       }
-      const roleResult = await withTimeout(
-        supabase.rpc("has_role", { _user_id: resolvedUserId, _role: "admin" }),
-        8000,
-        null,
-      );
-      if (cancelled) return;
-      if (!roleResult) {
-        setAllowed(false);
-        setAccessError("No se pudo verificar tu acceso. Recarga la página o inicia sesión de nuevo.");
-        setReady(true);
-        return;
-      }
-      const { data, error } = roleResult;
-      if (error || !data) {
-        setAllowed(false);
-        setAccessError("Esta cuenta no tiene acceso al panel admin.");
-        setReady(true);
-        return;
-      }
-      setAllowed(true);
-      setReady(true);
     }
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "INITIAL_SESSION") return;
-      check();
-    });
     check();
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") check();
+    });
     return () => { cancelled = true; sub.subscription.unsubscribe(); };
-  }, [navigate]);
+  }, []);
 
-  if (!ready) {
+  useEffect(() => {
+    if (status === "no-session") navigate({ to: "/login" });
+  }, [status, navigate]);
+
+  if (status === "loading") {
     return (
       <div className="grid min-h-[60vh] place-items-center gap-3 text-center text-sm text-muted-foreground">
         <p>Verificando acceso…</p>
@@ -81,11 +52,15 @@ function AdminLayout() {
       </div>
     );
   }
-  if (!allowed) {
+  if (status !== "ok") {
+    const msg =
+      status === "no-session" ? "Necesitas iniciar sesión." :
+      status === "no-role" ? "Esta cuenta no tiene rol admin." :
+      errorMsg ?? "No se pudo verificar tu acceso.";
     return (
       <div className="container mx-auto grid min-h-[60vh] max-w-md place-items-center px-4 text-center">
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">{accessError ?? "Acceso no autorizado."}</p>
+          <p className="text-sm text-muted-foreground">{msg}</p>
           <button onClick={() => navigate({ to: "/login" })} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Ir a login</button>
         </div>
       </div>
