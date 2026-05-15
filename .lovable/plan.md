@@ -1,54 +1,67 @@
-Diagnóstico directo: el backend sí tiene datos de visitas, pero el admin no los está mostrando porque el flujo de acceso/carga del panel está frágil y puede quedarse atorado en “Verificando acceso…”. Además, carritos y pedidos sí están en 0 porque todavía no se han persistido desde interacciones reales después del cambio, y el panel no explica esa diferencia.
+Diagnóstico verificado antes de tocar código:
+- La base de datos sí está registrando visitas: hay 291 page views y el último registro se creó durante esta revisión.
+- Analytics events existen: 59 registros.
+- Carritos y pedidos sí están en 0 actualmente porque no hay registros reales en esas tablas.
+- La función actual `admin_dashboard_summary()` falla con `forbidden` cuando se ejecuta sin sesión admin SQL (`auth.uid()`), y el panel depende de esa función para pintar métricas.
+- En preview, `/admin` no llegó a solicitar datos del dashboard; se quedó verificando acceso y terminó en `/login`. Esto explica por qué el usuario ve cero/sin datos aunque la base tenga visitas.
 
-Plan de reparación completa:
+Plan de reparación:
 
-1. Arreglar el acceso al admin
-- Convertir `/admin` en una ruta protegida real con `beforeLoad`, no una verificación manual dentro del componente.
-- Esperar correctamente la sesión del usuario y redirigir a `/login` solo si no hay sesión.
-- Verificar el rol admin de forma estable antes de renderizar el dashboard.
-- Evitar estados infinitos como “Verificando acceso…”. Si falla, mostrar error accionable.
+1. Separar lectura admin de RPC frágil
+- Rehacer `adminGetDashboard` para que no dependa de `admin_dashboard_summary()` ni de `auth.uid()` dentro de SQL.
+- Mantener la validación de admin en servidor con `assertAdmin(context.userId)`.
+- Después de validar el rol, leer directamente con el cliente admin del servidor:
+  - conteos de `page_views`, `analytics_events`, `carts`, `orders`
+  - visitas 1d/7d/30d y sesiones 1d/7d/30d
+  - últimos page views y eventos
+  - productos más vistos
+  - pedidos recientes
+  - salud del sistema con última visita/evento/carrito/pedido
+- Resultado: si el usuario es admin, los datos salen de la fuente real y no de una función SQL que puede rechazar por contexto de autenticación.
 
-2. Hacer que el dashboard use una fuente de verdad confiable
-- Rehacer `adminGetDashboard` para leer con acceso admin del servidor, no depender de llamadas RPC bajo el contexto del cliente cuando no sea necesario.
-- Devolver explícitamente visitas, sesiones, eventos, productos vistos, carritos, pedidos y estado de tracking.
-- Mostrar “sin datos” solo cuando realmente no existan datos, no convertir errores silenciosamente a 0.
+2. Rehacer `adminGetAnalytics` con lecturas server-side directas
+- Eliminar la dependencia de `admin_analytics()` para la pantalla Analytics.
+- Calcular en TypeScript/server con consultas directas:
+  - páginas más vistas
+  - referrers
+  - dispositivos
+  - UTM
+  - productos vistos
+  - add-to-cart
+  - búsquedas
+  - embudo
+- Resultado: Analytics deja de depender de RPC bajo contexto SQL y deja de mostrar cero por fallo silencioso.
 
-3. Separar métricas reales de métricas todavía inexistentes
-- Visitas y eventos: mostrar los números reales que ya existen en la base de datos.
-- Pedidos: mostrar 0 con nota clara si no hay pedidos creados.
-- Carritos: mostrar 0 solo si no hay carritos persistidos, y añadir indicador de si la sincronización de carritos está funcionando.
-- Añadir una barra de salud con última visita, último evento, último carrito, último pedido y errores recientes.
+3. Eliminar ceros silenciosos en el UI
+- Cambiar el dashboard para mostrar un error visible si el servidor falla, no normalizar todo a 0 como si fuera dato real.
+- Agregar un bloque “Datos crudos” con:
+  - total `page_views`
+  - total `analytics_events`
+  - total `carts`
+  - total `orders`
+- Mostrar claramente:
+  - “visitas registradas” cuando existan visitas
+  - “no hay carritos reales guardados” cuando `carts = 0`
+  - “no hay pedidos reales creados” cuando `orders = 0`
 
-4. Fortalecer tracking y carritos
-- Hacer que el carrito se sincronice al cargar la app si ya existe carrito local, no solo cuando se agrega/remueve un producto.
-- Asegurar que “add to cart”, “checkout”, “submit checkout” y “order_created” registren evento y metadata útil.
-- Ajustar el panel de carritos para poder ver carritos activos y abandonados, no solamente abandonados con email después de 1 hora.
+4. Arreglar el acceso admin para que no se quede colgado
+- Convertir `/admin` a una verificación determinista:
+  - esperar sesión con `supabase.auth.getUser()` / `getSession()`
+  - si no hay sesión, redirigir a `/login`
+  - si hay sesión, verificar rol con servidor o RPC de forma clara
+- Evitar estados infinitos de “Verificando acceso…”.
+- Si la cuenta no es admin, mostrar “sin rol admin” explícitamente.
 
-5. Reparar pedidos de punta a punta
-- Mantener el checkout creando pedido interno antes de Mercado Pago.
-- Revisar que el endpoint de creación de pedido marque el carrito como convertido y registre eventos internos.
-- Eliminar o dejar fuera de uso el endpoint viejo `/api/checkout/mercadopago` que crea pagos sin pedido interno, para que no vuelva a romper el admin.
+5. Validar tracking real después del cambio
+- Probar una visita pública y confirmar que incrementa `page_views`.
+- Probar `/admin` con sesión admin cuando esté disponible y confirmar que muestra los conteos reales.
+- Si no hay sesión admin en el entorno de prueba, dejar el dashboard preparado para mostrar un diagnóstico claro en vez de ceros.
 
-6. Hacer el admin auditable
-- Añadir una sección “Estado del sistema” dentro del admin con conteos crudos: `page_views`, `analytics_events`, `carts`, `orders`.
-- Añadir listas recientes de visitas/eventos para confirmar visualmente que se está registrando actividad.
-- En Analytics, mostrar embudo real con porcentajes y tablas de páginas/productos/referrers/dispositivos.
-
-7. Validación final
-- Probar una visita pública y confirmar que aparece en dashboard.
-- Probar agregar producto al carrito y confirmar que aparece como carrito activo.
-- Probar iniciar checkout y confirmar evento + carrito con datos de cliente.
-- Revisar consola/red para asegurar que no haya errores silenciosos.
-
-Archivos principales a tocar:
+Archivos a cambiar:
+- `src/lib/admin.functions.ts`
 - `src/routes/admin.tsx`
 - `src/routes/admin.index.tsx`
 - `src/routes/admin.analytics.tsx`
-- `src/routes/admin.carritos.tsx`
-- `src/lib/admin.functions.ts`
-- `src/lib/cart/store.ts`
-- `src/lib/analytics/track.ts`
-- `src/routes/api.checkout.create-order.ts`
-- posiblemente una migración para mejorar funciones SQL/índices si hace falta
+- posiblemente `src/lib/admin-client.ts`
 
-Resultado esperado: el admin deja de quedarse en verificación, muestra las visitas reales existentes, distingue correctamente qué métricas están en 0 por falta de pedidos/carritos reales, y permite validar desde el propio panel que tracking, carritos y pedidos están funcionando.
+No haré migración inicialmente porque la base ya tiene datos y el problema verificado es la ruta de lectura/autenticación del dashboard, no el tracking de page views.

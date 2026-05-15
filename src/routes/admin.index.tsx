@@ -9,8 +9,8 @@ export const Route = createFileRoute("/admin/")({ component: Dashboard });
 
 function Dashboard() {
   const fn = useServerFn(adminGetDashboard);
-  const { data, isLoading, isError, error } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => callAdminFn(fn), staleTime: 60_000, retry: false });
-  if (isError) return <AdminError message={formatAdminError(error)} />;
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => callAdminFn(fn), staleTime: 30_000, retry: false });
+  if (isError) return <AdminError message={formatAdminError(error)} onRetry={() => refetch()} />;
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   const dashboard = normalizeDashboard(data);
   const trackingHealthy = dashboard.visits.pv_d7 > 0;
@@ -18,10 +18,14 @@ function Dashboard() {
   const noCarts = dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned === 0;
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold">Dashboard</h1>
-        <p className="mt-1 text-xs text-muted-foreground">Tracking: {trackingHealthy ? "✅ activo" : "⚠️ sin visitas en 7d"} · Pedidos: {noOrders ? "0 (aún sin ventas)" : `${dashboard.counts.ordersTotal} totales`} · Carritos: {noCarts ? "0 (aún sin actividad guardada)" : `${dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned} guardados`}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold">Dashboard</h1>
+          <p className="mt-1 text-xs text-muted-foreground">Tracking: {trackingHealthy ? "✅ activo" : "⚠️ sin visitas en 7d"} · Pedidos: {noOrders ? "0 (aún sin ventas)" : `${dashboard.counts.ordersTotal} totales`} · Carritos: {noCarts ? "0 (aún sin actividad guardada)" : `${dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned} guardados`}</p>
+        </div>
+        <button onClick={() => refetch()} disabled={isFetching} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50">{isFetching ? "Actualizando…" : "Actualizar"}</button>
       </div>
+      <RawCounts r={dashboard.raw} />
       <HealthBar h={dashboard.health} />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Ingresos hoy" value={formatMxn(dashboard.revenue.d1)} />
@@ -120,6 +124,7 @@ type DashboardData = {
   recentVisits: { path: string; created_at: string; device: string | null; referrer_host: string | null }[];
   recentEvents: { name: string; product_slug: string | null; value_mxn: number | null; created_at: string }[];
   health: { lastPageviewAt: string | null; lastEventAt: string | null; lastOrderAt: string | null; lastCartAt: string | null };
+  raw: { pageViewsTotal: number; analyticsEventsTotal: number; ordersTotalRaw: number; cartsTotalRaw: number };
 };
 
 function normalizeDashboard(data: Partial<DashboardData>): DashboardData {
@@ -147,11 +152,45 @@ function normalizeDashboard(data: Partial<DashboardData>): DashboardData {
     recentVisits: data.recentVisits ?? [],
     recentEvents: data.recentEvents ?? [],
     health: { lastPageviewAt: data.health?.lastPageviewAt ?? null, lastEventAt: data.health?.lastEventAt ?? null, lastOrderAt: data.health?.lastOrderAt ?? null, lastCartAt: data.health?.lastCartAt ?? null },
+    raw: {
+      pageViewsTotal: data.raw?.pageViewsTotal ?? 0,
+      analyticsEventsTotal: data.raw?.analyticsEventsTotal ?? 0,
+      ordersTotalRaw: data.raw?.ordersTotalRaw ?? 0,
+      cartsTotalRaw: data.raw?.cartsTotalRaw ?? 0,
+    },
   };
 }
 
-function AdminError({ message }: { message: string }) {
-  return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
+function AdminError({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+      <p className="font-semibold">Error cargando el dashboard</p>
+      <p className="text-xs">{message}</p>
+      {onRetry && <button onClick={onRetry} className="rounded border border-destructive/40 px-2 py-1 text-xs hover:bg-destructive/20">Reintentar</button>}
+    </div>
+  );
+}
+
+function RawCounts({ r }: { r: DashboardData["raw"] }) {
+  const items = [
+    { label: "page_views (total)", value: r.pageViewsTotal },
+    { label: "analytics_events (total)", value: r.analyticsEventsTotal },
+    { label: "orders (total)", value: r.ordersTotalRaw },
+    { label: "carts (total)", value: r.cartsTotalRaw },
+  ];
+  return (
+    <div className="rounded-xl border border-border bg-muted/30 p-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Datos crudos en la base</p>
+      <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {items.map((it) => (
+          <div key={it.label}>
+            <p className="text-[10px] text-muted-foreground">{it.label}</p>
+            <p className="text-lg font-extrabold tabular-nums">{it.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
