@@ -17,6 +17,7 @@ import { WhatsAppFAB } from "@/components/site/WhatsAppFAB";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/whatsapp";
 import { trackPageview } from "@/lib/analytics/track";
+import { ensureCartPersisted } from "@/lib/cart/store";
 
 function NotFoundComponent() {
   return (
@@ -150,6 +151,7 @@ function PageviewTracker() {
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin") || pathname.startsWith("/api")) return;
     trackPageview(pathname);
+    ensureCartPersisted();
   }, [pathname]);
   return null;
 }
