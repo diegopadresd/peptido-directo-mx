@@ -13,9 +13,15 @@ function Dashboard() {
   if (isError) return <AdminError message={formatAdminError(error)} />;
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   const dashboard = normalizeDashboard(data);
+  const trackingHealthy = dashboard.visits.pv_d7 > 0;
+  const noOrders = dashboard.counts.ordersTotal === 0;
+  const noCarts = dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned === 0;
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold">Dashboard</h1>
+      <div>
+        <h1 className="text-2xl font-extrabold">Dashboard</h1>
+        <p className="mt-1 text-xs text-muted-foreground">Tracking: {trackingHealthy ? "✅ activo" : "⚠️ sin visitas en 7d"} · Pedidos: {noOrders ? "0 (aún sin ventas)" : `${dashboard.counts.ordersTotal} totales`} · Carritos: {noCarts ? "0 (aún sin actividad guardada)" : `${dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned} guardados`}</p>
+      </div>
       <HealthBar h={dashboard.health} />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Ingresos hoy" value={formatMxn(dashboard.revenue.d1)} />

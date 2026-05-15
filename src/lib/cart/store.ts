@@ -80,6 +80,20 @@ function queueCartSync(cartToken: string, items: CartItem[]) {
   }, 600);
 }
 
+let initialSyncDone = false;
+export function ensureCartPersisted() {
+  if (typeof window === "undefined" || initialSyncDone) return;
+  initialSyncDone = true;
+  const s = useCart.getState();
+  if (!s.cartToken || s.items.length === 0) return;
+  const subtotal = s.items.reduce((a, x) => a + x.lineTotal, 0);
+  syncCart({
+    cartToken: s.cartToken,
+    items: s.items as unknown as Array<Record<string, unknown>>,
+    subtotalMxn: subtotal,
+  });
+}
+
 export function syncCartWithCustomer(input: { email?: string; customerName?: string; phone?: string }) {
   const state = useCart.getState();
   const subtotal = state.items.reduce((a, x) => a + x.lineTotal, 0);

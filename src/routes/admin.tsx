@@ -31,12 +31,11 @@ function AdminLayout() {
 
   useEffect(() => {
     let cancelled = false;
-    async function check(userId?: string | null) {
+    async function check() {
       setAccessError(null);
       setReady(false);
-      const resolvedUserId = userId === undefined
-        ? (await withTimeout(supabase.auth.getUser(), 8000, null))?.data.user?.id ?? null
-        : userId;
+      const sessionResult = await withTimeout(supabase.auth.getSession(), 8000, null);
+      const resolvedUserId = sessionResult?.data.session?.user?.id ?? null;
       if (cancelled) return;
       if (!resolvedUserId) {
         setAllowed(false);
@@ -52,7 +51,7 @@ function AdminLayout() {
       if (cancelled) return;
       if (!roleResult) {
         setAllowed(false);
-        setAccessError("No se pudo verificar el acceso admin. Recarga o inicia sesión otra vez.");
+        setAccessError("No se pudo verificar tu acceso. Recarga la página o inicia sesión de nuevo.");
         setReady(true);
         return;
       }
@@ -66,18 +65,32 @@ function AdminLayout() {
       setAllowed(true);
       setReady(true);
     }
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "INITIAL_SESSION") return;
-      check(session?.user?.id ?? null);
+      check();
     });
     check();
     return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [navigate]);
 
   if (!ready) {
-    return <div className="grid min-h-[60vh] place-items-center text-sm text-muted-foreground">Verificando acceso…</div>;
+    return (
+      <div className="grid min-h-[60vh] place-items-center gap-3 text-center text-sm text-muted-foreground">
+        <p>Verificando acceso…</p>
+        <button onClick={() => window.location.reload()} className="text-xs text-primary hover:underline">Recargar si tarda más de 5s</button>
+      </div>
+    );
   }
-  if (!allowed) return <div className="grid min-h-[60vh] place-items-center text-sm text-muted-foreground">{accessError ?? "Acceso no autorizado."}</div>;
+  if (!allowed) {
+    return (
+      <div className="container mx-auto grid min-h-[60vh] max-w-md place-items-center px-4 text-center">
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">{accessError ?? "Acceso no autorizado."}</p>
+          <button onClick={() => navigate({ to: "/login" })} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Ir a login</button>
+        </div>
+      </div>
+    );
+  }
 
   const links = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
