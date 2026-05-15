@@ -118,11 +118,10 @@ export const adminListAbandonedCarts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
-    const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const { data, error } = await supabaseAdmin.from("carts")
-      .select("id, email, customer_name, phone, items, subtotal_mxn, last_seen_at, created_at")
-      .or(`status.eq.abandoned,and(status.eq.active,last_seen_at.lt.${cutoff})`)
-      .not("email", "is", null)
+      .select("id, status, email, customer_name, phone, items, subtotal_mxn, last_seen_at, created_at")
+      .neq("status", "converted")
+      .gt("subtotal_mxn", 0)
       .order("last_seen_at", { ascending: false }).limit(200);
     if (error) throw new Response(error.message, { status: 500 });
     return { carts: data ?? [] };

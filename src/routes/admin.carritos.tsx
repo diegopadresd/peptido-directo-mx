@@ -15,18 +15,19 @@ function Carritos() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Carritos abandonados</h1>
-      <p className="text-sm text-muted-foreground">Carritos con email donde el cliente no completó la compra después de 1 hora.</p>
+      <p className="text-sm text-muted-foreground">Carritos activos y abandonados (no convertidos) con productos. Los más recientes primero.</p>
       {isError && <AdminError message={formatAdminError(error)} />}
       <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider">
-            <tr><th className="px-3 py-2">Última actividad</th><th className="px-3 py-2">Cliente</th><th className="px-3 py-2">Subtotal</th><th className="px-3 py-2">Items</th><th></th></tr>
+            <tr><th className="px-3 py-2">Última actividad</th><th className="px-3 py-2">Estado</th><th className="px-3 py-2">Cliente</th><th className="px-3 py-2">Subtotal</th><th className="px-3 py-2">Items</th><th></th></tr>
           </thead>
           <tbody>
             {carts.map((c) => (
               <tr key={c.id} className="border-t border-border align-top">
                 <td className="px-3 py-2 whitespace-nowrap">{new Date(c.last_seen_at).toLocaleString("es-MX")}</td>
-                <td className="px-3 py-2"><div className="font-medium">{c.customer_name ?? "(sin nombre)"}</div><div className="text-xs text-muted-foreground">{c.email}</div><div className="text-xs">{c.phone}</div></td>
+                <td className="px-3 py-2"><span className="rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase">{(c as { status?: string }).status ?? "active"}</span></td>
+                <td className="px-3 py-2"><div className="font-medium">{c.customer_name ?? "(anónimo)"}</div><div className="text-xs text-muted-foreground">{c.email ?? "—"}</div><div className="text-xs">{c.phone ?? ""}</div></td>
                 <td className="px-3 py-2 tabular-nums">{formatMxn(c.subtotal_mxn ?? 0)}</td>
                 <td className="px-3 py-2 text-xs">{Array.isArray(c.items) ? (c.items as Array<{productName?: string; qty?: number}>).map((i, idx) => <div key={idx}>{i.productName} ×{i.qty}</div>) : null}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-xs">
@@ -36,7 +37,7 @@ function Carritos() {
                 </td>
               </tr>
             ))}
-            {carts.length === 0 && <tr><td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">Sin carritos abandonados.</td></tr>}
+            {carts.length === 0 && <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Aún no hay carritos guardados. Se llenarán cuando un cliente añada productos.</td></tr>}
           </tbody>
         </table>
       </div>
