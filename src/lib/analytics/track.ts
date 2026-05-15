@@ -44,7 +44,7 @@ export async function trackPageview(path: string) {
       _utm_campaign: url.searchParams.get("utm_campaign") ?? "",
       _user_agent: navigator.userAgent ?? "",
     } as never);
-  } catch { /* silent */ }
+  } catch (e) { if (typeof console !== "undefined") console.warn("[analytics] pageview failed", e); }
 }
 
 export async function trackEvent(name: string, opts: { path?: string; productSlug?: string; valueMxn?: number; meta?: Record<string, unknown> } = {}) {
@@ -60,5 +60,27 @@ export async function trackEvent(name: string, opts: { path?: string; productSlu
       _value_mxn: opts.valueMxn ?? null,
       _meta: (opts.meta ?? null) as never,
     } as never);
-  } catch { /* silent */ }
+  } catch (e) { if (typeof console !== "undefined") console.warn("[analytics] event failed", e); }
+}
+
+export async function syncCart(input: {
+  cartToken: string;
+  items: Array<Record<string, unknown>>;
+  subtotalMxn: number;
+  email?: string | null;
+  customerName?: string | null;
+  phone?: string | null;
+}) {
+  if (typeof window === "undefined") return;
+  if (!input.cartToken) return;
+  try {
+    await supabase.rpc("cart_upsert" as never, {
+      _cart_token: input.cartToken,
+      _items: input.items as never,
+      _subtotal_mxn: Math.max(0, Math.round(input.subtotalMxn || 0)),
+      _email: input.email ?? null,
+      _customer_name: input.customerName ?? null,
+      _phone: input.phone ?? null,
+    } as never);
+  } catch (e) { if (typeof console !== "undefined") console.warn("[analytics] cart sync failed", e); }
 }
