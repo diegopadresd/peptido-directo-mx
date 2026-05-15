@@ -354,6 +354,17 @@ export type Database = {
     Functions: {
       admin_analytics: { Args: { _days?: number }; Returns: Json }
       admin_dashboard_summary: { Args: never; Returns: Json }
+      cart_upsert: {
+        Args: {
+          _cart_token: string
+          _customer_name?: string
+          _email?: string
+          _items: Json
+          _phone?: string
+          _subtotal_mxn: number
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

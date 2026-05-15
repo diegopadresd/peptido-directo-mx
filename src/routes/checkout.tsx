@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Loader2, CreditCard } from "lucide-react";
-import { useCart } from "@/lib/cart/store";
+import { useCart, syncCartWithCustomer } from "@/lib/cart/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,6 +71,13 @@ function CheckoutPage() {
       return;
     }
     setLoading(true);
+    // Persist cart with customer info before redirect so abandoned carts captura email/teléfono.
+    await syncCartWithCustomer({
+      email: parsed.data.customerEmail,
+      customerName: parsed.data.customerName,
+      phone: parsed.data.customerPhone,
+    });
+    trackEvent("submit_checkout", { valueMxn: subtotal, meta: { items: items.length } });
     try {
       const res = await fetch("/api/checkout/create-order", {
         method: "POST",
@@ -79,6 +86,7 @@ function CheckoutPage() {
       });
       const data = await res.json() as { init_point?: string; error?: string; order_id?: string };
       if (!res.ok || !data.init_point) throw new Error(data.error || "No se pudo crear el pedido");
+      trackEvent("order_created", { valueMxn: subtotal, meta: { order_id: data.order_id } });
       window.location.href = data.init_point;
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Error inesperado");
