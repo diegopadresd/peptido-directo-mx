@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { syncCart } from "@/lib/analytics/track";
 
 export type CartItem = {
   productSlug: string;
@@ -35,27 +36,59 @@ export const useCart = create<CartState>()(
       addItem: (item) =>
         set((s) => {
           const i = s.items.findIndex((x) => x.productSlug === item.productSlug && x.dose === item.dose);
+          let next: CartItem[];
           if (i >= 0) {
-            const next = [...s.items];
+            next = [...s.items];
             next[i] = item;
-            return { items: next };
+          } else {
+            next = [...s.items, item];
           }
-          return { items: [...s.items, item] };
+          queueCartSync(s.cartToken, next);
+          return { items: next };
         }),
       updateQty: (slug, dose, qty) =>
-        set((s) => ({
-          items: s.items.map((x) =>
+        set((s) => {
+          const items = s.items.map((x) =>
             x.productSlug === slug && x.dose === dose
               ? { ...x, qty, lineTotal: Math.round((x.unitPrice * qty * x.lineTotal) / (x.unitPrice * x.qty || 1)) }
               : x,
-          ),
-        })),
+          );
+          queueCartSync(s.cartToken, items);
+          return { items };
+        }),
       removeItem: (slug, dose) =>
-        set((s) => ({ items: s.items.filter((x) => !(x.productSlug === slug && x.dose === dose)) })),
-      clear: () => set({ items: [] }),
+        set((s) => {
+          const items = s.items.filter((x) => !(x.productSlug === slug && x.dose === dose));
+          queueCartSync(s.cartToken, items);
+          return { items };
+        }),
+      clear: () => set((s) => { queueCartSync(s.cartToken, []); return { items: [] }; }),
       subtotal: () => get().items.reduce((acc, x) => acc + x.lineTotal, 0),
       count: () => get().items.reduce((acc, x) => acc + x.qty, 0),
     }),
     { name: "pm-cart-v1" },
   ),
 );
+
+let syncTimer: ReturnType<typeof setTimeout> | null = null;
+function queueCartSync(cartToken: string, items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  if (syncTimer) clearTimeout(syncTimer);
+  const subtotal = items.reduce((a, x) => a + x.lineTotal, 0);
+  syncTimer = setTimeout(() => {
+    syncCart({ cartToken, items: items as unknown as Array<Record<string, unknown>>, subtotalMxn: subtotal });
+  }, 600);
+}
+
+export function syncCartWithCustomer(input: { email?: string; customerName?: string; phone?: string }) {
+  const state = useCart.getState();
+  const subtotal = state.items.reduce((a, x) => a + x.lineTotal, 0);
+  return syncCart({
+    cartToken: state.cartToken,
+    items: state.items as unknown as Array<Record<string, unknown>>,
+    subtotalMxn: subtotal,
+    email: input.email,
+    customerName: input.customerName,
+    phone: input.phone,
+  });
+}
