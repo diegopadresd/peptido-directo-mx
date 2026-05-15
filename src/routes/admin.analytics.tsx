@@ -92,6 +92,7 @@ function Funnel({ f }: { f: Record<string, number> }) {
     { label: "Pedidos creados", key: "orders_pending" },
     { label: "Pedidos pagados", key: "orders_approved" },
   ];
+  const top = f[steps[0].key] ?? 0;
   const max = Math.max(1, ...steps.map((s) => f[s.key] ?? 0));
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -100,13 +101,14 @@ function Funnel({ f }: { f: Record<string, number> }) {
         {steps.map((s) => {
           const v = f[s.key] ?? 0;
           const pct = (v / max) * 100;
+          const conv = top > 0 ? Math.round((v / top) * 1000) / 10 : 0;
           return (
             <div key={s.key} className="flex items-center gap-3">
               <span className="w-44 text-xs text-muted-foreground">{s.label}</span>
               <div className="relative h-6 flex-1 overflow-hidden rounded bg-muted">
                 <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
               </div>
-              <span className="w-12 text-right text-sm font-bold tabular-nums">{v}</span>
+              <span className="w-20 text-right text-sm font-bold tabular-nums">{v} <span className="text-[10px] font-normal text-muted-foreground">({conv}%)</span></span>
             </div>
           );
         })}
