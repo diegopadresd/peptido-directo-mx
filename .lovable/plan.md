@@ -1,67 +1,37 @@
-Diagnóstico verificado antes de tocar código:
-- La base de datos sí está registrando visitas: hay 291 page views y el último registro se creó durante esta revisión.
-- Analytics events existen: 59 registros.
-- Carritos y pedidos sí están en 0 actualmente porque no hay registros reales en esas tablas.
-- La función actual `admin_dashboard_summary()` falla con `forbidden` cuando se ejecuta sin sesión admin SQL (`auth.uid()`), y el panel depende de esa función para pintar métricas.
-- En preview, `/admin` no llegó a solicitar datos del dashboard; se quedó verificando acceso y terminó en `/login`. Esto explica por qué el usuario ve cero/sin datos aunque la base tenga visitas.
+I verified the hosted backend is healthy and the database currently contains real data:
 
-Plan de reparación:
+- `page_views`: 531
+- `analytics_events`: 145
+- `carts`: 4
+- `orders`: 0
+- latest page view: 2026-05-18 01:40 UTC
+- latest analytics event: 2026-05-18 01:16 UTC
 
-1. Separar lectura admin de RPC frágil
-- Rehacer `adminGetDashboard` para que no dependa de `admin_dashboard_summary()` ni de `auth.uid()` dentro de SQL.
-- Mantener la validación de admin en servidor con `assertAdmin(context.userId)`.
-- Después de validar el rol, leer directamente con el cliente admin del servidor:
-  - conteos de `page_views`, `analytics_events`, `carts`, `orders`
-  - visitas 1d/7d/30d y sesiones 1d/7d/30d
-  - últimos page views y eventos
-  - productos más vistos
-  - pedidos recientes
-  - salud del sistema con última visita/evento/carrito/pedido
-- Resultado: si el usuario es admin, los datos salen de la fuente real y no de una función SQL que puede rechazar por contexto de autenticación.
+So if the dashboard or analytics page is showing all zeroes, the break is in the admin data-fetch/render path, not in the database.
 
-2. Rehacer `adminGetAnalytics` con lecturas server-side directas
-- Eliminar la dependencia de `admin_analytics()` para la pantalla Analytics.
-- Calcular en TypeScript/server con consultas directas:
-  - páginas más vistas
-  - referrers
-  - dispositivos
-  - UTM
-  - productos vistos
-  - add-to-cart
-  - búsquedas
-  - embudo
-- Resultado: Analytics deja de depender de RPC bajo contexto SQL y deja de mostrar cero por fallo silencioso.
+Plan:
 
-3. Eliminar ceros silenciosos en el UI
-- Cambiar el dashboard para mostrar un error visible si el servidor falla, no normalizar todo a 0 como si fuera dato real.
-- Agregar un bloque “Datos crudos” con:
-  - total `page_views`
-  - total `analytics_events`
-  - total `carts`
-  - total `orders`
-- Mostrar claramente:
-  - “visitas registradas” cuando existan visitas
-  - “no hay carritos reales guardados” cuando `carts = 0`
-  - “no hay pedidos reales creados” cuando `orders = 0`
+1. Remove silent zero normalization from the admin dashboard
+- Stop converting missing/failed response fields into `0` in `src/routes/admin.index.tsx`.
+- Add a strict response validator so malformed or empty server responses show a visible error instead of fake zeroes.
+- Keep the raw counts block, but make it impossible for it to display `0` unless the server actually returned `0`.
 
-4. Arreglar el acceso admin para que no se quede colgado
-- Convertir `/admin` a una verificación determinista:
-  - esperar sesión con `supabase.auth.getUser()` / `getSession()`
-  - si no hay sesión, redirigir a `/login`
-  - si hay sesión, verificar rol con servidor o RPC de forma clara
-- Evitar estados infinitos de “Verificando acceso…”.
-- Si la cuenta no es admin, mostrar “sin rol admin” explícitamente.
+2. Add server-side diagnostics to admin data functions
+- In `src/lib/admin.functions.ts`, check every database query result for `error`.
+- If any query fails, throw a clear error naming the failed query instead of returning partial data.
+- Add a small diagnostic payload to dashboard/analytics responses with raw total counts and timestamps, so the UI can prove what it received.
 
-5. Validar tracking real después del cambio
-- Probar una visita pública y confirmar que incrementa `page_views`.
-- Probar `/admin` con sesión admin cuando esté disponible y confirmar que muestra los conteos reales.
-- Si no hay sesión admin en el entorno de prueba, dejar el dashboard preparado para mostrar un diagnóstico claro en vez de ceros.
+3. Fix analytics page the same way
+- Add raw totals to `adminGetAnalytics`: total page views/events overall and within the selected date range.
+- Update `src/routes/admin.analytics.tsx` to show those raw totals at the top.
+- Remove fallback patterns that turn missing arrays/objects into empty zero-looking analytics without warning.
 
-Archivos a cambiar:
-- `src/lib/admin.functions.ts`
-- `src/routes/admin.tsx`
-- `src/routes/admin.index.tsx`
-- `src/routes/admin.analytics.tsx`
-- posiblemente `src/lib/admin-client.ts`
+4. Make admin auth/data loading explicit
+- Keep `/admin` role checking, but make failed auth and failed data fetch visually distinct.
+- If the user has no admin role, show that explicitly.
+- If the admin data function fails, show the server error and a retry button.
 
-No haré migración inicialmente porque la base ya tiene datos y el problema verificado es la ruta de lectura/autenticación del dashboard, no el tracking de page views.
+5. Validate the fix with evidence
+- Query the database again after implementation.
+- Use the preview/admin data path or server logs where possible to confirm the admin function is being called and no longer returns silent empty data.
+- Do not claim it works unless the relevant signal confirms it.
