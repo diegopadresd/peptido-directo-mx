@@ -170,7 +170,10 @@ function RawCounts({ r }: { r: DashboardData["raw"] }) {
   ];
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-4">
-      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Datos crudos en la base</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Datos crudos en la base</p>
+        <p className="text-[10px] text-muted-foreground">Servidor: {new Date(r.generatedAt).toLocaleString("es-MX")}</p>
+      </div>
       <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map((it) => (
           <div key={it.label}>
