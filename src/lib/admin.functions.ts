@@ -12,17 +12,39 @@ function isoDaysAgo(days: number) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
+function failAdminQuery(label: string, error: { message?: string } | null | undefined): never {
+  const message = error?.message ? `${label}: ${error.message}` : `${label}: respuesta inválida de la base de datos`;
+  console.error(`[admin] ${message}`);
+  throw new Response(message, { status: 500 });
+}
+
+function exactCount(label: string, count: number | null, error?: { message?: string } | null) {
+  if (error || typeof count !== "number") failAdminQuery(label, error);
+  return count;
+}
+
+function rowsOrFail<T>(label: string, data: T[] | null, error?: { message?: string } | null) {
+  if (error || !Array.isArray(data)) failAdminQuery(label, error);
+  return data;
+}
+
+function maybeRowOrFail<T>(label: string, data: T | null, error?: { message?: string } | null) {
+  if (error) failAdminQuery(label, error);
+  return data;
+}
+
 async function countSince(table: "page_views" | "analytics_events" | "orders" | "carts", column: string, days: number, extra?: (q: any) => any) {
   let q = supabaseAdmin.from(table).select("*", { count: "exact", head: true }).gte(column, isoDaysAgo(days));
   if (extra) q = extra(q);
-  const { count } = await q;
-  return count ?? 0;
+  const { count, error } = await q;
+  return exactCount(`${table} count ${days}d`, count, error);
 }
 
 async function distinctSessionsSince(days: number, table: "page_views" | "analytics_events") {
-  const { data } = await supabaseAdmin.from(table).select("session_id").gte("created_at", isoDaysAgo(days)).limit(50000);
+  const { data, error } = await supabaseAdmin.from(table).select("session_id").gte("created_at", isoDaysAgo(days)).limit(50000);
+  const rows = rowsOrFail(`${table} sessions ${days}d`, data, error);
   const set = new Set<string>();
-  (data ?? []).forEach((r) => { if (r.session_id) set.add(r.session_id); });
+  rows.forEach((r) => { if (r.session_id) set.add(r.session_id); });
   return set.size;
 }
 
