@@ -105,6 +105,8 @@ type DashboardData = {
   cartsCreated30d: number;
   checkoutsStarted30d: number;
   paid30d: number;
+  pageViews30d: number;
+  analyticsEvents30d: number;
   pageViewsTotal: number;
   analyticsEventsTotal: number;
   ordersTotal: number;
@@ -227,7 +229,7 @@ function Dashboard() {
     },
     {
       title: "Visitas 30d",
-      value: String(data.pageViewsTotal),
+      value: String(data.pageViews30d),
       sub: `${data.visitors30d} sesiones únicas en 30d`,
       icon: Eye,
       tone: "text-cyan-500",
@@ -471,6 +473,8 @@ async function loadDashboardData(): Promise<DashboardData> {
     cartsCreated30d: new Set(cartEvents.map((event) => event.session_id)).size,
     checkoutsStarted30d: checkoutEvents.length,
     paid30d: paid30dRows.length,
+    pageViews30d: pageViews.length,
+    analyticsEvents30d: events.length,
     pageViewsTotal: counts.pageViewsTotal,
     analyticsEventsTotal: counts.analyticsEventsTotal,
     ordersTotal: counts.ordersTotal,
