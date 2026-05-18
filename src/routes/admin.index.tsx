@@ -12,7 +12,9 @@ function Dashboard() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => callAdminFn(fn), staleTime: 30_000, retry: false });
   if (isError) return <AdminError message={formatAdminError(error)} onRetry={() => refetch()} />;
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
-  const dashboard = normalizeDashboard(data);
+  const validated = validateDashboardData(data);
+  if (typeof validated === "string") return <AdminError message={validated} onRetry={() => refetch()} />;
+  const dashboard = validated;
   const trackingHealthy = dashboard.visits.pv_d7 > 0;
   const noOrders = dashboard.counts.ordersTotal === 0;
   const noCarts = dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned === 0;
@@ -124,41 +126,29 @@ type DashboardData = {
   recentVisits: { path: string; created_at: string; device: string | null; referrer_host: string | null }[];
   recentEvents: { name: string; product_slug: string | null; value_mxn: number | null; created_at: string }[];
   health: { lastPageviewAt: string | null; lastEventAt: string | null; lastOrderAt: string | null; lastCartAt: string | null };
-  raw: { pageViewsTotal: number; analyticsEventsTotal: number; ordersTotalRaw: number; cartsTotalRaw: number };
+  raw: { pageViewsTotal: number; analyticsEventsTotal: number; ordersTotalRaw: number; cartsTotalRaw: number; generatedAt: string };
 };
 
-function normalizeDashboard(data: Partial<DashboardData>): DashboardData {
-  return {
-    revenue: { d1: data.revenue?.d1 ?? 0, d7: data.revenue?.d7 ?? 0, d30: data.revenue?.d30 ?? 0 },
-    counts: {
-      ordersTotal: data.counts?.ordersTotal ?? 0,
-      ordersApproved: data.counts?.ordersApproved ?? 0,
-      ordersPending: data.counts?.ordersPending ?? 0,
-      cartsActive: data.counts?.cartsActive ?? 0,
-      cartsAbandoned: data.counts?.cartsAbandoned ?? 0,
-    },
-    avgTicket: data.avgTicket ?? 0,
-    visits: {
-      pv_d1: data.visits?.pv_d1 ?? 0,
-      pv_d7: data.visits?.pv_d7 ?? 0,
-      pv_d30: data.visits?.pv_d30 ?? 0,
-      sess_d1: data.visits?.sess_d1 ?? 0,
-      sess_d7: data.visits?.sess_d7 ?? 0,
-      sess_d30: data.visits?.sess_d30 ?? 0,
-    },
-    daily: data.daily ?? [],
-    recentOrders: data.recentOrders ?? [],
-    topProducts30d: data.topProducts30d ?? [],
-    recentVisits: data.recentVisits ?? [],
-    recentEvents: data.recentEvents ?? [],
-    health: { lastPageviewAt: data.health?.lastPageviewAt ?? null, lastEventAt: data.health?.lastEventAt ?? null, lastOrderAt: data.health?.lastOrderAt ?? null, lastCartAt: data.health?.lastCartAt ?? null },
-    raw: {
-      pageViewsTotal: data.raw?.pageViewsTotal ?? 0,
-      analyticsEventsTotal: data.raw?.analyticsEventsTotal ?? 0,
-      ordersTotalRaw: data.raw?.ordersTotalRaw ?? 0,
-      cartsTotalRaw: data.raw?.cartsTotalRaw ?? 0,
-    },
-  };
+function validateDashboardData(data: unknown): DashboardData | string {
+  if (!isRecord(data)) return "El servidor no devolvió un dashboard válido.";
+  const requiredObjects = ["revenue", "counts", "visits", "health", "raw"] as const;
+  for (const key of requiredObjects) if (!isRecord(data[key])) return `Respuesta incompleta: falta ${key}.`;
+  const requiredArrays = ["daily", "recentOrders", "topProducts30d", "recentVisits", "recentEvents"] as const;
+  for (const key of requiredArrays) if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
+  const numericPaths = [
+    ["revenue", "d1"], ["revenue", "d7"], ["revenue", "d30"], ["counts", "ordersTotal"], ["counts", "ordersApproved"],
+    ["counts", "ordersPending"], ["counts", "cartsActive"], ["counts", "cartsAbandoned"], ["visits", "pv_d1"], ["visits", "pv_d7"],
+    ["visits", "pv_d30"], ["visits", "sess_d1"], ["visits", "sess_d7"], ["visits", "sess_d30"], ["raw", "pageViewsTotal"],
+    ["raw", "analyticsEventsTotal"], ["raw", "ordersTotalRaw"], ["raw", "cartsTotalRaw"],
+  ] as const;
+  for (const [obj, key] of numericPaths) if (typeof data[obj][key] !== "number") return `Respuesta incompleta: ${obj}.${key} no es numérico.`;
+  if (typeof data.avgTicket !== "number") return "Respuesta incompleta: avgTicket no es numérico.";
+  if (typeof data.raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
+  return data as DashboardData;
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function AdminError({ message, onRetry }: { message: string; onRetry?: () => void }) {
