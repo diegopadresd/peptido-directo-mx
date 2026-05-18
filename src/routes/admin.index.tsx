@@ -9,11 +9,17 @@ export const Route = createFileRoute("/admin/")({ component: Dashboard });
 
 function Dashboard() {
   const fn = useServerFn(adminGetDashboard);
-  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({ queryKey: ["admin","dashboard"], queryFn: () => callAdminFn(fn), staleTime: 30_000, retry: false });
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: ["admin", "dashboard"],
+    queryFn: () => callAdminFn(fn),
+    staleTime: 30_000,
+    retry: false,
+  });
   if (isError) return <AdminError message={formatAdminError(error)} onRetry={() => refetch()} />;
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">Cargando…</p>;
   const validated = validateDashboardData(data);
-  if (typeof validated === "string") return <AdminError message={validated} onRetry={() => refetch()} />;
+  if (typeof validated === "string")
+    return <AdminError message={validated} onRetry={() => refetch()} />;
   const dashboard = validated;
   const trackingHealthy = dashboard.visits.pv_d7 > 0;
   const noOrders = dashboard.counts.ordersTotal === 0;
@@ -23,9 +29,22 @@ function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-extrabold">Dashboard</h1>
-          <p className="mt-1 text-xs text-muted-foreground">Tracking: {trackingHealthy ? "✅ activo" : "⚠️ sin visitas en 7d"} · Pedidos: {noOrders ? "0 (aún sin ventas)" : `${dashboard.counts.ordersTotal} totales`} · Carritos: {noCarts ? "0 (aún sin actividad guardada)" : `${dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned} guardados`}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Tracking: {trackingHealthy ? "✅ activo" : "⚠️ sin visitas en 7d"} · Pedidos:{" "}
+            {noOrders ? "0 (aún sin ventas)" : `${dashboard.counts.ordersTotal} totales`} ·
+            Carritos:{" "}
+            {noCarts
+              ? "0 (aún sin actividad guardada)"
+              : `${dashboard.counts.cartsActive + dashboard.counts.cartsAbandoned} guardados`}
+          </p>
         </div>
-        <button onClick={() => refetch()} disabled={isFetching} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50">{isFetching ? "Actualizando…" : "Actualizar"}</button>
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50"
+        >
+          {isFetching ? "Actualizando…" : "Actualizar"}
+        </button>
       </div>
       <RawCounts r={dashboard.raw} />
       <HealthBar h={dashboard.health} />
@@ -46,17 +65,23 @@ function Dashboard() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Pedidos recientes" cta={{ label: "Ver todos", to: "/admin/pedidos" }}>
-          {dashboard.recentOrders.length === 0 ? <Empty text="Aún no hay pedidos." /> : (
+          {dashboard.recentOrders.length === 0 ? (
+            <Empty text="Aún no hay pedidos." />
+          ) : (
             <ul className="divide-y divide-border text-sm">
               {dashboard.recentOrders.map((o) => (
                 <li key={o.id} className="flex items-center justify-between py-2">
                   <Link to="/admin/pedidos/$id" params={{ id: o.id }} className="min-w-0 flex-1">
                     <p className="truncate font-medium">{o.customer_name || "—"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{o.customer_email} · {new Date(o.created_at).toLocaleString("es-MX")}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {o.customer_email} · {new Date(o.created_at).toLocaleString("es-MX")}
+                    </p>
                   </Link>
                   <div className="ml-3 text-right">
                     <p className="tabular-nums font-bold">{formatMxn(o.total_mxn)}</p>
-                    <p className="text-[10px] uppercase text-muted-foreground">{o.status} · {o.shipping_status}</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">
+                      {o.status} · {o.shipping_status}
+                    </p>
                   </div>
                 </li>
               ))}
@@ -64,23 +89,39 @@ function Dashboard() {
           )}
         </Panel>
 
-        <Panel title="Productos más vistos (30d)" cta={{ label: "Analytics", to: "/admin/analytics" }}>
-          {dashboard.topProducts30d.length === 0 ? <Empty text="Aún sin vistas de productos." /> : (
+        <Panel
+          title="Productos más vistos (30d)"
+          cta={{ label: "Analytics", to: "/admin/analytics" }}
+        >
+          {dashboard.topProducts30d.length === 0 ? (
+            <Empty text="Aún sin vistas de productos." />
+          ) : (
             <ul className="space-y-1 text-sm">
               {dashboard.topProducts30d.map((p) => (
-                <li key={p.slug} className="flex justify-between"><span className="truncate">{p.slug}</span><span className="tabular-nums text-muted-foreground">{p.views}</span></li>
+                <li key={p.slug} className="flex justify-between">
+                  <span className="truncate">{p.slug}</span>
+                  <span className="tabular-nums text-muted-foreground">{p.views}</span>
+                </li>
               ))}
             </ul>
           )}
         </Panel>
 
         <Panel title="Últimas visitas">
-          {dashboard.recentVisits.length === 0 ? <Empty text="Sin visitas registradas." /> : (
+          {dashboard.recentVisits.length === 0 ? (
+            <Empty text="Sin visitas registradas." />
+          ) : (
             <ul className="space-y-1 text-xs">
               {dashboard.recentVisits.map((v, i) => (
                 <li key={i} className="flex justify-between gap-2">
                   <span className="truncate">{v.path}</span>
-                  <span className="tabular-nums text-muted-foreground">{new Date(v.created_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })} · {v.device ?? "?"}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {new Date(v.created_at).toLocaleTimeString("es-MX", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    · {v.device ?? "?"}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -88,12 +129,23 @@ function Dashboard() {
         </Panel>
 
         <Panel title="Últimos eventos">
-          {dashboard.recentEvents.length === 0 ? <Empty text="Sin eventos." /> : (
+          {dashboard.recentEvents.length === 0 ? (
+            <Empty text="Sin eventos." />
+          ) : (
             <ul className="space-y-1 text-xs">
               {dashboard.recentEvents.map((e, i) => (
                 <li key={i} className="flex justify-between gap-2">
-                  <span className="truncate"><strong>{e.name}</strong>{e.product_slug ? ` · ${e.product_slug}` : ""}{e.value_mxn ? ` · ${formatMxn(e.value_mxn)}` : ""}</span>
-                  <span className="tabular-nums text-muted-foreground">{new Date(e.created_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="truncate">
+                    <strong>{e.name}</strong>
+                    {e.product_slug ? ` · ${e.product_slug}` : ""}
+                    {e.value_mxn ? ` · ${formatMxn(e.value_mxn)}` : ""}
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {new Date(e.created_at).toLocaleTimeString("es-MX", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -102,11 +154,20 @@ function Dashboard() {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Pedidos pagados (últimos 30 días)</h2>
-        {dashboard.daily.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Aún sin datos.</p> : (
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          Pedidos pagados (últimos 30 días)
+        </h2>
+        {dashboard.daily.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">Aún sin datos.</p>
+        ) : (
           <ul className="mt-3 space-y-1 text-sm">
             {dashboard.daily.map((d) => (
-              <li key={d.day} className="flex justify-between"><span>{d.day}</span><span className="tabular-nums">{d.count} · {formatMxn(d.revenue)}</span></li>
+              <li key={d.day} className="flex justify-between">
+                <span>{d.day}</span>
+                <span className="tabular-nums">
+                  {d.count} · {formatMxn(d.revenue)}
+                </span>
+              </li>
             ))}
           </ul>
         )}
@@ -117,37 +178,103 @@ function Dashboard() {
 
 type DashboardData = {
   revenue: { d1: number; d7: number; d30: number };
-  counts: { ordersTotal: number; ordersApproved: number; ordersPending: number; cartsActive: number; cartsAbandoned: number };
+  counts: {
+    ordersTotal: number;
+    ordersApproved: number;
+    ordersPending: number;
+    cartsActive: number;
+    cartsAbandoned: number;
+  };
   avgTicket: number;
-  visits: { pv_d1: number; pv_d7: number; pv_d30: number; sess_d1: number; sess_d7: number; sess_d30: number };
+  visits: {
+    pv_d1: number;
+    pv_d7: number;
+    pv_d30: number;
+    sess_d1: number;
+    sess_d7: number;
+    sess_d30: number;
+  };
   daily: { day: string; count: number; revenue: number }[];
-  recentOrders: { id: string; created_at: string; customer_name: string; customer_email: string; total_mxn: number; status: string; shipping_status: string }[];
+  recentOrders: {
+    id: string;
+    created_at: string;
+    customer_name: string;
+    customer_email: string;
+    total_mxn: number;
+    status: string;
+    shipping_status: string;
+  }[];
   topProducts30d: { slug: string; views: number }[];
-  recentVisits: { path: string; created_at: string; device: string | null; referrer_host: string | null }[];
-  recentEvents: { name: string; product_slug: string | null; value_mxn: number | null; created_at: string }[];
-  health: { lastPageviewAt: string | null; lastEventAt: string | null; lastOrderAt: string | null; lastCartAt: string | null };
-  raw: { pageViewsTotal: number; analyticsEventsTotal: number; ordersTotalRaw: number; cartsTotalRaw: number; generatedAt: string };
+  recentVisits: {
+    path: string;
+    created_at: string;
+    device: string | null;
+    referrer_host: string | null;
+  }[];
+  recentEvents: {
+    name: string;
+    product_slug: string | null;
+    value_mxn: number | null;
+    created_at: string;
+  }[];
+  health: {
+    lastPageviewAt: string | null;
+    lastEventAt: string | null;
+    lastOrderAt: string | null;
+    lastCartAt: string | null;
+  };
+  raw: {
+    pageViewsTotal: number;
+    analyticsEventsTotal: number;
+    ordersTotalRaw: number;
+    cartsTotalRaw: number;
+    generatedAt: string;
+  };
 };
 
 function validateDashboardData(data: unknown): DashboardData | string {
   if (!isRecord(data)) return "El servidor no devolvió un dashboard válido.";
   const requiredObjects = ["revenue", "counts", "visits", "health", "raw"] as const;
-  for (const key of requiredObjects) if (!isRecord(data[key])) return `Respuesta incompleta: falta ${key}.`;
-  const requiredArrays = ["daily", "recentOrders", "topProducts30d", "recentVisits", "recentEvents"] as const;
-  for (const key of requiredArrays) if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
+  for (const key of requiredObjects)
+    if (!isRecord(data[key])) return `Respuesta incompleta: falta ${key}.`;
+  const requiredArrays = [
+    "daily",
+    "recentOrders",
+    "topProducts30d",
+    "recentVisits",
+    "recentEvents",
+  ] as const;
+  for (const key of requiredArrays)
+    if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
   const numericPaths = [
-    ["revenue", "d1"], ["revenue", "d7"], ["revenue", "d30"], ["counts", "ordersTotal"], ["counts", "ordersApproved"],
-    ["counts", "ordersPending"], ["counts", "cartsActive"], ["counts", "cartsAbandoned"], ["visits", "pv_d1"], ["visits", "pv_d7"],
-    ["visits", "pv_d30"], ["visits", "sess_d1"], ["visits", "sess_d7"], ["visits", "sess_d30"], ["raw", "pageViewsTotal"],
-    ["raw", "analyticsEventsTotal"], ["raw", "ordersTotalRaw"], ["raw", "cartsTotalRaw"],
+    ["revenue", "d1"],
+    ["revenue", "d7"],
+    ["revenue", "d30"],
+    ["counts", "ordersTotal"],
+    ["counts", "ordersApproved"],
+    ["counts", "ordersPending"],
+    ["counts", "cartsActive"],
+    ["counts", "cartsAbandoned"],
+    ["visits", "pv_d1"],
+    ["visits", "pv_d7"],
+    ["visits", "pv_d30"],
+    ["visits", "sess_d1"],
+    ["visits", "sess_d7"],
+    ["visits", "sess_d30"],
+    ["raw", "pageViewsTotal"],
+    ["raw", "analyticsEventsTotal"],
+    ["raw", "ordersTotalRaw"],
+    ["raw", "cartsTotalRaw"],
   ] as const;
   for (const [obj, key] of numericPaths) {
     const parent = data[obj];
-    if (!isRecord(parent) || typeof parent[key] !== "number") return `Respuesta incompleta: ${obj}.${key} no es numérico.`;
+    if (!isRecord(parent) || typeof parent[key] !== "number")
+      return `Respuesta incompleta: ${obj}.${key} no es numérico.`;
   }
   if (typeof data.avgTicket !== "number") return "Respuesta incompleta: avgTicket no es numérico.";
   const raw = data.raw;
-  if (!isRecord(raw) || typeof raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
+  if (!isRecord(raw) || typeof raw.generatedAt !== "string")
+    return "Respuesta incompleta: falta raw.generatedAt.";
   return data as DashboardData;
 }
 
@@ -160,7 +287,14 @@ function AdminError({ message, onRetry }: { message: string; onRetry?: () => voi
     <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
       <p className="font-semibold">Error cargando el dashboard</p>
       <p className="text-xs">{message}</p>
-      {onRetry && <button onClick={onRetry} className="rounded border border-destructive/40 px-2 py-1 text-xs hover:bg-destructive/20">Reintentar</button>}
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="rounded border border-destructive/40 px-2 py-1 text-xs hover:bg-destructive/20"
+        >
+          Reintentar
+        </button>
+      )}
     </div>
   );
 }
@@ -175,8 +309,12 @@ function RawCounts({ r }: { r: DashboardData["raw"] }) {
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Datos crudos en la base</p>
-        <p className="text-[10px] text-muted-foreground">Servidor: {new Date(r.generatedAt).toLocaleString("es-MX")}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Datos crudos en la base
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          Servidor: {new Date(r.generatedAt).toLocaleString("es-MX")}
+        </p>
       </div>
       <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map((it) => (
@@ -199,12 +337,26 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Panel({ title, cta, children }: { title: string; cta?: { label: string; to: string }; children: React.ReactNode }) {
+function Panel({
+  title,
+  cta,
+  children,
+}: {
+  title: string;
+  cta?: { label: string; to: string };
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
-        {cta && <Link to={cta.to} className="text-xs font-medium text-primary hover:underline">{cta.label}</Link>}
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </h2>
+        {cta && (
+          <Link to={cta.to} className="text-xs font-medium text-primary hover:underline">
+            {cta.label}
+          </Link>
+        )}
       </div>
       <div className="mt-3">{children}</div>
     </div>
@@ -229,9 +381,13 @@ function HealthBar({ h }: { h: DashboardData["health"] }) {
         const stale = it.ts && !fresh;
         return (
           <div key={it.label} className="flex items-center gap-2 text-xs">
-            <span className={`h-2 w-2 rounded-full ${fresh ? "bg-emerald-500" : stale ? "bg-amber-500" : "bg-muted-foreground/40"}`} />
+            <span
+              className={`h-2 w-2 rounded-full ${fresh ? "bg-emerald-500" : stale ? "bg-amber-500" : "bg-muted-foreground/40"}`}
+            />
             <span className="text-muted-foreground">{it.label}:</span>
-            <span className="font-medium">{it.ts ? new Date(it.ts).toLocaleString("es-MX") : "—"}</span>
+            <span className="font-medium">
+              {it.ts ? new Date(it.ts).toLocaleString("es-MX") : "—"}
+            </span>
           </div>
         );
       })}
