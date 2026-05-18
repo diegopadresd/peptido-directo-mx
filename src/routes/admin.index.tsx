@@ -141,9 +141,13 @@ function validateDashboardData(data: unknown): DashboardData | string {
     ["visits", "pv_d30"], ["visits", "sess_d1"], ["visits", "sess_d7"], ["visits", "sess_d30"], ["raw", "pageViewsTotal"],
     ["raw", "analyticsEventsTotal"], ["raw", "ordersTotalRaw"], ["raw", "cartsTotalRaw"],
   ] as const;
-  for (const [obj, key] of numericPaths) if (typeof data[obj][key] !== "number") return `Respuesta incompleta: ${obj}.${key} no es numérico.`;
+  for (const [obj, key] of numericPaths) {
+    const parent = data[obj];
+    if (!isRecord(parent) || typeof parent[key] !== "number") return `Respuesta incompleta: ${obj}.${key} no es numérico.`;
+  }
   if (typeof data.avgTicket !== "number") return "Respuesta incompleta: avgTicket no es numérico.";
-  if (typeof data.raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
+  const raw = data.raw;
+  if (!isRecord(raw) || typeof raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
   return data as DashboardData;
 }
 
