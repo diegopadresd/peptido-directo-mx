@@ -33,9 +33,8 @@ function maybeRowOrFail<T>(label: string, data: T | null, error?: { message?: st
   return data;
 }
 
-async function countSince(table: "page_views" | "analytics_events" | "orders" | "carts", column: string, days: number, extra?: (q: any) => any) {
+async function countSince(table: "page_views" | "analytics_events" | "orders" | "carts", column: string, days: number) {
   let q = supabaseAdmin.from(table).select("*", { count: "exact", head: true }).gte(column, isoDaysAgo(days));
-  if (extra) q = extra(q);
   const { count, error } = await q;
   return exactCount(`${table} count ${days}d`, count, error);
 }
