@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResumenEmpresaRouteImport } from './routes/resumen-empresa'
 import { Route as PreguntasFrecuentesRouteImport } from './routes/preguntas-frecuentes'
+import { Route as PoliticaDevolucionesRouteImport } from './routes/politica-devoluciones'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EmpezarNegocioRouteImport } from './routes/empezar-negocio'
 import { Route as DistribuidorRouteImport } from './routes/distribuidor'
@@ -59,6 +60,11 @@ const ResumenEmpresaRoute = ResumenEmpresaRouteImport.update({
 const PreguntasFrecuentesRoute = PreguntasFrecuentesRouteImport.update({
   id: '/preguntas-frecuentes',
   path: '/preguntas-frecuentes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDevolucionesRoute = PoliticaDevolucionesRouteImport.update({
+  id: '/politica-devoluciones',
+  path: '/politica-devoluciones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/login': typeof LoginRoute
+  '/politica-devoluciones': typeof PoliticaDevolucionesRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/login': typeof LoginRoute
+  '/politica-devoluciones': typeof PoliticaDevolucionesRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/distribuidor': typeof DistribuidorRoute
   '/empezar-negocio': typeof EmpezarNegocioRoute
   '/login': typeof LoginRoute
+  '/politica-devoluciones': typeof PoliticaDevolucionesRoute
   '/preguntas-frecuentes': typeof PreguntasFrecuentesRoute
   '/resumen-empresa': typeof ResumenEmpresaRoute
   '/robots.txt': typeof RobotsDottxtRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/login'
+    | '/politica-devoluciones'
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/login'
+    | '/politica-devoluciones'
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/distribuidor'
     | '/empezar-negocio'
     | '/login'
+    | '/politica-devoluciones'
     | '/preguntas-frecuentes'
     | '/resumen-empresa'
     | '/robots.txt'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   DistribuidorRoute: typeof DistribuidorRoute
   EmpezarNegocioRoute: typeof EmpezarNegocioRoute
   LoginRoute: typeof LoginRoute
+  PoliticaDevolucionesRoute: typeof PoliticaDevolucionesRoute
   PreguntasFrecuentesRoute: typeof PreguntasFrecuentesRoute
   ResumenEmpresaRoute: typeof ResumenEmpresaRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
@@ -452,6 +465,13 @@ declare module '@tanstack/react-router' {
       path: '/preguntas-frecuentes'
       fullPath: '/preguntas-frecuentes'
       preLoaderRoute: typeof PreguntasFrecuentesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-devoluciones': {
+      id: '/politica-devoluciones'
+      path: '/politica-devoluciones'
+      fullPath: '/politica-devoluciones'
+      preLoaderRoute: typeof PoliticaDevolucionesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -699,6 +719,7 @@ const rootRouteChildren: RootRouteChildren = {
   DistribuidorRoute: DistribuidorRoute,
   EmpezarNegocioRoute: EmpezarNegocioRoute,
   LoginRoute: LoginRoute,
+  PoliticaDevolucionesRoute: PoliticaDevolucionesRoute,
   PreguntasFrecuentesRoute: PreguntasFrecuentesRoute,
   ResumenEmpresaRoute: ResumenEmpresaRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
