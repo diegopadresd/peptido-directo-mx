@@ -192,15 +192,29 @@ export const adminGetAnalytics = createServerFn({ method: "POST" })
     await assertAdmin(context.userId);
     const since = isoDaysAgo(data.days);
 
-    const [pvRes, evRes, ordersTotalRes, ordersApprovedRes] = await Promise.all([
+    const [pvRes, evRes, ordersTotalRes, ordersApprovedRes, pvTotalRes, evTotalRes, pvRangeCountRes, evRangeCountRes] = await Promise.all([
       supabaseAdmin.from("page_views").select("path, session_id, created_at, device, referrer_host, utm_source, utm_medium, utm_campaign").gte("created_at", since).limit(50000),
       supabaseAdmin.from("analytics_events").select("name, product_slug, session_id, meta, created_at").gte("created_at", since).limit(50000),
       supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).gte("created_at", since),
       supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).eq("status", "approved").gte("created_at", since),
+      supabaseAdmin.from("page_views").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("analytics_events").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("page_views").select("*", { count: "exact", head: true }).gte("created_at", since),
+      supabaseAdmin.from("analytics_events").select("*", { count: "exact", head: true }).gte("created_at", since),
     ]);
 
-    const pvs = pvRes.data ?? [];
-    const evs = evRes.data ?? [];
+    const pvs = rowsOrFail("analytics page views range", pvRes.data, pvRes.error);
+    const evs = rowsOrFail("analytics events range", evRes.data, evRes.error);
+    const ordersPending = exactCount("analytics orders range", ordersTotalRes.count, ordersTotalRes.error);
+    const ordersApproved = exactCount("analytics approved orders range", ordersApprovedRes.count, ordersApprovedRes.error);
+    const raw = {
+      pageViewsTotal: exactCount("analytics page_views total", pvTotalRes.count, pvTotalRes.error),
+      analyticsEventsTotal: exactCount("analytics_events total", evTotalRes.count, evTotalRes.error),
+      pageViewsInRange: exactCount("analytics page_views in range", pvRangeCountRes.count, pvRangeCountRes.error),
+      analyticsEventsInRange: exactCount("analytics_events in range", evRangeCountRes.count, evRangeCountRes.error),
+      generatedAt: new Date().toISOString(),
+      days: data.days,
+    };
 
     // Daily
     const dailyMap = new Map<string, { views: number; sessions: Set<string> }>();
@@ -271,11 +285,11 @@ export const adminGetAnalytics = createServerFn({ method: "POST" })
       view_product: distinct("view_product"),
       add_to_cart: distinct("add_to_cart"),
       begin_checkout: distinct("begin_checkout"),
-      orders_pending: ordersTotalRes.count ?? 0,
-      orders_approved: ordersApprovedRes.count ?? 0,
+      orders_pending: ordersPending,
+      orders_approved: ordersApproved,
     };
 
-    return { daily, topPages, topReferrers, devices, utm, topProducts, addToCart, searches, funnel };
+    return { daily, topPages, topReferrers, devices, utm, topProducts, addToCart, searches, funnel, raw };
   });
 
 const ListSchema = z.object({
