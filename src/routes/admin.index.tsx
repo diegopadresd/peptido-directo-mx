@@ -233,10 +233,11 @@ type DashboardData = {
 };
 
 function validateDashboardData(data: unknown): DashboardData | string {
-  if (!isRecord(data)) return "El servidor no devolvió un dashboard válido.";
+  const payload = unwrapServerPayload(data);
+  if (!isRecord(payload)) return "El servidor no devolvió un dashboard válido.";
   const requiredObjects = ["revenue", "counts", "visits", "health", "raw"] as const;
   for (const key of requiredObjects)
-    if (!isRecord(data[key])) return `Respuesta incompleta: falta ${key}.`;
+    if (!isRecord(payload[key])) return `Respuesta incompleta: falta ${key}.`;
   const requiredArrays = [
     "daily",
     "recentOrders",
@@ -245,7 +246,7 @@ function validateDashboardData(data: unknown): DashboardData | string {
     "recentEvents",
   ] as const;
   for (const key of requiredArrays)
-    if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
+    if (!Array.isArray(payload[key])) return `Respuesta incompleta: falta ${key}.`;
   const numericPaths = [
     ["revenue", "d1"],
     ["revenue", "d7"],
@@ -267,15 +268,23 @@ function validateDashboardData(data: unknown): DashboardData | string {
     ["raw", "cartsTotalRaw"],
   ] as const;
   for (const [obj, key] of numericPaths) {
-    const parent = data[obj];
+    const parent = payload[obj];
     if (!isRecord(parent) || typeof parent[key] !== "number")
       return `Respuesta incompleta: ${obj}.${key} no es numérico.`;
   }
-  if (typeof data.avgTicket !== "number") return "Respuesta incompleta: avgTicket no es numérico.";
-  const raw = data.raw;
+  if (typeof payload.avgTicket !== "number") return "Respuesta incompleta: avgTicket no es numérico.";
+  const raw = payload.raw;
   if (!isRecord(raw) || typeof raw.generatedAt !== "string")
     return "Respuesta incompleta: falta raw.generatedAt.";
-  return data as DashboardData;
+  return payload as DashboardData;
+}
+
+function unwrapServerPayload(data: unknown): unknown {
+  if (!isRecord(data)) return data;
+  if (isRecord(data.revenue) && isRecord(data.counts)) return data;
+  if (isRecord(data.result)) return unwrapServerPayload(data.result);
+  if (isRecord(data.data)) return unwrapServerPayload(data.data);
+  return data;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
