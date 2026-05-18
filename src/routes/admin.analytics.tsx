@@ -148,6 +148,17 @@ function validateAnalyticsData(data: unknown): AnalyticsData | string {
   if (!isRecord(data)) return "El servidor no devolvió analytics válido.";
   if (!isRecord(data.funnel)) return "Respuesta incompleta: falta funnel.";
   if (!isRecord(data.raw)) return "Respuesta incompleta: falta raw.";
+  const funnelKeys = [
+    "sessions",
+    "view_product",
+    "add_to_cart",
+    "begin_checkout",
+    "orders_pending",
+    "orders_approved",
+  ] as const;
+  for (const key of funnelKeys)
+    if (typeof data.funnel[key] !== "number")
+      return `Respuesta incompleta: funnel.${key} no es numérico.`;
   const arrays = [
     "topPages",
     "topReferrers",
