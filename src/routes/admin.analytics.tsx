@@ -95,9 +95,10 @@ function validateAnalyticsData(data: unknown): AnalyticsData | string {
   if (!isRecord(data.raw)) return "Respuesta incompleta: falta raw.";
   const arrays = ["topPages", "topReferrers", "devices", "utm", "topProducts", "addToCart", "searches", "daily"] as const;
   for (const key of arrays) if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
+  const raw = data.raw;
   const rawKeys = ["pageViewsTotal", "analyticsEventsTotal", "pageViewsInRange", "analyticsEventsInRange", "days"] as const;
-  for (const key of rawKeys) if (typeof data.raw[key] !== "number") return `Respuesta incompleta: raw.${key} no es numérico.`;
-  if (typeof data.raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
+  for (const key of rawKeys) if (!isRecord(raw) || typeof raw[key] !== "number") return `Respuesta incompleta: raw.${key} no es numérico.`;
+  if (!isRecord(raw) || typeof raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
   return data as AnalyticsData;
 }
 
