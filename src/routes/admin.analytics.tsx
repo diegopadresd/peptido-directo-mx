@@ -145,9 +145,10 @@ type AnalyticsData = {
 };
 
 function validateAnalyticsData(data: unknown): AnalyticsData | string {
-  if (!isRecord(data)) return "El servidor no devolvió analytics válido.";
-  if (!isRecord(data.funnel)) return "Respuesta incompleta: falta funnel.";
-  if (!isRecord(data.raw)) return "Respuesta incompleta: falta raw.";
+  const payload = unwrapServerPayload(data);
+  if (!isRecord(payload)) return "El servidor no devolvió analytics válido.";
+  if (!isRecord(payload.funnel)) return "Respuesta incompleta: falta funnel.";
+  if (!isRecord(payload.raw)) return "Respuesta incompleta: falta raw.";
   const funnelKeys = [
     "sessions",
     "view_product",
@@ -157,7 +158,7 @@ function validateAnalyticsData(data: unknown): AnalyticsData | string {
     "orders_approved",
   ] as const;
   for (const key of funnelKeys)
-    if (typeof data.funnel[key] !== "number")
+    if (typeof payload.funnel[key] !== "number")
       return `Respuesta incompleta: funnel.${key} no es numérico.`;
   const arrays = [
     "topPages",
@@ -170,8 +171,8 @@ function validateAnalyticsData(data: unknown): AnalyticsData | string {
     "daily",
   ] as const;
   for (const key of arrays)
-    if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
-  const raw = data.raw;
+    if (!Array.isArray(payload[key])) return `Respuesta incompleta: falta ${key}.`;
+  const raw = payload.raw;
   const rawKeys = [
     "pageViewsTotal",
     "analyticsEventsTotal",
@@ -184,7 +185,15 @@ function validateAnalyticsData(data: unknown): AnalyticsData | string {
       return `Respuesta incompleta: raw.${key} no es numérico.`;
   if (!isRecord(raw) || typeof raw.generatedAt !== "string")
     return "Respuesta incompleta: falta raw.generatedAt.";
-  return data as AnalyticsData;
+  return payload as AnalyticsData;
+}
+
+function unwrapServerPayload(data: unknown): unknown {
+  if (!isRecord(data)) return data;
+  if (isRecord(data.funnel) && isRecord(data.raw)) return data;
+  if (isRecord(data.result)) return unwrapServerPayload(data.result);
+  if (isRecord(data.data)) return unwrapServerPayload(data.data);
+  return data;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
