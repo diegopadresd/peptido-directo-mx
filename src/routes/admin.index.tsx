@@ -147,7 +147,7 @@ function validateDashboardData(data: unknown): DashboardData | string {
   return data as DashboardData;
 }
 
-function isRecord(value: unknown): value is Record<string, any> {
+function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
