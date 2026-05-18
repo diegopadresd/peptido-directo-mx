@@ -12,6 +12,7 @@ export const staticRoutes = [
   "/contacto",
   "/blog",
   "/resumen-empresa",
+  "/politica-devoluciones",
 ];
 
 export const blogSlugs = allBlogSlugs;

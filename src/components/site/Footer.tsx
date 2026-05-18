@@ -60,7 +60,7 @@ export function Footer() {
               <li><a className="hover:text-primary" href="#">Términos</a></li>
               <li><a className="hover:text-primary" href="#">Privacidad</a></li>
               <li><a className="hover:text-primary" href="#">Política de envíos</a></li>
-              <li><a className="hover:text-primary" href="#">Reembolsos</a></li>
+              <li><Link to="/politica-devoluciones" className="hover:text-primary">Reembolsos</Link></li>
             </ul>
         </div>
         <div className="mt-10 border-t border-border pt-6 text-xs text-muted-foreground">

@@ -15,6 +15,7 @@ const entries = [
   ["/contacto", "yearly", "0.4"],
   ["/resumen-empresa", "monthly", "0.6"],
   ["/blog", "weekly", "0.7"],
+  ["/politica-devoluciones", "yearly", "0.4"],
   ...products.map((p) => [`/productos/${p.slug}`, "weekly", "0.8"]),
   ...cities.map((c) => [`/peptidos/${c.slug}`, "monthly", "0.7"]),
   ...posts.map((p) => [`/blog/${p.slug}`, "monthly", "0.6"]),
