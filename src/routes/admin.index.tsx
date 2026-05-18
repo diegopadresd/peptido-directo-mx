@@ -607,6 +607,8 @@ function RawCounts({ data }: { data: DashboardData }) {
   const items = [
     { label: "page_views total", value: data.pageViewsTotal },
     { label: "analytics_events total", value: data.analyticsEventsTotal },
+    { label: "page_views 30d", value: data.pageViews30d },
+    { label: "analytics_events 30d", value: data.analyticsEvents30d },
     { label: "orders total", value: data.ordersTotal },
     { label: "carts total", value: data.cartsTotal },
   ];
@@ -620,7 +622,7 @@ function RawCounts({ data }: { data: DashboardData }) {
           Lectura: {new Date(data.generatedAt).toLocaleString("es-MX")}
         </p>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {items.map((item) => (
           <div key={item.label}>
             <p className="text-[10px] text-muted-foreground">{item.label}</p>
