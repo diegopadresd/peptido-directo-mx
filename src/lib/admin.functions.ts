@@ -94,8 +94,27 @@ export const adminGetDashboard = createServerFn({ method: "GET" })
       supabaseAdmin.from("orders").select("total_mxn").eq("status", "approved"),
     ]);
 
+    const ordersTotal = exactCount("orders total", ordersTotalRes.count, ordersTotalRes.error);
+    const ordersApproved = exactCount("orders approved", ordersApprovedRes.count, ordersApprovedRes.error);
+    const ordersPending = exactCount("orders pending", ordersPendingRes.count, ordersPendingRes.error);
+    exactCount("carts total", cartsTotalRes.count, cartsTotalRes.error);
+    const cartsActive = exactCount("carts active", cartsActiveRes.count, cartsActiveRes.error);
+    const pageViewsTotal = exactCount("page_views total", pvTotalRes.count, pvTotalRes.error);
+    const analyticsEventsTotal = exactCount("analytics_events total", evTotalRes.count, evTotalRes.error);
+    const ordersTotalRaw = exactCount("orders raw total", ordersTotalCountRes.count, ordersTotalCountRes.error);
+    const cartsTotalRaw = exactCount("carts raw total", cartsTotalCountRes.count, cartsTotalCountRes.error);
+    const revRows = rowsOrFail("approved orders revenue rows", revenueRowsRes.data, revenueRowsRes.error);
+    const recentOrders = rowsOrFail("recent orders", recentOrdersRes.data, recentOrdersRes.error);
+    const topProductRows = rowsOrFail("top product events", topProductsRes.data, topProductsRes.error);
+    const recentVisits = rowsOrFail("recent page views", recentVisitsRes.data, recentVisitsRes.error);
+    const recentEvents = rowsOrFail("recent analytics events", recentEventsRes.data, recentEventsRes.error);
+    const lastPv = maybeRowOrFail("latest page view", lastPvRes.data, lastPvRes.error);
+    const lastEv = maybeRowOrFail("latest analytics event", lastEvRes.data, lastEvRes.error);
+    const lastOrder = maybeRowOrFail("latest order", lastOrderRes.data, lastOrderRes.error);
+    const lastCart = maybeRowOrFail("latest cart", lastCartRes.data, lastCartRes.error);
+    const avgRows = rowsOrFail("approved orders ticket rows", avgTicketRowsRes.data, avgTicketRowsRes.error);
+
     // Revenue buckets
-    const revRows = revenueRowsRes.data ?? [];
     const now = Date.now();
     let r1 = 0, r7 = 0, r30 = 0;
     for (const o of revRows) {
@@ -119,48 +138,48 @@ export const adminGetDashboard = createServerFn({ method: "GET" })
 
     // Top products
     const topMap = new Map<string, number>();
-    (topProductsRes.data ?? []).forEach((r) => {
+    topProductRows.forEach((r) => {
       if (!r.product_slug) return;
       topMap.set(r.product_slug, (topMap.get(r.product_slug) ?? 0) + 1);
     });
     const topProducts30d = Array.from(topMap.entries()).map(([slug, views]) => ({ slug, views })).sort((a, b) => b.views - a.views).slice(0, 8);
 
     // Avg ticket
-    const avgRows = avgTicketRowsRes.data ?? [];
     const avgTicket = avgRows.length > 0 ? Math.round(avgRows.reduce((s, x) => s + (x.total_mxn ?? 0), 0) / avgRows.length) : 0;
 
     // Carts breakdown (active = seen in last hour, abandoned = total non-converted - active)
-    const cartsActive = cartsActiveRes.count ?? 0;
-    const { count: cartsNonConverted } = await supabaseAdmin.from("carts").select("*", { count: "exact", head: true }).neq("status", "converted");
-    const cartsAbandoned = Math.max(0, (cartsNonConverted ?? 0) - cartsActive);
+    const { count: cartsNonConvertedCount, error: cartsNonConvertedError } = await supabaseAdmin.from("carts").select("*", { count: "exact", head: true }).neq("status", "converted");
+    const cartsNonConverted = exactCount("carts non-converted", cartsNonConvertedCount, cartsNonConvertedError);
+    const cartsAbandoned = Math.max(0, cartsNonConverted - cartsActive);
 
     return {
       revenue: { d1: r1, d7: r7, d30: r30 },
       counts: {
-        ordersTotal: ordersTotalRes.count ?? 0,
-        ordersApproved: ordersApprovedRes.count ?? 0,
-        ordersPending: ordersPendingRes.count ?? 0,
+        ordersTotal,
+        ordersApproved,
+        ordersPending,
         cartsActive,
         cartsAbandoned,
       },
       avgTicket,
       visits: { pv_d1, pv_d7, pv_d30, sess_d1, sess_d7, sess_d30 },
       daily,
-      recentOrders: recentOrdersRes.data ?? [],
+      recentOrders,
       topProducts30d,
-      recentVisits: recentVisitsRes.data ?? [],
-      recentEvents: recentEventsRes.data ?? [],
+      recentVisits,
+      recentEvents,
       health: {
-        lastPageviewAt: lastPvRes.data?.created_at ?? null,
-        lastEventAt: lastEvRes.data?.created_at ?? null,
-        lastOrderAt: lastOrderRes.data?.created_at ?? null,
-        lastCartAt: lastCartRes.data?.last_seen_at ?? null,
+        lastPageviewAt: lastPv?.created_at ?? null,
+        lastEventAt: lastEv?.created_at ?? null,
+        lastOrderAt: lastOrder?.created_at ?? null,
+        lastCartAt: lastCart?.last_seen_at ?? null,
       },
       raw: {
-        pageViewsTotal: pvTotalRes.count ?? 0,
-        analyticsEventsTotal: evTotalRes.count ?? 0,
-        ordersTotalRaw: ordersTotalCountRes.count ?? 0,
-        cartsTotalRaw: cartsTotalCountRes.count ?? 0,
+        pageViewsTotal,
+        analyticsEventsTotal,
+        ordersTotalRaw,
+        cartsTotalRaw,
+        generatedAt: new Date().toISOString(),
       },
     };
   });
