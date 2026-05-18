@@ -31,19 +31,12 @@ function AnalyticsPage() {
       </div>
 
       {isError ? <AdminError message={formatAdminError(error)} /> : isLoading ? <p className="text-sm text-muted-foreground">Cargando…</p> : !data ? <AdminError message={formatAdminError(null)} /> : (() => {
-        const d = {
-          funnel: data.funnel ?? {},
-          topPages: data.topPages ?? [],
-          topReferrers: data.topReferrers ?? [],
-          devices: data.devices ?? [],
-          utm: data.utm ?? [],
-          topProducts: data.topProducts ?? [],
-          addToCart: data.addToCart ?? [],
-          searches: data.searches ?? [],
-          daily: data.daily ?? [],
-        };
+        const validated = validateAnalyticsData(data);
+        if (typeof validated === "string") return <AdminError message={validated} />;
+        const d = validated;
         return (
         <>
+          <RawAnalytics r={d.raw} />
           <Funnel f={d.funnel} />
 
           <div className="grid gap-4 lg:grid-cols-2">
@@ -81,6 +74,60 @@ function AnalyticsPage() {
 
 function AdminError({ message }: { message: string }) {
   return <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{message}</p>;
+}
+
+type AnalyticsData = {
+  funnel: Record<string, number>;
+  topPages: { path: string; views: number; sessions: number }[];
+  topReferrers: { host: string; visits: number }[];
+  devices: { device: string; visits: number }[];
+  utm: { source: string; medium: string; campaign: string; visits: number }[];
+  topProducts: { slug: string; views: number }[];
+  addToCart: { slug: string; count: number }[];
+  searches: { q: string; count: number }[];
+  daily: { day: string; views: number; sessions: number }[];
+  raw: { pageViewsTotal: number; analyticsEventsTotal: number; pageViewsInRange: number; analyticsEventsInRange: number; generatedAt: string; days: number };
+};
+
+function validateAnalyticsData(data: unknown): AnalyticsData | string {
+  if (!isRecord(data)) return "El servidor no devolvió analytics válido.";
+  if (!isRecord(data.funnel)) return "Respuesta incompleta: falta funnel.";
+  if (!isRecord(data.raw)) return "Respuesta incompleta: falta raw.";
+  const arrays = ["topPages", "topReferrers", "devices", "utm", "topProducts", "addToCart", "searches", "daily"] as const;
+  for (const key of arrays) if (!Array.isArray(data[key])) return `Respuesta incompleta: falta ${key}.`;
+  const rawKeys = ["pageViewsTotal", "analyticsEventsTotal", "pageViewsInRange", "analyticsEventsInRange", "days"] as const;
+  for (const key of rawKeys) if (typeof data.raw[key] !== "number") return `Respuesta incompleta: raw.${key} no es numérico.`;
+  if (typeof data.raw.generatedAt !== "string") return "Respuesta incompleta: falta raw.generatedAt.";
+  return data as AnalyticsData;
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function RawAnalytics({ r }: { r: AnalyticsData["raw"] }) {
+  const items = [
+    { label: `page_views (${r.days}d)`, value: r.pageViewsInRange },
+    { label: `analytics_events (${r.days}d)`, value: r.analyticsEventsInRange },
+    { label: "page_views total", value: r.pageViewsTotal },
+    { label: "analytics_events total", value: r.analyticsEventsTotal },
+  ];
+  return (
+    <div className="rounded-xl border border-border bg-muted/30 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Datos crudos recibidos</p>
+        <p className="text-[10px] text-muted-foreground">Servidor: {new Date(r.generatedAt).toLocaleString("es-MX")}</p>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {items.map((it) => (
+          <div key={it.label}>
+            <p className="text-[10px] text-muted-foreground">{it.label}</p>
+            <p className="text-lg font-extrabold tabular-nums">{it.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function Funnel({ f }: { f: Record<string, number> }) {
