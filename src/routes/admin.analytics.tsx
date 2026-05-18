@@ -101,7 +101,7 @@ function validateAnalyticsData(data: unknown): AnalyticsData | string {
   return data as AnalyticsData;
 }
 
-function isRecord(value: unknown): value is Record<string, any> {
+function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
