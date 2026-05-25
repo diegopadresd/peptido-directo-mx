@@ -1,37 +1,54 @@
-I verified the hosted backend is healthy and the database currently contains real data:
+# Plan: migrar de Mercado Pago a ecartpay
 
-- `page_views`: 531
-- `analytics_events`: 145
-- `carts`: 4
-- `orders`: 0
-- latest page view: 2026-05-18 01:40 UTC
-- latest analytics event: 2026-05-18 01:16 UTC
+## 1. Secrets que te pediré
+Después de aprobar el plan abriré el formulario seguro para guardar:
+- `ECARTPAY_PUBLIC_KEY`
+- `ECARTPAY_SECRET_KEY`
+- `ECARTPAY_WEBHOOK_SECRET` (para verificar la firma del webhook)
 
-So if the dashboard or analytics page is showing all zeroes, the break is in the admin data-fetch/render path, not in the database.
+> Nota: ecartpay no es un proveedor oficial conocido por Lovable. Implementaré la integración asumiendo el patrón REST estándar (POST a `/checkout/sessions` con Bearer token, redirect a `init_point`, webhook firmado con HMAC-SHA256 en header `x-ecartpay-signature`). En cuanto me pases el link a su doc oficial ajusto endpoints/headers exactos sin re-planear.
 
-Plan:
+## 2. Cambios de código
 
-1. Remove silent zero normalization from the admin dashboard
-- Stop converting missing/failed response fields into `0` in `src/routes/admin.index.tsx`.
-- Add a strict response validator so malformed or empty server responses show a visible error instead of fake zeroes.
-- Keep the raw counts block, but make it impossible for it to display `0` unless the server actually returned `0`.
+### Nueva ruta server: `src/routes/api.checkout.create-order.ts`
+Reescribo la ruta actual para que:
+- Valide el body con el mismo Zod schema.
+- Cree el `order` en DB (igual que hoy).
+- Llame al endpoint hosted de ecartpay con `ECARTPAY_SECRET_KEY`.
+- Guarde `external_reference = order.id` y el `session_id` de ecartpay en una nueva columna.
+- Devuelva `{ init_point, order_id }` (la página de checkout no cambia).
 
-2. Add server-side diagnostics to admin data functions
-- In `src/lib/admin.functions.ts`, check every database query result for `error`.
-- If any query fails, throw a clear error naming the failed query instead of returning partial data.
-- Add a small diagnostic payload to dashboard/analytics responses with raw total counts and timestamps, so the UI can prove what it received.
+### Nueva ruta webhook: `src/routes/api.public.ecartpay-webhook.ts`
+- Verifica firma HMAC con `ECARTPAY_WEBHOOK_SECRET` (timing-safe).
+- Actualiza `orders.status` a `approved` / `rejected` / `pending` según evento.
+- Inserta evento en `order_events`.
+- Dispara el email de notificación (reutiliza `lib/email/notify.server.ts`).
 
-3. Fix analytics page the same way
-- Add raw totals to `adminGetAnalytics`: total page views/events overall and within the selected date range.
-- Update `src/routes/admin.analytics.tsx` to show those raw totals at the top.
-- Remove fallback patterns that turn missing arrays/objects into empty zero-looking analytics without warning.
+### Eliminar / limpiar
+- Borrar `src/routes/api.checkout.mercadopago.ts`.
+- Borrar `src/routes/api.public.mercadopago-webhook.ts`.
+- En `supabase/config.toml`, quitar el bloque de la función MP si existe.
+- En `src/components/site/ConcentrationVolumePicker.tsx` y `CartDrawer.tsx`: cambiar copy "Mercado Pago" → "ecartpay" (botones, leyendas de seguridad).
+- En `src/routes/checkout.tsx`: cambiar texto del botón final ("Pagar con ecartpay").
+- En `src/routes/pago.exito.tsx` / `pago.fallo.tsx` / `pago.pendiente.tsx`: ya leen `?ref=`, solo ajustar copy "Mercado Pago" → "ecartpay".
+- Dejar el secret `MERCADOPAGO_ACCESS_TOKEN` en Lovable Cloud (no se puede borrar desde aquí; te indico cómo eliminarlo manualmente si quieres).
 
-4. Make admin auth/data loading explicit
-- Keep `/admin` role checking, but make failed auth and failed data fetch visually distinct.
-- If the user has no admin role, show that explicitly.
-- If the admin data function fails, show the server error and a retry button.
+## 3. Cambio de DB (migración)
+Agregar a `orders`:
+- `ecartpay_session_id TEXT`
+- `ecartpay_payment_id TEXT`
+- `ecartpay_status_detail TEXT`
 
-5. Validate the fix with evidence
-- Query the database again after implementation.
-- Use the preview/admin data path or server logs where possible to confirm the admin function is being called and no longer returns silent empty data.
-- Do not claim it works unless the relevant signal confirms it.
+(Las columnas `mp_*` las dejo para no romper pedidos históricos; quedan como nullable y se ignoran.)
+
+## 4. URL del webhook que tendrás que pegar en el panel de ecartpay
+`https://peptidosmayoreo.com/api/public/ecartpay-webhook`
+(o el dominio publicado actual `https://peptido-directo-mx.lovable.app/api/public/ecartpay-webhook` si aún no apuntas el dominio).
+
+## 5. Verificación post-deploy
+1. Hacer un pedido de prueba → ver que redirija a ecartpay.
+2. Pagar con tarjeta de prueba → ver redirect a `/pago/exito`.
+3. Revisar logs del webhook → `orders.status='approved'` y `order_events` con el evento.
+4. Confirmar que llega el email a `ADMIN_NOTIFICATION_EMAIL`.
+
+Si apruebas, al pasar a build mode: primero ejecuto la migración, después te pido los 3 secrets, y al recibirlos escribo el código.
