@@ -37,7 +37,6 @@ import { Route as AdminConfiguracionRouteImport } from './routes/admin.configura
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminCarritosRouteImport } from './routes/admin.carritos'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
-import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api.public.mercadopago-webhook'
 import { Route as ApiCheckoutMercadopagoRouteImport } from './routes/api.checkout.mercadopago'
 import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
 import { Route as AdminPedidosIdRouteImport } from './routes/admin.pedidos.$id'
@@ -182,12 +181,6 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
-const ApiPublicMercadopagoWebhookRoute =
-  ApiPublicMercadopagoWebhookRouteImport.update({
-    id: '/api/public/mercadopago-webhook',
-    path: '/api/public/mercadopago-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiCheckoutMercadopagoRoute = ApiCheckoutMercadopagoRouteImport.update({
   id: '/api/checkout/mercadopago',
   path: '/api/checkout/mercadopago',
@@ -236,7 +229,6 @@ export interface FileRoutesByFullPath {
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
-  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -269,7 +261,6 @@ export interface FileRoutesByTo {
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
-  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -304,7 +295,6 @@ export interface FileRoutesById {
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
   '/api/checkout/mercadopago': typeof ApiCheckoutMercadopagoRoute
-  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -340,7 +330,6 @@ export interface FileRouteTypes {
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
-    | '/api/public/mercadopago-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -373,7 +362,6 @@ export interface FileRouteTypes {
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
-    | '/api/public/mercadopago-webhook'
   id:
     | '__root__'
     | '/'
@@ -407,7 +395,6 @@ export interface FileRouteTypes {
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
     | '/api/checkout/mercadopago'
-    | '/api/public/mercadopago-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -434,7 +421,6 @@ export interface RootRouteChildren {
   ProductosIndexRoute: typeof ProductosIndexRoute
   ApiCheckoutCreateOrderRoute: typeof ApiCheckoutCreateOrderRoute
   ApiCheckoutMercadopagoRoute: typeof ApiCheckoutMercadopagoRoute
-  ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -635,13 +621,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/api/public/mercadopago-webhook': {
-      id: '/api/public/mercadopago-webhook'
-      path: '/api/public/mercadopago-webhook'
-      fullPath: '/api/public/mercadopago-webhook'
-      preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/checkout/mercadopago': {
       id: '/api/checkout/mercadopago'
       path: '/api/checkout/mercadopago'
@@ -732,7 +711,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProductosIndexRoute: ProductosIndexRoute,
   ApiCheckoutCreateOrderRoute: ApiCheckoutCreateOrderRoute,
   ApiCheckoutMercadopagoRoute: ApiCheckoutMercadopagoRoute,
-  ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
