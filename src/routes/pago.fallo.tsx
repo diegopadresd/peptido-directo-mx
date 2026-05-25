@@ -30,7 +30,7 @@ function PagoFallo() {
           <Link to="/productos">Volver al catálogo</Link>
         </Button>
         <Button asChild variant="outline" size="lg">
-          <a href={buildWaLink("Hola, mi pago en Mercado Pago no se completó. ¿Me ayudan?")} target="_blank" rel="noopener">
+          <a href={buildWaLink("Hola, mi pago en Stripe no se completó. ¿Me ayudan?")} target="_blank" rel="noopener">
             <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
           </a>
         </Button>

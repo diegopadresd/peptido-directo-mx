@@ -28,7 +28,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
   const perVial = Math.round(total / qty);
 
   const wa = buildWaLink(
-    `Hola, quiero comprar ${product.name} ${variant.dose} — pack de ${qty} viales (${formatMxn(total)}). ¿Confirmamos disponibilidad y pago por Mercado Pago?`,
+    `Hola, quiero comprar ${product.name} ${variant.dose} — pack de ${qty} viales (${formatMxn(total)}). ¿Confirmamos disponibilidad y pago por Stripe?`,
   );
 
   const [loading, setLoading] = useState(false);
@@ -182,7 +182,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
         >
           {loading ? (
             <>
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Redirigiendo a Mercado Pago…
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Redirigiendo a Stripe…
             </>
           ) : (
             <>
@@ -199,7 +199,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
           </a>
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
-          Pago seguro con Mercado Pago · envío 3-7 días hábiles
+          Pago seguro con Stripe · envío 3-7 días hábiles
         </p>
       </div>
     </div>

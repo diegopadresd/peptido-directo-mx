@@ -76,7 +76,7 @@ function PoliticaDevoluciones() {
             <div>
               <h2 className="font-display text-xl font-bold">Tiempos de reembolso</h2>
               <p className="mt-1 text-muted-foreground">
-                Los reembolsos aprobados se procesan en un plazo de 5 a 10 días hábiles. El tiempo de reflejo en tu cuenta depende de tu banco o de Mercado Pago. Transferencias SPEI suelen ser más rápidas; tarjetas de crédito pueden tardar hasta un ciclo de facturación.
+                Los reembolsos aprobados se procesan en un plazo de 5 a 10 días hábiles. El tiempo de reflejo en tu cuenta depende de tu banco o de Stripe. Transferencias SPEI suelen ser más rápidas; tarjetas de crédito pueden tardar hasta un ciclo de facturación.
               </p>
             </div>
           </div>
