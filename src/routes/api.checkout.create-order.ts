@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { SITE_URL } from "@/lib/whatsapp";
+import { createEcartpayOrder } from "@/lib/ecartpay.server";
 
 const ItemSchema = z.object({
   productSlug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
@@ -30,25 +31,41 @@ const BodySchema = z.object({
   cartToken: z.string().max(80).optional(),
 });
 
+// Lightweight MX state → ISO/INEGI code map. ecartpay accepts the standard
+// 2-3 letter code for shipping_address.state.code. Anything not found falls
+// back to the first 3 chars of the name.
+const MX_STATE_CODES: Record<string, string> = {
+  "Aguascalientes": "AGU", "Baja California": "BCN", "Baja California Sur": "BCS",
+  "Campeche": "CAM", "Chiapas": "CHP", "Chihuahua": "CHH", "Ciudad de México": "CMX",
+  "Coahuila": "COA", "Colima": "COL", "Durango": "DUR", "Estado de México": "MEX",
+  "Guanajuato": "GUA", "Guerrero": "GRO", "Hidalgo": "HID", "Jalisco": "JAL",
+  "Michoacán": "MIC", "Morelos": "MOR", "Nayarit": "NAY", "Nuevo León": "NLE",
+  "Oaxaca": "OAX", "Puebla": "PUE", "Querétaro": "QUE", "Quintana Roo": "ROO",
+  "San Luis Potosí": "SLP", "Sinaloa": "SIN", "Sonora": "SON", "Tabasco": "TAB",
+  "Tamaulipas": "TAM", "Tlaxcala": "TLA", "Veracruz": "VER", "Yucatán": "YUC",
+  "Zacatecas": "ZAC",
+};
+
 export const Route = createFileRoute("/api/checkout/create-order")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
-        if (!token) return json({ error: "Mercado Pago no configurado" }, 500);
+        if (!process.env.ECARTPAY_PUBLIC_KEY || !process.env.ECARTPAY_SECRET_KEY) {
+          return json({ error: "ecartpay no está configurado" }, 500);
+        }
+
         let body: z.infer<typeof BodySchema>;
         try { body = BodySchema.parse(await request.json()); }
         catch (e) { return json({ error: "Datos inválidos", details: e instanceof Error ? e.message : "" }, 400); }
 
         const subtotal = body.items.reduce((a, x) => a + x.lineTotal, 0);
-        // sanity check item totals
         for (const it of body.items) {
           if (Math.abs(it.lineTotal - it.unitPrice * it.qty) > it.unitPrice * it.qty * 0.5) {
             return json({ error: "Monto inconsistente en un item" }, 400);
           }
         }
 
-        // 1. Insert order
+        // 1. Create order in DB.
         const { data: order, error: oErr } = await supabaseAdmin.from("orders").insert({
           status: "pending",
           total_mxn: subtotal,
@@ -68,7 +85,7 @@ export const Route = createFileRoute("/api/checkout/create-order")({
           return json({ error: "No se pudo crear el pedido" }, 500);
         }
 
-        // 2. Insert items
+        // 2. Insert line items.
         const { error: iErr } = await supabaseAdmin.from("order_items").insert(
           body.items.map((it) => ({
             order_id: order.id,
@@ -82,64 +99,68 @@ export const Route = createFileRoute("/api/checkout/create-order")({
         );
         if (iErr) console.error("insert items failed", iErr);
 
-        // 3. Mark cart converted (best-effort)
+        // 3. Mark cart converted (best-effort).
         if (body.cartToken) {
           await supabaseAdmin.from("carts")
             .update({ status: "converted", converted_order_id: order.id })
             .eq("cart_token", body.cartToken);
         }
 
-        // 4. Set external_reference to order.id
         const externalRef = order.id;
         await supabaseAdmin.from("orders").update({ external_reference: externalRef }).eq("id", order.id);
 
-        // 5. Create MP preference
-        const preference = {
-          items: body.items.map((it) => ({
-            id: it.productSlug,
-            title: `${it.productName} ${it.dose} · pack ${it.qty} viales`,
-            quantity: 1,
-            currency_id: "MXN",
-            unit_price: it.lineTotal,
-            category_id: "health",
-          })),
-          payer: {
-            name: body.customerName,
-            email: body.customerEmail,
-            phone: { number: body.customerPhone },
-            address: { zip_code: body.postalCode, street_name: body.street, street_number: Number(body.extNumber.replace(/\D/g, "")) || 0 },
-          },
-          external_reference: externalRef,
-          statement_descriptor: "PEPTIDOSMAYOREO",
-          back_urls: {
-            success: `${SITE_URL}/pago/exito?ref=${encodeURIComponent(externalRef)}`,
-            failure: `${SITE_URL}/pago/fallo?ref=${encodeURIComponent(externalRef)}`,
-            pending: `${SITE_URL}/pago/pendiente?ref=${encodeURIComponent(externalRef)}`,
-          },
-          auto_return: "approved",
-          notification_url: `${SITE_URL}/api/public/mercadopago-webhook`,
-          metadata: { order_id: order.id },
-        };
+        // 4. Split full name → first/last for ecartpay.
+        const nameParts = body.customerName.trim().split(/\s+/);
+        const firstName = nameParts.slice(0, Math.max(1, Math.ceil(nameParts.length / 2))).join(" ");
+        const lastName = nameParts.slice(Math.max(1, Math.ceil(nameParts.length / 2))).join(" ") || firstName;
+
+        const stateCode = MX_STATE_CODES[body.state] || body.state.slice(0, 3).toUpperCase();
+        const street = `${body.street} ${body.extNumber}${body.intNumber ? ` Int ${body.intNumber}` : ""}`;
 
         try {
-          const res = await fetch("https://api.mercadopago.com/checkout/preferences", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", "X-Idempotency-Key": externalRef },
-            body: JSON.stringify(preference),
+          const ec = await createEcartpayOrder({
+            items: body.items.map((it) => ({
+              name: `${it.productName} ${it.dose} · pack ${it.qty} viales`.slice(0, 180),
+              quantity: 1,
+              price: it.lineTotal,
+              is_service: false,
+            })),
+            email: body.customerEmail,
+            firstName,
+            lastName,
+            phone: body.customerPhone,
+            shippingAddress: {
+              address1: street,
+              address2: body.neighborhood,
+              city: body.city,
+              stateCode,
+              postalCode: body.postalCode,
+            },
+            notifyUrl: `${SITE_URL}/api/public/ecartpay-webhook?ref=${encodeURIComponent(externalRef)}`,
+            redirectUrl: `${SITE_URL}/pago/exito?ref=${encodeURIComponent(externalRef)}`,
+            reference: externalRef,
+            metafields: { order_id: externalRef },
           });
-          if (!res.ok) {
-            const txt = await res.text();
-            console.error("MP preference error", res.status, txt);
-            return json({ error: "Mercado Pago rechazó la preferencia" }, 502);
+
+          const payLink = ec.pay_link as string | undefined;
+          if (!payLink) {
+            console.error("ecartpay response missing pay_link", ec);
+            return json({ error: "ecartpay no devolvió un enlace de pago" }, 502);
           }
-          const data = await res.json() as { init_point?: string; id?: string };
-          if (!data.init_point) return json({ error: "Respuesta inválida de Mercado Pago" }, 502);
-          await supabaseAdmin.from("orders").update({ mp_preference_id: data.id }).eq("id", order.id);
-          await supabaseAdmin.from("order_events").insert({ order_id: order.id, event: "order_created", payload: { preference_id: data.id } });
-          return json({ init_point: data.init_point, order_id: order.id }, 200);
+
+          await supabaseAdmin.from("orders").update({
+            ecartpay_session_id: (ec.id as string | undefined) ?? null,
+          }).eq("id", order.id);
+          await supabaseAdmin.from("order_events").insert({
+            order_id: order.id,
+            event: "order_created",
+            payload: { ecartpay_id: ec.id ?? null },
+          });
+
+          return json({ init_point: payLink, order_id: order.id }, 200);
         } catch (err) {
-          console.error("MP request failed", err);
-          return json({ error: "Error de red contactando Mercado Pago" }, 502);
+          console.error("ecartpay create order error", err);
+          return json({ error: err instanceof Error ? err.message : "Error con ecartpay" }, 502);
         }
       },
     },
