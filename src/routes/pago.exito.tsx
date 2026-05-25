@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { CheckCircle2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildHead } from "@/lib/seo";
@@ -16,6 +17,13 @@ export const Route = createFileRoute("/pago/exito")({
 });
 
 function PagoExito() {
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const sessionId = sp.get("session_id");
+    if (!sessionId) return;
+    fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`).catch(() => {});
+  }, []);
+
   return (
     <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
       <CheckCircle2 className="mx-auto h-16 w-16 text-success" />
@@ -26,7 +34,7 @@ function PagoExito() {
       </p>
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
         <Button asChild size="lg" className="bg-success text-success-foreground hover:bg-success/90">
-          <a href={buildWaLink("Hola, acabo de pagar mi pedido por Mercado Pago.")} target="_blank" rel="noopener">
+          <a href={buildWaLink("Hola, acabo de pagar mi pedido con tarjeta.")} target="_blank" rel="noopener">
             <MessageCircle className="mr-1.5 h-4 w-4" /> Confirmar por WhatsApp
           </a>
         </Button>

@@ -39,6 +39,7 @@ import { Route as AdminCarritosRouteImport } from './routes/admin.carritos'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as ApiPublicEcartpayWebhookRouteImport } from './routes/api.public.ecartpay-webhook'
 import { Route as ApiPublicEcartpayTestLinkRouteImport } from './routes/api.public.ecartpay-test-link'
+import { Route as ApiCheckoutVerifyRouteImport } from './routes/api.checkout.verify'
 import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
 import { Route as AdminPedidosIdRouteImport } from './routes/admin.pedidos.$id'
 
@@ -194,6 +195,11 @@ const ApiPublicEcartpayTestLinkRoute =
     path: '/api/public/ecartpay-test-link',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiCheckoutVerifyRoute = ApiCheckoutVerifyRouteImport.update({
+  id: '/api/checkout/verify',
+  path: '/api/checkout/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutCreateOrderRoute = ApiCheckoutCreateOrderRouteImport.update({
   id: '/api/checkout/create-order',
   path: '/api/checkout/create-order',
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/productos/': typeof ProductosIndexRoute
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
+  '/api/checkout/verify': typeof ApiCheckoutVerifyRoute
   '/api/public/ecartpay-test-link': typeof ApiPublicEcartpayTestLinkRoute
   '/api/public/ecartpay-webhook': typeof ApiPublicEcartpayWebhookRoute
 }
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/productos': typeof ProductosIndexRoute
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
+  '/api/checkout/verify': typeof ApiCheckoutVerifyRoute
   '/api/public/ecartpay-test-link': typeof ApiPublicEcartpayTestLinkRoute
   '/api/public/ecartpay-webhook': typeof ApiPublicEcartpayWebhookRoute
 }
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/productos/': typeof ProductosIndexRoute
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
+  '/api/checkout/verify': typeof ApiCheckoutVerifyRoute
   '/api/public/ecartpay-test-link': typeof ApiPublicEcartpayTestLinkRoute
   '/api/public/ecartpay-webhook': typeof ApiPublicEcartpayWebhookRoute
 }
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/productos/'
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
+    | '/api/checkout/verify'
     | '/api/public/ecartpay-test-link'
     | '/api/public/ecartpay-webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/productos'
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
+    | '/api/checkout/verify'
     | '/api/public/ecartpay-test-link'
     | '/api/public/ecartpay-webhook'
   id:
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/productos/'
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
+    | '/api/checkout/verify'
     | '/api/public/ecartpay-test-link'
     | '/api/public/ecartpay-webhook'
   fileRoutesById: FileRoutesById
@@ -434,6 +446,7 @@ export interface RootRouteChildren {
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
   ApiCheckoutCreateOrderRoute: typeof ApiCheckoutCreateOrderRoute
+  ApiCheckoutVerifyRoute: typeof ApiCheckoutVerifyRoute
   ApiPublicEcartpayTestLinkRoute: typeof ApiPublicEcartpayTestLinkRoute
   ApiPublicEcartpayWebhookRoute: typeof ApiPublicEcartpayWebhookRoute
 }
@@ -650,6 +663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEcartpayTestLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checkout/verify': {
+      id: '/api/checkout/verify'
+      path: '/api/checkout/verify'
+      fullPath: '/api/checkout/verify'
+      preLoaderRoute: typeof ApiCheckoutVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout/create-order': {
       id: '/api/checkout/create-order'
       path: '/api/checkout/create-order'
@@ -732,6 +752,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
   ApiCheckoutCreateOrderRoute: ApiCheckoutCreateOrderRoute,
+  ApiCheckoutVerifyRoute: ApiCheckoutVerifyRoute,
   ApiPublicEcartpayTestLinkRoute: ApiPublicEcartpayTestLinkRoute,
   ApiPublicEcartpayWebhookRoute: ApiPublicEcartpayWebhookRoute,
 }
