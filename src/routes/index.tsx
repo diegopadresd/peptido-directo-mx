@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
     buildHead({
       title: "Péptidos Mayoreo - Distribuidor Directo de Fábrica en México",
       description:
-        "Compra péptidos al mayoreo en México con 50% de descuento. Mínimo 10 viales, pago Mercado Pago, envío 10-20 días. BPC-157, semaglutida, tirzepatida.",
+        "Compra péptidos al mayoreo en México con 50% de descuento. Mínimo 10 viales, pago Stripe, envío 10-20 días. BPC-157, semaglutida, tirzepatida.",
       canonical: "/",
       keywords: ["péptidos mayoreo", "peptidos al por mayor mexico", "distribuidor de péptidos méxico", "comprar péptidos mayoreo"],
       jsonLd: [organizationJsonLd(), faqJsonLd(homeFaqs)],
@@ -71,7 +71,7 @@ function Home() {
           <div className="mx-auto mt-14 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               { icon: Truck, label: "Envío 10-20 días" },
-              { icon: CreditCard, label: "Mercado Pago" },
+              { icon: CreditCard, label: "Stripe" },
               { icon: ShieldCheck, label: "Pureza ≥99%" },
               { icon: Users, label: "+500 clientes" },
             ].map((b) => (
@@ -94,7 +94,7 @@ function Home() {
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {[
               { icon: Package, n: "01", t: "Eliges tu compuesto", d: "Mínimo 10 viales del mismo péptido y dosis. Cada pedido = 1 compuesto." },
-              { icon: CreditCard, n: "02", t: "Pagas con Mercado Pago", d: "Tarjeta, SPEI o efectivo en OXXO. Todo en MXN, recibo formal." },
+              { icon: CreditCard, n: "02", t: "Pagas con Stripe", d: "Tarjeta, SPEI o efectivo en OXXO. Todo en MXN, recibo formal." },
               { icon: HomeIcon, n: "03", t: "Recibes en casa", d: "Envío directo desde el laboratorio en China a tu puerta. 10-20 días." },
             ].map((s) => (
               <div key={s.n} className="rounded-2xl border border-border bg-card p-7 shadow-soft transition hover:border-primary/30 hover:shadow-card">

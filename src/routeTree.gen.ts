@@ -37,8 +37,7 @@ import { Route as AdminConfiguracionRouteImport } from './routes/admin.configura
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminCarritosRouteImport } from './routes/admin.carritos'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
-import { Route as ApiPublicEcartpayWebhookRouteImport } from './routes/api.public.ecartpay-webhook'
-import { Route as ApiPublicEcartpayTestLinkRouteImport } from './routes/api.public.ecartpay-test-link'
+import { Route as ApiCheckoutVerifyRouteImport } from './routes/api.checkout.verify'
 import { Route as ApiCheckoutCreateOrderRouteImport } from './routes/api.checkout.create-order'
 import { Route as AdminPedidosIdRouteImport } from './routes/admin.pedidos.$id'
 
@@ -182,18 +181,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
-const ApiPublicEcartpayWebhookRoute =
-  ApiPublicEcartpayWebhookRouteImport.update({
-    id: '/api/public/ecartpay-webhook',
-    path: '/api/public/ecartpay-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicEcartpayTestLinkRoute =
-  ApiPublicEcartpayTestLinkRouteImport.update({
-    id: '/api/public/ecartpay-test-link',
-    path: '/api/public/ecartpay-test-link',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const ApiCheckoutVerifyRoute = ApiCheckoutVerifyRouteImport.update({
+  id: '/api/checkout/verify',
+  path: '/api/checkout/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutCreateOrderRoute = ApiCheckoutCreateOrderRouteImport.update({
   id: '/api/checkout/create-order',
   path: '/api/checkout/create-order',
@@ -236,8 +228,7 @@ export interface FileRoutesByFullPath {
   '/productos/': typeof ProductosIndexRoute
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
-  '/api/public/ecartpay-test-link': typeof ApiPublicEcartpayTestLinkRoute
-  '/api/public/ecartpay-webhook': typeof ApiPublicEcartpayWebhookRoute
+  '/api/checkout/verify': typeof ApiCheckoutVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -269,8 +260,7 @@ export interface FileRoutesByTo {
   '/productos': typeof ProductosIndexRoute
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
-  '/api/public/ecartpay-test-link': typeof ApiPublicEcartpayTestLinkRoute
-  '/api/public/ecartpay-webhook': typeof ApiPublicEcartpayWebhookRoute
+  '/api/checkout/verify': typeof ApiCheckoutVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -304,8 +294,7 @@ export interface FileRoutesById {
   '/productos/': typeof ProductosIndexRoute
   '/admin/pedidos/$id': typeof AdminPedidosIdRoute
   '/api/checkout/create-order': typeof ApiCheckoutCreateOrderRoute
-  '/api/public/ecartpay-test-link': typeof ApiPublicEcartpayTestLinkRoute
-  '/api/public/ecartpay-webhook': typeof ApiPublicEcartpayWebhookRoute
+  '/api/checkout/verify': typeof ApiCheckoutVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -340,8 +329,7 @@ export interface FileRouteTypes {
     | '/productos/'
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
-    | '/api/public/ecartpay-test-link'
-    | '/api/public/ecartpay-webhook'
+    | '/api/checkout/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -373,8 +361,7 @@ export interface FileRouteTypes {
     | '/productos'
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
-    | '/api/public/ecartpay-test-link'
-    | '/api/public/ecartpay-webhook'
+    | '/api/checkout/verify'
   id:
     | '__root__'
     | '/'
@@ -407,8 +394,7 @@ export interface FileRouteTypes {
     | '/productos/'
     | '/admin/pedidos/$id'
     | '/api/checkout/create-order'
-    | '/api/public/ecartpay-test-link'
-    | '/api/public/ecartpay-webhook'
+    | '/api/checkout/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -434,8 +420,7 @@ export interface RootRouteChildren {
   ProductosSlugRoute: typeof ProductosSlugRoute
   ProductosIndexRoute: typeof ProductosIndexRoute
   ApiCheckoutCreateOrderRoute: typeof ApiCheckoutCreateOrderRoute
-  ApiPublicEcartpayTestLinkRoute: typeof ApiPublicEcartpayTestLinkRoute
-  ApiPublicEcartpayWebhookRoute: typeof ApiPublicEcartpayWebhookRoute
+  ApiCheckoutVerifyRoute: typeof ApiCheckoutVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -636,18 +621,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/api/public/ecartpay-webhook': {
-      id: '/api/public/ecartpay-webhook'
-      path: '/api/public/ecartpay-webhook'
-      fullPath: '/api/public/ecartpay-webhook'
-      preLoaderRoute: typeof ApiPublicEcartpayWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/ecartpay-test-link': {
-      id: '/api/public/ecartpay-test-link'
-      path: '/api/public/ecartpay-test-link'
-      fullPath: '/api/public/ecartpay-test-link'
-      preLoaderRoute: typeof ApiPublicEcartpayTestLinkRouteImport
+    '/api/checkout/verify': {
+      id: '/api/checkout/verify'
+      path: '/api/checkout/verify'
+      fullPath: '/api/checkout/verify'
+      preLoaderRoute: typeof ApiCheckoutVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/checkout/create-order': {
@@ -732,9 +710,18 @@ const rootRouteChildren: RootRouteChildren = {
   ProductosSlugRoute: ProductosSlugRoute,
   ProductosIndexRoute: ProductosIndexRoute,
   ApiCheckoutCreateOrderRoute: ApiCheckoutCreateOrderRoute,
-  ApiPublicEcartpayTestLinkRoute: ApiPublicEcartpayTestLinkRoute,
-  ApiPublicEcartpayWebhookRoute: ApiPublicEcartpayWebhookRoute,
+  ApiCheckoutVerifyRoute: ApiCheckoutVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

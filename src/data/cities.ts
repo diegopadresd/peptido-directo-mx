@@ -16,7 +16,7 @@ const baseFaqs = (city: string, days: string): City["faqs"] => [
   },
   {
     q: `¿Hacen envío contra entrega en ${city}?`,
-    a: `No. Trabajamos con pago anticipado por Mercado Pago (tarjeta, SPEI u OXXO). Esto nos permite mantener precios al mayoreo sin sumar el costo de COD.`,
+    a: `No. Trabajamos con pago anticipado por Stripe (tarjeta, SPEI u OXXO). Esto nos permite mantener precios al mayoreo sin sumar el costo de COD.`,
   },
   {
     q: `¿Cuál es el mínimo de viales para distribuidores en ${city}?`,

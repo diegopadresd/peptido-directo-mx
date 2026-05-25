@@ -153,7 +153,7 @@ function CheckoutPage() {
           </div>
           {serverError && <p className="text-xs text-destructive">{serverError}</p>}
           <Button type="submit" disabled={loading} size="lg" className="w-full rounded-full">
-            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Procesando…</> : <><CreditCard className="mr-2 h-4 w-4"/>Pagar con ecartpay</>}
+            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Procesando…</> : <><CreditCard className="mr-2 h-4 w-4"/>Pagar con tarjeta</>}
           </Button>
           <p className="text-[11px] text-muted-foreground text-center">Confirmamos guía y costo de envío después del pago.</p>
         </aside>
