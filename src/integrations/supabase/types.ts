@@ -196,6 +196,9 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          ecartpay_payment_id: string | null
+          ecartpay_session_id: string | null
+          ecartpay_status_detail: string | null
           external_reference: string | null
           id: string
           mp_payment_id: string | null
@@ -219,6 +222,9 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          ecartpay_payment_id?: string | null
+          ecartpay_session_id?: string | null
+          ecartpay_status_detail?: string | null
           external_reference?: string | null
           id?: string
           mp_payment_id?: string | null
@@ -242,6 +248,9 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string
+          ecartpay_payment_id?: string | null
+          ecartpay_session_id?: string | null
+          ecartpay_status_detail?: string | null
           external_reference?: string | null
           id?: string
           mp_payment_id?: string | null
