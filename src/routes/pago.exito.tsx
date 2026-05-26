@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { CheckCircle2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildHead } from "@/lib/seo";
@@ -17,13 +16,6 @@ export const Route = createFileRoute("/pago/exito")({
 });
 
 function PagoExito() {
-  useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    const sessionId = sp.get("session_id");
-    if (!sessionId) return;
-    fetch(`/api/checkout/verify?session_id=${encodeURIComponent(sessionId)}`).catch(() => {});
-  }, []);
-
   return (
     <div className="container mx-auto max-w-2xl px-4 py-20 text-center">
       <CheckCircle2 className="mx-auto h-16 w-16 text-success" />
