@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { SITE_URL } from "@/lib/whatsapp";
-import { getStripe } from "@/lib/stripe.server";
+import { createEcartpayOrder } from "@/lib/ecartpay.server";
 
 const ItemSchema = z.object({
   productSlug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
@@ -35,8 +35,8 @@ export const Route = createFileRoute("/api/checkout/create-order")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!process.env.STRIPE_SECRET_KEY) {
-          return json({ error: "Stripe no está configurado" }, 500);
+        if (!process.env.ECARTPAY_SECRET_KEY || !process.env.ECARTPAY_PUBLIC_KEY) {
+          return json({ error: "eCartPay no está configurado" }, 500);
         }
 
         let body: z.infer<typeof BodySchema>;
@@ -95,46 +95,46 @@ export const Route = createFileRoute("/api/checkout/create-order")({
         await supabaseAdmin.from("orders").update({ external_reference: externalRef }).eq("id", order.id);
 
         try {
-          const stripe = getStripe();
-          const session = await stripe.checkout.sessions.create({
-            mode: "payment",
-            payment_method_types: ["card"],
-            customer_email: body.customerEmail,
-            client_reference_id: externalRef,
-            line_items: body.items.map((it) => ({
+          const session = await createEcartpayOrder({
+            reference: externalRef,
+            totalMxn: subtotal,
+            items: body.items.map((it) => ({
+              name: `${it.productName} ${it.dose} · pack ${it.qty} viales`,
               quantity: 1,
-              price_data: {
-                currency: "mxn",
-                unit_amount: it.lineTotal * 100, // MXN → centavos
-                product_data: {
-                  name: `${it.productName} ${it.dose} · pack ${it.qty} viales`.slice(0, 180),
-                  metadata: { product_slug: it.productSlug, dose: it.dose, qty: String(it.qty) },
-                },
-              },
+              price: it.lineTotal,
+              sku: `${it.productSlug}-${it.dose}-${it.qty}v`.slice(0, 60),
             })),
-            metadata: { order_id: externalRef },
-            success_url: `${SITE_URL}/pago/exito?session_id={CHECKOUT_SESSION_ID}&ref=${encodeURIComponent(externalRef)}`,
-            cancel_url: `${SITE_URL}/pago/fallo?ref=${encodeURIComponent(externalRef)}`,
+            customer: {
+              name: body.customerName,
+              email: body.customerEmail,
+              phone: body.customerPhone,
+            },
+            shipping: {
+              street: body.street,
+              extNumber: body.extNumber,
+              intNumber: body.intNumber,
+              neighborhood: body.neighborhood,
+              postalCode: body.postalCode,
+              city: body.city,
+              state: body.state,
+            },
+            redirectUrl: `${SITE_URL}/pago/exito?ref=${encodeURIComponent(externalRef)}`,
+            notifyUrl: `${SITE_URL}/api/public/ecartpay-webhook`,
           });
 
-          if (!session.url) {
-            console.error("stripe session missing url", session.id);
-            return json({ error: "Stripe no devolvió un enlace de pago" }, 502);
-          }
-
           await supabaseAdmin.from("orders").update({
-            mp_preference_id: session.id, // reuse legacy column for stripe session id
+            ecartpay_session_id: session.id,
           }).eq("id", order.id);
           await supabaseAdmin.from("order_events").insert({
             order_id: order.id,
             event: "order_created",
-            payload: { stripe_session_id: session.id },
+            payload: { ecartpay_session_id: session.id },
           });
 
-          return json({ init_point: session.url, order_id: order.id }, 200);
+          return json({ init_point: session.paymentUrl, order_id: order.id }, 200);
         } catch (err) {
-          console.error("stripe create session error", err);
-          return json({ error: err instanceof Error ? err.message : "Error con Stripe" }, 502);
+          console.error("ecartpay create order error", err);
+          return json({ error: err instanceof Error ? err.message : "Error con eCartPay" }, 502);
         }
       },
     },
