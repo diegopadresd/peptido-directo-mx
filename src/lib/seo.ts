@@ -78,7 +78,7 @@ export function organizationJsonLd() {
     logo: `${SITE_URL}/og-image.jpg`,
     sameAs: [],
     description:
-      "Distribuidor mayorista de péptidos en México. Mínimo 10 viales, pago seguro con Stripe, envío nacional.",
+      "Distribuidor mayorista de péptidos en México. Mínimo 10 viales, pago seguro con eCartPay, envío nacional.",
     address: {
       "@type": "PostalAddress",
       addressCountry: "MX",

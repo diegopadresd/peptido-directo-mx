@@ -1,54 +1,23 @@
-# Plan: migrar de Mercado Pago a ecartpay
 
-## 1. Secrets que te pediré
-Después de aprobar el plan abriré el formulario seguro para guardar:
-- `ECARTPAY_PUBLIC_KEY`
-- `ECARTPAY_SECRET_KEY`
-- `ECARTPAY_WEBHOOK_SECRET` (para verificar la firma del webhook)
+## Cambiar checkout de Stripe a eCartPay
 
-> Nota: ecartpay no es un proveedor oficial conocido por Lovable. Implementaré la integración asumiendo el patrón REST estándar (POST a `/checkout/sessions` con Bearer token, redirect a `init_point`, webhook firmado con HMAC-SHA256 en header `x-ecartpay-signature`). En cuanto me pases el link a su doc oficial ajusto endpoints/headers exactos sin re-planear.
+Las llaves `ECARTPAY_PUBLIC_KEY` y `ECARTPAY_SECRET_KEY` ya están guardadas. Las columnas `ecartpay_session_id`, `ecartpay_payment_id`, `ecartpay_status_detail` ya existen en `orders`. La migración previa de eCartPay → Stripe se revierte así:
 
-## 2. Cambios de código
+### Backend
+1. **Crear `src/lib/ecartpay.server.ts`** — cliente con cache de JWT (1h), `createEcartpayOrder()` y `getEcartpayOrder()`. Mapea `paid`/`approved` → `approved`. Lee `ECARTPAY_ENV` (default `live`) para elegir endpoint sandbox vs producción.
+2. **Reescribir `src/routes/api.checkout.create-order.ts`** — reemplazar la creación de Stripe Checkout Session por `createEcartpayOrder()`. Devolver `init_point` con el link de pago de eCart. Guardar `ecartpay_session_id` en lugar de reutilizar `mp_preference_id`.
+3. **Crear `src/routes/api.public.ecartpay-webhook.ts`** — handler POST que (a) valida firma HMAC si `ECARTPAY_WEBHOOK_SECRET` existe, (b) re-consulta la orden a eCart como verificación autoritativa, (c) actualiza `orders.status`, registra `order_events`, dispara `notifyAdminNewOrder` una sola vez (idempotente vía `notified_at`).
+4. **Eliminar archivos Stripe**: `src/lib/stripe.server.ts` y `src/routes/api.checkout.verify.ts`. (Dejo el secret `STRIPE_SECRET_KEY` en su lugar por si lo quieres conservar; dime si lo borro.)
 
-### Nueva ruta server: `src/routes/api.checkout.create-order.ts`
-Reescribo la ruta actual para que:
-- Valide el body con el mismo Zod schema.
-- Cree el `order` en DB (igual que hoy).
-- Llame al endpoint hosted de ecartpay con `ECARTPAY_SECRET_KEY`.
-- Guarde `external_reference = order.id` y el `session_id` de ecartpay en una nueva columna.
-- Devuelva `{ init_point, order_id }` (la página de checkout no cambia).
+### Frontend
+5. **`src/routes/checkout.tsx`** — cambiar el label del botón de "Pagar con tarjeta" a "Pagar con eCartPay".
+6. **`src/routes/pago.exito.tsx`** — quitar el `useEffect` que llamaba `/api/checkout/verify`; la confirmación llega por webhook. Mantener mensaje de WhatsApp genérico.
+7. **Copys de marketing** — los textos sitewide ya dicen "Stripe". Los actualizo a "eCartPay" en el mismo pase (footer, FAQs, política, blog, ciudades, productos, home).
 
-### Nueva ruta webhook: `src/routes/api.public.ecartpay-webhook.ts`
-- Verifica firma HMAC con `ECARTPAY_WEBHOOK_SECRET` (timing-safe).
-- Actualiza `orders.status` a `approved` / `rejected` / `pending` según evento.
-- Inserta evento en `order_events`.
-- Dispara el email de notificación (reutiliza `lib/email/notify.server.ts`).
+### Configuración pendiente de tu lado
+- En el panel de eCart configurar el webhook a: `https://peptidosmayoreo.com/api/public/ecartpay-webhook`
+- Si las llaves son sandbox, agregar el secret `ECARTPAY_ENV=sandbox`. Si son live no hace falta nada.
+- Opcional más adelante: `ECARTPAY_WEBHOOK_SECRET` para validar firma del webhook.
 
-### Eliminar / limpiar
-- Borrar `src/routes/api.checkout.mercadopago.ts`.
-- Borrar `src/routes/api.public.mercadopago-webhook.ts`.
-- En `supabase/config.toml`, quitar el bloque de la función MP si existe.
-- En `src/components/site/ConcentrationVolumePicker.tsx` y `CartDrawer.tsx`: cambiar copy "Mercado Pago" → "ecartpay" (botones, leyendas de seguridad).
-- En `src/routes/checkout.tsx`: cambiar texto del botón final ("Pagar con ecartpay").
-- En `src/routes/pago.exito.tsx` / `pago.fallo.tsx` / `pago.pendiente.tsx`: ya leen `?ref=`, solo ajustar copy "Mercado Pago" → "ecartpay".
-- Dejar el secret `MERCADOPAGO_ACCESS_TOKEN` en Lovable Cloud (no se puede borrar desde aquí; te indico cómo eliminarlo manualmente si quieres).
-
-## 3. Cambio de DB (migración)
-Agregar a `orders`:
-- `ecartpay_session_id TEXT`
-- `ecartpay_payment_id TEXT`
-- `ecartpay_status_detail TEXT`
-
-(Las columnas `mp_*` las dejo para no romper pedidos históricos; quedan como nullable y se ignoran.)
-
-## 4. URL del webhook que tendrás que pegar en el panel de ecartpay
-`https://peptidosmayoreo.com/api/public/ecartpay-webhook`
-(o el dominio publicado actual `https://peptido-directo-mx.lovable.app/api/public/ecartpay-webhook` si aún no apuntas el dominio).
-
-## 5. Verificación post-deploy
-1. Hacer un pedido de prueba → ver que redirija a ecartpay.
-2. Pagar con tarjeta de prueba → ver redirect a `/pago/exito`.
-3. Revisar logs del webhook → `orders.status='approved'` y `order_events` con el evento.
-4. Confirmar que llega el email a `ADMIN_NOTIFICATION_EMAIL`.
-
-Si apruebas, al pasar a build mode: primero ejecuto la migración, después te pido los 3 secrets, y al recibirlos escribo el código.
+### Pregunta
+- ¿Las llaves que cargaste son **sandbox** o **live**? Necesito saberlo para apuntar al endpoint correcto (o configuro `ECARTPAY_ENV` después).

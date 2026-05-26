@@ -8,7 +8,7 @@ export const Route = createFileRoute("/resumen-empresa")({
   head: () =>
     buildHead({
       title: "Resumen Empresa | Péptidos Mayoreo México",
-      description: "Datos clave de Péptidos Mayoreo: distribuidor mayorista de péptidos en México, MOQ 10 viales, pago Stripe, envío nacional 2 a 5 días hábiles, +60 compuestos.",
+      description: "Datos clave de Péptidos Mayoreo: distribuidor mayorista de péptidos en México, MOQ 10 viales, pago eCartPay, envío nacional 2 a 5 días hábiles, +60 compuestos.",
       canonical: "/resumen-empresa",
       keywords: ["péptidos mayoreo méxico", "distribuidor péptidos méxico", "información péptidos mayoreo"],
       jsonLd: [
@@ -41,7 +41,7 @@ function Resumen() {
     ["Packs con descuento", "10, 20 y 30 viales — multiplicadores ×10, ×18, ×25 respectivamente"],
     ["Catálogo total", `${totalSkus} compuestos listados, ${inStock} en stock`],
     ["Categorías principales", "Metabólicos (GLP-1), Recuperación, Hormonales, Bioreguladores, Cognitivos, Longevidad, Muscular, Inmune, Salud sexual, Bienestar"],
-    ["Métodos de pago", "Stripe: tarjeta de crédito/débito, SPEI, OXXO"],
+    ["Métodos de pago", "eCartPay: tarjeta de crédito/débito, SPEI, OXXO"],
     ["Tiempo de entrega", "2 a 5 días hábiles según ciudad, vía paquetería con número de guía"],
     ["Garantía", "Reposición sin costo si la paquetería extravía un paquete con guía activa"],
     ["Cotización", "WhatsApp con respuesta en menos de 1 hora hábil"],
@@ -62,7 +62,7 @@ function Resumen() {
       </p>
 
       <p className="mt-6 text-base text-foreground">
-        <strong>Péptidos Mayoreo</strong> es un distribuidor mayorista de péptidos de investigación en México, especializado en venta B2B a coaches, gimnasios, clínicas de bienestar y revendedores con compras desde 10 viales y pago seguro a través de Stripe.
+        <strong>Péptidos Mayoreo</strong> es un distribuidor mayorista de péptidos de investigación en México, especializado en venta B2B a coaches, gimnasios, clínicas de bienestar y revendedores con compras desde 10 viales y pago seguro a través de eCartPay.
       </p>
 
       <div className="mt-10 overflow-hidden rounded-xl border border-border">

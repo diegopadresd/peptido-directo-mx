@@ -68,7 +68,7 @@ export const Route = createFileRoute("/productos/$slug")({
     };
     return buildHead({
       title: `${p.name} Mayoreo (${dosesLabel}) - Precio Distribuidor México`,
-      description: `${p.name} ${dosesLabel} al mayoreo desde $${minPerVial} MXN/vial. Pack mínimo 10 viales. Pago Stripe. Envío 10-20 días a todo México.`,
+      description: `${p.name} ${dosesLabel} al mayoreo desde $${minPerVial} MXN/vial. Pack mínimo 10 viales. Pago eCartPay. Envío 10-20 días a todo México.`,
       canonical: `/productos/${p.slug}`,
       keywords: p.keywords,
       type: "product",

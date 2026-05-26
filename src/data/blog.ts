@@ -58,7 +58,7 @@ export const posts: BlogPost[] = [
         heading: "4. WhatsApp es tu canal principal, no la tienda online",
         paragraphs: [
           "El cliente mexicano de péptidos compra por WhatsApp. Quiere hablar con alguien, preguntar dosis, ver fotos del lote. Tener una tienda Shopify perfecta no sirve si nadie te escribe.",
-          "Construye tu funnel así: contenido en Instagram/TikTok → CTA a WhatsApp → catálogo PDF → cierre por mensaje → pago por Stripe o transferencia → envío con guía.",
+          "Construye tu funnel así: contenido en Instagram/TikTok → CTA a WhatsApp → catálogo PDF → cierre por mensaje → pago por eCartPay o transferencia → envío con guía.",
         ],
       },
       {
@@ -305,7 +305,7 @@ export const posts: BlogPost[] = [
       {
         heading: "Notas",
         paragraphs: [
-          "Precios en MXN, sujetos a cambio. Volumen mayor a 30 viales acepta condiciones especiales. El pago se procesa por Stripe o transferencia SPEI.",
+          "Precios en MXN, sujetos a cambio. Volumen mayor a 30 viales acepta condiciones especiales. El pago se procesa por eCartPay o transferencia SPEI.",
         ],
       },
     ],
@@ -558,7 +558,7 @@ export const posts: BlogPost[] = [
      faq: [
        { q: "¿Cuál es el MOQ para comprar semaglutida al mayoreo?", a: "10 viales mezclados con otros SKUs. Puedes combinar semaglutida 5 mg, 10 mg y otros péptidos para llegar al MOQ." },
        { q: "¿Cuánto cuesta el vial de semaglutida 5 mg al mayoreo en México?", a: "Entre $850 y $1,200 MXN dependiendo del lote y volumen. A partir de 30 viales hay descuento adicional." },
-       { q: "¿Qué método de pago aceptan?", a: "Stripe (tarjeta, OXXO, SPEI) y transferencia bancaria SPEI directa. Para volumen >50 viales se acepta anticipo + saldo contra entrega." },
+       { q: "¿Qué método de pago aceptan?", a: "eCartPay (tarjeta, OXXO, SPEI) y transferencia bancaria SPEI directa. Para volumen >50 viales se acepta anticipo + saldo contra entrega." },
        { q: "¿Hacen factura?", a: "Sí, emitimos CFDI 4.0 con uso G03 (gastos en general) o el que el contribuyente requiera. Solicítalo al confirmar el pedido." },
        { q: "¿Cuánto tarda el envío?", a: "24 horas en CDMX, GDL y MTY. 48–72 horas al resto del país. Salidas diarias hasta las 14:00 hrs." },
      ],
