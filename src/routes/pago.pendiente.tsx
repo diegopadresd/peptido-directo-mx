@@ -21,13 +21,13 @@ function PagoPendiente() {
       <Clock className="mx-auto h-16 w-16 text-primary" />
       <h1 className="mt-6 font-display text-4xl font-extrabold">Pago pendiente</h1>
       <p className="mt-3 text-lg text-muted-foreground">
-        Tu pago quedó en revisión por Stripe (común en pagos en efectivo
+        Tu pago quedó en revisión por eCartPay (común en pagos en efectivo
         u OXXO). En cuanto se acredite te avisamos por WhatsApp y procesamos tu
         envío.
       </p>
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
         <Button asChild size="lg">
-          <a href={buildWaLink("Hola, mi pago en Stripe quedó pendiente.")} target="_blank" rel="noopener">
+          <a href={buildWaLink("Hola, mi pago en eCartPay quedó pendiente.")} target="_blank" rel="noopener">
             <MessageCircle className="mr-1.5 h-4 w-4" /> Avisar por WhatsApp
           </a>
         </Button>
