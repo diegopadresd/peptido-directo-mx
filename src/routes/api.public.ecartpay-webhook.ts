@@ -95,18 +95,16 @@ export const Route = createFileRoute("/api/public/ecartpay-webhook")({
           return ok({ error: "order not found" }, 200); // 200 so eCart doesn't retry forever
         }
 
-        const patch: Record<string, unknown> = {
+        await supabaseAdmin.from("orders").update({
           status: mapped,
           ecartpay_status_detail: rawStatus ?? null,
+          ecartpay_payment_id: ecartpayId ?? null,
           updated_at: new Date().toISOString(),
-        };
-        if (ecartpayId) patch.ecartpay_payment_id = ecartpayId;
-
-        await supabaseAdmin.from("orders").update(patch).eq("id", orderRow.id);
+        }).eq("id", orderRow.id);
         await supabaseAdmin.from("order_events").insert({
           order_id: orderRow.id,
           event: `ecartpay_${mapped}`,
-          payload: { rawStatus, ecartpayId, body: payload },
+          payload: { rawStatus: rawStatus ?? null, ecartpayId: ecartpayId ?? null, body: JSON.parse(JSON.stringify(payload)) },
         });
 
         // Notify admin once when approved.
