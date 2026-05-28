@@ -28,7 +28,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
   const perVial = Math.round(total / qty);
 
   const wa = buildWaLink(
-    `Hola, quiero comprar ${product.name} ${variant.dose} — pack de ${qty} viales (${formatMxn(total)}). ¿Confirmamos disponibilidad y pago por eCartPay?`,
+    `Hola, quiero comprar ${product.name} ${variant.dose} — pack de ${qty} viales (${formatMxn(total)}). ¿Confirmamos disponibilidad y pago con tarjeta, OXXO o SPEI?`,
   );
 
   const [loading, setLoading] = useState(false);
@@ -182,7 +182,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
         >
           {loading ? (
             <>
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Redirigiendo a eCartPay…
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Redirigiendo al pago…
             </>
           ) : (
             <>
@@ -199,7 +199,7 @@ export function ConcentrationVolumePicker({ product }: { product: Product }) {
           </a>
         </Button>
         <p className="text-center text-[11px] text-muted-foreground">
-          Pago seguro con eCartPay · envío 3-7 días hábiles
+          Pago seguro con Mercado Pago · envío 3-7 días hábiles
         </p>
       </div>
     </div>

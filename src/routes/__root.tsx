@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "dns-prefetch", href: "https://wa.me" },
-      { rel: "dns-prefetch", href: "https://api.ecart.com" },
+      { rel: "dns-prefetch", href: "https://check-out.mx" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Geist:wght@700;800&display=swap",

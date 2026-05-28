@@ -19,7 +19,7 @@ export const Route = createFileRoute("/peptidos/$ciudad")({
     const c = loaderData.city;
     return buildHead({
       title: `Péptidos al Mayoreo en ${c.name} | Envío Directo a ${c.state}`,
-      description: `Compra péptidos al mayoreo en ${c.name}, ${c.state}. Mínimo 10 viales, descuentos por volumen, pago seguro eCartPay. Envío en ${c.deliveryDays} hábiles.`,
+      description: `Compra péptidos al mayoreo en ${c.name}, ${c.state}. Mínimo 10 viales, descuentos por volumen, pago seguro con Mercado Pago. Envío en ${c.deliveryDays} hábiles.`,
       canonical: `/peptidos/${c.slug}`,
       keywords: [
         `péptidos mayoreo ${c.name}`,
@@ -88,7 +88,7 @@ function CiudadPage() {
         <div className="flex items-start gap-3">
           <MessageCircle className="mt-0.5 h-5 w-5 text-primary" />
           <div>
-            <p className="text-sm font-semibold">Pago eCartPay</p>
+            <p className="text-sm font-semibold">Pago seguro</p>
             <p className="text-sm text-muted-foreground">Tarjeta, SPEI u OXXO. Comprobante automático.</p>
           </div>
         </div>

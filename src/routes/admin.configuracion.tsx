@@ -41,7 +41,7 @@ function Config() {
         <div>
           <Label htmlFor="email">Correo para notificaciones de pedidos</Label>
           <Input id="email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} className="mt-1" placeholder="tu@correo.com" />
-          <p className="mt-1 text-xs text-muted-foreground">Se envía un correo aquí cada vez que un pedido es aprobado por eCartPay.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Se envía un correo aquí cada vez que un pedido es aprobado.</p>
           {data?.adminEmailEnv && <p className="mt-1 text-xs text-muted-foreground">Configurado en variables de entorno: <code>{data.adminEmailEnv}</code></p>}
         </div>
         <label className="flex items-center gap-2 text-sm">

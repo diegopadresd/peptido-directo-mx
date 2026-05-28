@@ -11,7 +11,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <img src={logoFull} alt="Péptidos Mayoreo" className="h-12 w-auto" />
             <p className="mt-3 text-sm text-muted-foreground">
-              Distribuidor mayorista de péptidos en México. Mínimo 10 viales, pago eCartPay, envío nacional.
+              Distribuidor mayorista de péptidos en México. Mínimo 10 viales, pago seguro, envío nacional.
             </p>
           </div>
           <div>
