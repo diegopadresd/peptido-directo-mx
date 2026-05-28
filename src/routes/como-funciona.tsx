@@ -8,7 +8,7 @@ export const Route = createFileRoute("/como-funciona")({
   head: () =>
     buildHead({
       title: "Cómo Funciona - Mayoreo de Péptidos en México",
-      description: "Cotización por WhatsApp, pago seguro con eCartPay y envío nacional. Mínimo 10 viales, mezcla libre del catálogo.",
+      description: "Cotización por WhatsApp, pago seguro con Mercado Pago y envío nacional. Mínimo 10 viales, mezcla libre del catálogo.",
       canonical: "/como-funciona",
       keywords: ["péptidos mayoreo méxico", "como comprar péptidos mayoreo", "mercado pago péptidos"],
       jsonLd: breadcrumbJsonLd([{ name: "Inicio", url: "/" }, { name: "Cómo funciona", url: "/como-funciona" }]),
@@ -21,13 +21,13 @@ function ComoFunciona() {
     <div className="container mx-auto max-w-4xl px-4 py-12 md:py-20">
       <h1 className="font-display text-4xl font-extrabold md:text-5xl">Cómo Funciona el Modelo</h1>
       <p className="mt-4 text-lg text-muted-foreground">
-        Compras al mayoreo con precio por vial, cotización rápida por WhatsApp y pago seguro con eCartPay. Envío nacional a todo México.
+        Compras al mayoreo con precio por vial, cotización rápida por WhatsApp y pago seguro con Mercado Pago. Envío nacional a todo México.
       </p>
 
       <div className="mt-12 space-y-6">
         {[
           { icon: Package, t: "1. Eliges productos y cantidad", d: "Mínimo 10 viales totales — puedes mezclar cualquier producto del catálogo. Nos escribes por WhatsApp con tu lista y te confirmamos disponibilidad y precio final en MXN." },
-          { icon: CreditCard, t: "2. Pagas con eCartPay", d: "Te enviamos un link de pago de eCartPay con el monto exacto de tu cotización. Puedes pagar con tarjeta de crédito o débito, SPEI o efectivo en OXXO. Recibes comprobante automático al confirmar el pago." },
+          { icon: CreditCard, t: "2. Pagas con tarjeta, OXXO o SPEI", d: "Te enviamos un link de pago de Mercado Pago con el monto exacto de tu cotización. Puedes pagar con tarjeta de crédito o débito, SPEI o efectivo en OXXO. Recibes comprobante automático al confirmar el pago." },
           { icon: Truck, t: "3. Preparamos y enviamos tu pedido", d: "Una vez confirmado el pago, preparamos el pedido y lo enviamos por paquetería con número de guía para que rastrees el envío en todo momento." },
           { icon: Home, t: "4. Llega a tu puerta", d: "Entregamos a la dirección que indiques en cualquier estado de México. Tiempos estimados de 3 a 7 días hábiles según ubicación." },
           { icon: ShieldCheck, t: "5. Garantía de entrega", d: "Si tu paquete se extravía con la paquetería, lo reponemos sin costo. Cobertura sujeta a guía con seguimiento activo." },

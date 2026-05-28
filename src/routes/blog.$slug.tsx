@@ -105,7 +105,7 @@ function Post() {
       <aside className="mt-14 rounded-xl border border-border bg-card p-6">
         <h3 className="font-display text-xl font-bold">¿Listo para empezar a vender?</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          MOQ 10 viales mezclados. Pago por eCartPay. Envío nacional con cadena de frío.
+          MOQ 10 viales mezclados. Pago con tarjeta, OXXO o SPEI. Envío nacional con cadena de frío.
         </p>
         <a
           href={buildWaLink("Hola, vengo del blog y quiero recibir el catálogo mayoreo.")}
