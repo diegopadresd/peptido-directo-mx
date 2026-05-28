@@ -1,23 +1,62 @@
+## Replicar el checkout de Peptide MX (handoff a Zelara → check-out.mx)
 
-## Cambiar checkout de Stripe a eCartPay
+Peptide MX **no** integra eCartPay ni Mercado Pago directamente. Hace un POST a un edge function de Zelara (`create-checkout-handoff`), Zelara crea la orden, genera un token, y devuelve un `init_point` a `https://check-out.mx/c/<token>`. El cliente es redirigido ahí, paga, y vuelve al `return_url` en peptidosmayoreo. Las órdenes pagadas viven en la DB de Zelara, etiquetadas con `source`.
 
-Las llaves `ECARTPAY_PUBLIC_KEY` y `ECARTPAY_SECRET_KEY` ya están guardadas. Las columnas `ecartpay_session_id`, `ecartpay_payment_id`, `ecartpay_status_detail` ya existen en `orders`. La migración previa de eCartPay → Stripe se revierte así:
+### Flujo exacto a implementar
 
-### Backend
-1. **Crear `src/lib/ecartpay.server.ts`** — cliente con cache de JWT (1h), `createEcartpayOrder()` y `getEcartpayOrder()`. Mapea `paid`/`approved` → `approved`. Lee `ECARTPAY_ENV` (default `live`) para elegir endpoint sandbox vs producción.
-2. **Reescribir `src/routes/api.checkout.create-order.ts`** — reemplazar la creación de Stripe Checkout Session por `createEcartpayOrder()`. Devolver `init_point` con el link de pago de eCart. Guardar `ecartpay_session_id` en lugar de reutilizar `mp_preference_id`.
-3. **Crear `src/routes/api.public.ecartpay-webhook.ts`** — handler POST que (a) valida firma HMAC si `ECARTPAY_WEBHOOK_SECRET` existe, (b) re-consulta la orden a eCart como verificación autoritativa, (c) actualiza `orders.status`, registra `order_events`, dispara `notifyAdminNewOrder` una sola vez (idempotente vía `notified_at`).
-4. **Eliminar archivos Stripe**: `src/lib/stripe.server.ts` y `src/routes/api.checkout.verify.ts`. (Dejo el secret `STRIPE_SECRET_KEY` en su lugar por si lo quieres conservar; dime si lo borro.)
+```text
+[checkout peptidosmayoreo]
+        │
+        ▼
+POST /api/checkout/create-order (server fn nuestro)
+        │  arma payload tipo Peptide MX
+        ▼
+POST https://uizhzrudwujhjwhwjzfm.supabase.co/functions/v1/create-checkout-handoff
+     headers: apikey + Authorization Bearer (anon key de Zelara, ya pública)
+     body: { source, email, items[], subtotal, shipping_cost, total,
+             shipping_address, return_url, discount_code? }
+        │
+        ▼  { init_point: "https://check-out.mx/c/<token>", order_id }
+        │
+[redirección del navegador a init_point]
+        │
+        ▼ pago en check-out.mx (procesa con razón social neutral)
+        │
+        ▼ redirige a return_url = https://peptidosmayoreo.com/pago/exito?order_id=...
+```
 
-### Frontend
-5. **`src/routes/checkout.tsx`** — cambiar el label del botón de "Pagar con tarjeta" a "Pagar con eCartPay".
-6. **`src/routes/pago.exito.tsx`** — quitar el `useEffect` que llamaba `/api/checkout/verify`; la confirmación llega por webhook. Mantener mensaje de WhatsApp genérico.
-7. **Copys de marketing** — los textos sitewide ya dicen "Stripe". Los actualizo a "eCartPay" en el mismo pase (footer, FAQs, política, blog, ciudades, productos, home).
+### Cambios concretos
 
-### Configuración pendiente de tu lado
-- En el panel de eCart configurar el webhook a: `https://peptidosmayoreo.com/api/public/ecartpay-webhook`
-- Si las llaves son sandbox, agregar el secret `ECARTPAY_ENV=sandbox`. Si son live no hace falta nada.
-- Opcional más adelante: `ECARTPAY_WEBHOOK_SECRET` para validar firma del webhook.
+**1. `src/routes/api.checkout.create-order.ts` — reescribir**
+- Mantener el schema Zod actual de validación.
+- Reemplazar toda la lógica de eCartPay/orden local por un único `fetch` al handoff de Zelara con el payload en el formato que espera (ver `items[].{id,title,quantity,unit_price,picture_url}`, `shipping_address` con `full_name/phone/email/street/exterior_number/interior_number/neighborhood/city/state/postal_code/country/notes`).
+- `source`: ver pregunta abajo.
+- `return_url`: `https://peptidosmayoreo.com/pago/exito?order_id=`
+- Devolver al cliente `{ init_point, order_id }` para que el front haga `window.location.href = init_point`.
 
-### Pregunta
-- ¿Las llaves que cargaste son **sandbox** o **live**? Necesito saberlo para apuntar al endpoint correcto (o configuro `ECARTPAY_ENV` después).
+**2. Borrar archivos eCartPay**
+- `src/lib/ecartpay.server.ts`
+- `src/routes/api.public.ecartpay-webhook.ts`
+
+**3. Borrar secrets sobrantes** (opcional, después de validar): `ECARTPAY_PUBLIC_KEY`, `ECARTPAY_SECRET_KEY`, `STRIPE_SECRET_KEY`.
+
+**4. Frontend `src/routes/checkout.tsx`** — cambiar label del botón a "Pagar" (o "Continuar al pago seguro"). El resto del flujo (cart → submit → redirect a `init_point`) ya funciona; solo cambia el destino.
+
+**5. Copys sitewide** — sustituir menciones de "eCartPay" → "Pago seguro" / "check-out.mx" / "Mercado Pago" (Peptide MX dice "Pago seguro procesado por Mercado Pago" porque check-out.mx usa MP por detrás). Archivos: `Footer.tsx`, `como-funciona.tsx`, `politica-devoluciones.tsx`, `productos.$slug.tsx`, `pago.*.tsx`, `index.tsx`, `blog.$slug.tsx`, `cities.ts`, etc.
+
+**6. `src/routes/pago.exito.tsx`** — sin cambios funcionales (ya solo muestra mensaje + WhatsApp; no consulta webhook).
+
+**7. Tabla `orders` de peptidosmayoreo**
+- Decisión: con este flujo, las órdenes pagadas viven en la DB de Zelara. La tabla local `orders` deja de recibir registros nuevos.
+- Implicación: el panel admin de peptidosmayoreo (`/admin/pedidos`, carritos, dashboard) deja de ver órdenes nuevas. Para verlas habría que entrar al admin de Zelara, filtrando por `source` correspondiente.
+
+### Preguntas que necesito antes de codear
+
+1. **`source` tag**: la función de Zelara solo reconoce `"peptide-mx"` o `"zelara"` por default. ¿Quieres que:
+   - (a) usemos `"peptide-mx"` (las órdenes se mezclan con Peptide MX en el admin de Zelara), o
+   - (b) agreguemos un valor nuevo tipo `"peptidos-mayoreo"` (requiere que actualices la función de Zelara también para reconocerlo), o
+   - (c) `"zelara"` (todas mezcladas)?
+
+2. **Panel admin local**: ¿Está bien que el admin de peptidosmayoreo deje de mostrar pedidos nuevos? (Como en Peptide MX, que no tiene admin de órdenes propio — todo se consulta en Zelara.)
+
+3. **Catálogo de precios autoritativos en Zelara**: el handoff de Zelara tiene un mapa `CATALOG_PRICES_MXN` que sobrescribe precios para IDs conocidos. Los slugs de peptidosmayoreo (ej. `retatrutida-10mg`) coinciden parcialmente con ese catálogo pero **los packs** (precio por 5/10/25 viales) no encajan. ¿Te aseguras de actualizar ese catálogo en Zelara para que NO sobrescriba los precios de packs de peptidosmayoreo? O alternativa: usaremos un `id` distinto que no exista en el catálogo (p.ej. `pmm:retatrutida-10mg:5v`) para que Zelara respete el `unit_price` que mandamos.
