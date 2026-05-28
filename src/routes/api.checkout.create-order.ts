@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { SITE_URL } from "@/lib/whatsapp";
-import { createEcartpayOrder } from "@/lib/ecartpay.server";
 
 const ItemSchema = z.object({
   productSlug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
@@ -31,14 +29,18 @@ const BodySchema = z.object({
   cartToken: z.string().max(80).optional(),
 });
 
+// Handoff a Zelara → check-out.mx (mismo flujo que Peptide MX).
+// Zelara crea la orden con source="peptide-mx" y devuelve un init_point
+// que apunta a https://check-out.mx/c/<token>.
+const ZELARA_HANDOFF_URL =
+  "https://uizhzrudwujhjwhwjzfm.supabase.co/functions/v1/create-checkout-handoff";
+const ZELARA_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpemh6cnVkd3VqaGp3aHdqemZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3Nzk1OTMsImV4cCI6MjA4NDM1NTU5M30.kt5UZ6GbpBzRpdobwsPnEZVEasc-IG6FfFZn45unKfk";
+
 export const Route = createFileRoute("/api/checkout/create-order")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        if (!process.env.ECARTPAY_SECRET_KEY || !process.env.ECARTPAY_PUBLIC_KEY) {
-          return json({ error: "eCartPay no está configurado" }, 500);
-        }
-
         let body: z.infer<typeof BodySchema>;
         try { body = BodySchema.parse(await request.json()); }
         catch (e) { return json({ error: "Datos inválidos", details: e instanceof Error ? e.message : "" }, 400); }
@@ -50,91 +52,62 @@ export const Route = createFileRoute("/api/checkout/create-order")({
           }
         }
 
-        // 1. Create order in DB.
-        const { data: order, error: oErr } = await supabaseAdmin.from("orders").insert({
-          status: "pending",
-          total_mxn: subtotal,
-          customer_name: body.customerName,
-          customer_email: body.customerEmail,
-          customer_phone: body.customerPhone,
-          customer_address: {
-            street: body.street, extNumber: body.extNumber, intNumber: body.intNumber,
-            neighborhood: body.neighborhood, postalCode: body.postalCode, city: body.city,
-            state: body.state, references: body.references, rfc: body.rfc,
-          },
-          notes: body.notes || null,
-          shipping_status: "pendiente",
-        }).select("id").single();
-        if (oErr || !order) {
-          console.error("create order failed", oErr);
-          return json({ error: "No se pudo crear el pedido" }, 500);
-        }
-
-        // 2. Insert line items.
-        const { error: iErr } = await supabaseAdmin.from("order_items").insert(
-          body.items.map((it) => ({
-            order_id: order.id,
-            product_slug: it.productSlug,
-            product_name: it.productName,
-            dose: it.dose,
-            qty: it.qty,
-            unit_price_mxn: it.unitPrice,
-            line_total_mxn: it.lineTotal,
+        // Construye el payload para el handoff de Zelara → check-out.mx.
+        // Usamos un id con prefijo "pmm:" para que el catálogo autoritativo de
+        // Zelara NO sobrescriba los precios de pack que mandamos.
+        const payload = {
+          source: "peptide-mx",
+          email: body.customerEmail,
+          user_id: null,
+          items: body.items.map((it) => ({
+            id: `pmm:${it.productSlug}:${it.dose}:${it.qty}v`,
+            title: `${it.productName} ${it.dose} · pack ${it.qty} viales`,
+            quantity: 1,
+            unit_price: it.lineTotal,
+            picture_url: null,
+            slug: it.productSlug,
           })),
-        );
-        if (iErr) console.error("insert items failed", iErr);
-
-        // 3. Mark cart converted (best-effort).
-        if (body.cartToken) {
-          await supabaseAdmin.from("carts")
-            .update({ status: "converted", converted_order_id: order.id })
-            .eq("cart_token", body.cartToken);
-        }
-
-        const externalRef = order.id;
-        await supabaseAdmin.from("orders").update({ external_reference: externalRef }).eq("id", order.id);
+          subtotal,
+          shipping_cost: 0,
+          total: subtotal,
+          shipping_address: {
+            full_name: body.customerName,
+            phone: body.customerPhone,
+            email: body.customerEmail,
+            street: body.street,
+            exterior_number: body.extNumber || null,
+            interior_number: body.intNumber || null,
+            neighborhood: body.neighborhood || null,
+            city: body.city,
+            state: body.state,
+            postal_code: body.postalCode,
+            country: "MX",
+            notes: [body.references, body.notes, body.rfc ? `RFC: ${body.rfc}` : ""].filter(Boolean).join(" · ") || null,
+          },
+          return_url: `${SITE_URL}/pago/exito?order_id=`,
+        };
 
         try {
-          const session = await createEcartpayOrder({
-            reference: externalRef,
-            totalMxn: subtotal,
-            items: body.items.map((it) => ({
-              name: `${it.productName} ${it.dose} · pack ${it.qty} viales`,
-              quantity: 1,
-              price: it.lineTotal,
-              sku: `${it.productSlug}-${it.dose}-${it.qty}v`.slice(0, 60),
-            })),
-            customer: {
-              name: body.customerName,
-              email: body.customerEmail,
-              phone: body.customerPhone,
+          const res = await fetch(ZELARA_HANDOFF_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: ZELARA_ANON_KEY,
+              Authorization: `Bearer ${ZELARA_ANON_KEY}`,
             },
-            shipping: {
-              street: body.street,
-              extNumber: body.extNumber,
-              intNumber: body.intNumber,
-              neighborhood: body.neighborhood,
-              postalCode: body.postalCode,
-              city: body.city,
-              state: body.state,
-            },
-            redirectUrl: `${SITE_URL}/pago/exito?ref=${encodeURIComponent(externalRef)}`,
-            notifyUrl: `${SITE_URL}/api/public/ecartpay-webhook`,
+            body: JSON.stringify(payload),
           });
-
-          await supabaseAdmin.from("orders").update({
-            ecartpay_session_id: session.id,
-          }).eq("id", order.id);
-          await supabaseAdmin.from("order_events").insert({
-            order_id: order.id,
-            event: "order_created",
-            payload: { ecartpay_session_id: session.id },
-          });
-
-          return json({ init_point: session.paymentUrl, order_id: order.id }, 200);
+          const data = await res.json().catch(() => null) as
+            | { init_point?: string; order_id?: string; error?: string; detail?: string }
+            | null;
+          if (!res.ok || !data?.init_point) {
+            console.error("create-checkout-handoff failed", res.status, data);
+            return json({ error: data?.error || "No se pudo iniciar el pago" }, 502);
+          }
+          return json({ init_point: data.init_point, order_id: data.order_id }, 200);
         } catch (err) {
-          console.error("ecartpay create order error", err);
-          return json({ error: err instanceof Error ? err.message : "Error con eCartPay" }, 502);
+          console.error("create-checkout-handoff network error", err);
+          return json({ error: "No se pudo conectar con el procesador de pagos" }, 502);
         }
       },
     },
