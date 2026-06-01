@@ -33,6 +33,7 @@ import { Route as PagoFalloRouteImport } from './routes/pago.fallo'
 import { Route as PagoExitoRouteImport } from './routes/pago.exito'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminCrmBackfillRouteImport } from './routes/admin.crm-backfill'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin.configuracion'
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminCarritosRouteImport } from './routes/admin.carritos'
@@ -160,6 +161,11 @@ const AdminPedidosRoute = AdminPedidosRouteImport.update({
   path: '/pedidos',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCrmBackfillRoute = AdminCrmBackfillRouteImport.update({
+  id: '/crm-backfill',
+  path: '/crm-backfill',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
   id: '/configuracion',
   path: '/configuracion',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/crm-backfill': typeof AdminCrmBackfillRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/crm-backfill': typeof AdminCrmBackfillRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/admin/carritos': typeof AdminCarritosRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/crm-backfill': typeof AdminCrmBackfillRoute
   '/admin/pedidos': typeof AdminPedidosRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
   '/pago/exito': typeof PagoExitoRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/admin/carritos'
     | '/admin/clientes'
     | '/admin/configuracion'
+    | '/admin/crm-backfill'
     | '/admin/pedidos'
     | '/blog/$slug'
     | '/pago/exito'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/carritos'
     | '/admin/clientes'
     | '/admin/configuracion'
+    | '/admin/crm-backfill'
     | '/admin/pedidos'
     | '/blog/$slug'
     | '/pago/exito'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/admin/carritos'
     | '/admin/clientes'
     | '/admin/configuracion'
+    | '/admin/crm-backfill'
     | '/admin/pedidos'
     | '/blog/$slug'
     | '/pago/exito'
@@ -580,6 +592,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPedidosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/crm-backfill': {
+      id: '/admin/crm-backfill'
+      path: '/crm-backfill'
+      fullPath: '/admin/crm-backfill'
+      preLoaderRoute: typeof AdminCrmBackfillRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/configuracion': {
       id: '/admin/configuracion'
       path: '/configuracion'
@@ -642,6 +661,7 @@ interface AdminRouteChildren {
   AdminCarritosRoute: typeof AdminCarritosRoute
   AdminClientesRoute: typeof AdminClientesRoute
   AdminConfiguracionRoute: typeof AdminConfiguracionRoute
+  AdminCrmBackfillRoute: typeof AdminCrmBackfillRoute
   AdminPedidosRoute: typeof AdminPedidosRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -651,6 +671,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCarritosRoute: AdminCarritosRoute,
   AdminClientesRoute: AdminClientesRoute,
   AdminConfiguracionRoute: AdminConfiguracionRoute,
+  AdminCrmBackfillRoute: AdminCrmBackfillRoute,
   AdminPedidosRoute: AdminPedidosRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
 }
