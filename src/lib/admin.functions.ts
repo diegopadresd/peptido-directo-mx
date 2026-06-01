@@ -2,6 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  syncAll as crmSyncAll,
+  syncCustomers as crmSyncCustomers,
+  syncOrders as crmSyncOrders,
+  syncProducts as crmSyncProducts,
+  syncOrderByIdLive,
+} from "@/lib/crm-sync";
 
 async function assertAdmin(userId: string) {
   const { data, error } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -612,6 +619,8 @@ export const adminUpdateOrder = createServerFn({ method: "POST" })
       event: "admin_update",
       payload: update as Record<string, string>,
     });
+    // Fire-and-forget CRM live sync (single order + its customer aggregate).
+    void syncOrderByIdLive(data.id);
     return { ok: true };
   });
 
@@ -699,4 +708,40 @@ export const adminUpdateSettings = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("app_settings").update(data).eq("id", 1);
     if (error) throw new Response(error.message, { status: 500 });
     return { ok: true };
+  });
+
+// ---------- CRM backfill (admin-only) ----------
+
+const CrmInput = z.object({ replace: z.boolean().default(false) }).default({ replace: false });
+
+export const adminCrmSyncProducts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => CrmInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    return crmSyncProducts(data.replace);
+  });
+
+export const adminCrmSyncOrders = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => CrmInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    return crmSyncOrders(data.replace);
+  });
+
+export const adminCrmSyncCustomers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => CrmInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    return crmSyncCustomers(data.replace);
+  });
+
+export const adminCrmSyncAll = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => CrmInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    return crmSyncAll(data.replace);
   });
