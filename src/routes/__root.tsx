@@ -91,6 +91,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     scripts: [
       { type: "application/ld+json", children: JSON.stringify(organizationJsonLd()) },
       { type: "application/ld+json", children: JSON.stringify(websiteJsonLd()) },
+      {
+        src: "https://project--e730ba8b-d7c5-4ed6-8694-e31a24c88138.lovable.app/tracker.js",
+        defer: true,
+        "data-token": "c3144f6b20ae924f25ed40ab902524879dfbcf919e9f00bc",
+      },
       // Analytics placeholders — pega tus IDs cuando los tengas:
       // { children: "/* GA4 */ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);} gtag('js',new Date()); gtag('config','G-XXXXXXXXXX');" },
       // { src: "https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX", async: "" },
