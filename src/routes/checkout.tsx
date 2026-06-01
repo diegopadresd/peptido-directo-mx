@@ -42,7 +42,7 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
-  const completedRef = (typeof window !== "undefined") ? (window as unknown as { __pmCheckoutDone?: { v: boolean } }).__pmCheckoutDone ??= { v: false } : { v: false };
+  const completedRef = useState({ v: false })[0];
   useEffect(() => {
     if (items.length > 0) trackEvent("begin_checkout", { valueMxn: subtotal, meta: { items: items.length } });
     const startItems = useCart.getState().items;
