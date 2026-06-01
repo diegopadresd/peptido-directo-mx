@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatMxn } from "@/lib/pricing";
 import { MX_STATES } from "@/lib/mx-states";
 import { trackEvent } from "@/lib/analytics/track";
+import { trackCheckout } from "@/lib/crm";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout · Péptidos Mayoreo" }, { name: "robots", content: "noindex" }] }),
@@ -41,8 +42,31 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const completedRef = (typeof window !== "undefined") ? (window as unknown as { __pmCheckoutDone?: { v: boolean } }).__pmCheckoutDone ??= { v: false } : { v: false };
   useEffect(() => {
     if (items.length > 0) trackEvent("begin_checkout", { valueMxn: subtotal, meta: { items: items.length } });
+    const startItems = useCart.getState().items;
+    const startSubtotal = startItems.reduce((a, x) => a + x.lineTotal, 0);
+    trackCheckout("checkout_start", {
+      items: startItems as unknown as Array<Record<string, unknown>>,
+      item_count: startItems.reduce((a, x) => a + x.qty, 0),
+      value_cents: Math.round(startSubtotal * 100),
+      currency: "MXN",
+    });
+    completedRef.v = false;
+    const onPageHide = () => {
+      if (completedRef.v) return;
+      const s = useCart.getState().items;
+      const sub = s.reduce((a, x) => a + x.lineTotal, 0);
+      trackCheckout("checkout_abandoned", {
+        items: s as unknown as Array<Record<string, unknown>>,
+        item_count: s.reduce((a, x) => a + x.qty, 0),
+        value_cents: Math.round(sub * 100),
+        currency: "MXN",
+      });
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -87,6 +111,14 @@ function CheckoutPage() {
       const data = await res.json() as { init_point?: string; error?: string; order_id?: string };
       if (!res.ok || !data.init_point) throw new Error(data.error || "No se pudo crear el pedido");
       trackEvent("order_created", { valueMxn: subtotal, meta: { order_id: data.order_id } });
+      completedRef.v = true;
+      trackCheckout("checkout_complete", {
+        items: items as unknown as Array<Record<string, unknown>>,
+        item_count: items.reduce((a, x) => a + x.qty, 0),
+        value_cents: Math.round(subtotal * 100),
+        currency: "MXN",
+        user_email: parsed.data.customerEmail,
+      });
       window.location.href = data.init_point;
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Error inesperado");
