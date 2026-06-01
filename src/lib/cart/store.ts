@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { syncCart } from "@/lib/analytics/track";
+import { trackCart } from "@/lib/crm";
 
 export type CartItem = {
   productSlug: string;
@@ -75,6 +76,13 @@ function queueCartSync(cartToken: string, items: CartItem[]) {
   if (typeof window === "undefined") return;
   if (syncTimer) clearTimeout(syncTimer);
   const subtotal = items.reduce((a, x) => a + x.lineTotal, 0);
+  const itemCount = items.reduce((a, x) => a + x.qty, 0);
+  trackCart({
+    items: items as unknown as Array<Record<string, unknown>>,
+    item_count: itemCount,
+    value_cents: Math.round(subtotal * 100),
+    currency: "MXN",
+  });
   syncTimer = setTimeout(() => {
     syncCart({ cartToken, items: items as unknown as Array<Record<string, unknown>>, subtotalMxn: subtotal });
   }, 600);
@@ -97,6 +105,13 @@ export function ensureCartPersisted() {
 export function syncCartWithCustomer(input: { email?: string; customerName?: string; phone?: string }) {
   const state = useCart.getState();
   const subtotal = state.items.reduce((a, x) => a + x.lineTotal, 0);
+  trackCart({
+    items: state.items as unknown as Array<Record<string, unknown>>,
+    item_count: state.items.reduce((a, x) => a + x.qty, 0),
+    value_cents: Math.round(subtotal * 100),
+    currency: "MXN",
+    user_email: input.email,
+  });
   return syncCart({
     cartToken: state.cartToken,
     items: state.items as unknown as Array<Record<string, unknown>>,
