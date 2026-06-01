@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, ShoppingBag, Users, ShoppingCart, Settings, LogOut, BarChart3 } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Users, ShoppingCart, Settings, LogOut, BarChart3, RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin · Péptidos Mayoreo" }, { name: "robots", content: "noindex" }] }),
@@ -74,6 +74,7 @@ function AdminLayout() {
     { to: "/admin/carritos", label: "Carritos abandonados", icon: ShoppingCart },
     { to: "/admin/clientes", label: "Clientes", icon: Users },
     { to: "/admin/configuracion", label: "Configuración", icon: Settings },
+    { to: "/admin/crm-backfill", label: "CRM backfill", icon: RefreshCw },
   ];
 
   return (
