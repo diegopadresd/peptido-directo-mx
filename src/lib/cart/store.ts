@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { syncCart } from "@/lib/analytics/track";
 import { trackCart } from "@/lib/crm";
+import { trackCartUpdate } from "@/lib/crm-tracker";
 
 export type CartItem = {
   productSlug: string;
@@ -83,6 +84,11 @@ function queueCartSync(cartToken: string, items: CartItem[]) {
     value_cents: Math.round(subtotal * 100),
     currency: "MXN",
   });
+  trackCartUpdate({
+    items: items.map((x) => ({ sku: x.productSlug + ":" + x.dose, name: `${x.productName} ${x.dose}`, qty: x.qty, price_cents: Math.round((x.lineTotal / Math.max(x.qty, 1)) * 100) })),
+    value_cents: Math.round(subtotal * 100),
+    currency: "MXN",
+  });
   syncTimer = setTimeout(() => {
     syncCart({ cartToken, items: items as unknown as Array<Record<string, unknown>>, subtotalMxn: subtotal });
   }, 600);
@@ -108,6 +114,12 @@ export function syncCartWithCustomer(input: { email?: string; customerName?: str
   trackCart({
     items: state.items as unknown as Array<Record<string, unknown>>,
     item_count: state.items.reduce((a, x) => a + x.qty, 0),
+    value_cents: Math.round(subtotal * 100),
+    currency: "MXN",
+    user_email: input.email,
+  });
+  trackCartUpdate({
+    items: state.items.map((x) => ({ sku: x.productSlug + ":" + x.dose, name: `${x.productName} ${x.dose}`, qty: x.qty, price_cents: Math.round((x.lineTotal / Math.max(x.qty, 1)) * 100) })),
     value_cents: Math.round(subtotal * 100),
     currency: "MXN",
     user_email: input.email,
