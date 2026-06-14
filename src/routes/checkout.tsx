@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatMxn } from "@/lib/pricing";
 import { MX_STATES } from "@/lib/mx-states";
 import { trackEvent } from "@/lib/analytics/track";
-import { trackCheckout } from "@/lib/crm";
+import { trackCheckout as trackCheckoutLegacy } from "@/lib/crm";
+import { trackCheckout as trackCheckoutCrm } from "@/lib/crm-tracker";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout · Péptidos Mayoreo" }, { name: "robots", content: "noindex" }] }),
@@ -47,20 +48,31 @@ function CheckoutPage() {
     if (items.length > 0) trackEvent("begin_checkout", { valueMxn: subtotal, meta: { items: items.length } });
     const startItems = useCart.getState().items;
     const startSubtotal = startItems.reduce((a, x) => a + x.lineTotal, 0);
-    trackCheckout("checkout_start", {
+    trackCheckoutLegacy("checkout_start", {
       items: startItems as unknown as Array<Record<string, unknown>>,
       item_count: startItems.reduce((a, x) => a + x.qty, 0),
       value_cents: Math.round(startSubtotal * 100),
       currency: "MXN",
+    });
+    trackCheckoutCrm("checkout_start", {
+      items: startItems.map((x) => ({ sku: x.productSlug + ":" + x.dose, name: `${x.productName} ${x.dose}`, qty: x.qty, price_cents: Math.round((x.lineTotal / Math.max(x.qty, 1)) * 100) })),
+      value_cents: Math.round(startSubtotal * 100),
+      currency: "MXN",
+      checkout_step: "shipping",
     });
     completedRef.v = false;
     const onPageHide = () => {
       if (completedRef.v) return;
       const s = useCart.getState().items;
       const sub = s.reduce((a, x) => a + x.lineTotal, 0);
-      trackCheckout("checkout_abandoned", {
+      trackCheckoutLegacy("checkout_abandoned", {
         items: s as unknown as Array<Record<string, unknown>>,
         item_count: s.reduce((a, x) => a + x.qty, 0),
+        value_cents: Math.round(sub * 100),
+        currency: "MXN",
+      });
+      trackCheckoutCrm("checkout_abandoned", {
+        items: s.map((x) => ({ sku: x.productSlug + ":" + x.dose, name: `${x.productName} ${x.dose}`, qty: x.qty, price_cents: Math.round((x.lineTotal / Math.max(x.qty, 1)) * 100) })),
         value_cents: Math.round(sub * 100),
         currency: "MXN",
       });
@@ -112,9 +124,16 @@ function CheckoutPage() {
       if (!res.ok || !data.init_point) throw new Error(data.error || "No se pudo crear el pedido");
       trackEvent("order_created", { valueMxn: subtotal, meta: { order_id: data.order_id } });
       completedRef.v = true;
-      trackCheckout("checkout_complete", {
+      trackCheckoutLegacy("checkout_complete", {
         items: items as unknown as Array<Record<string, unknown>>,
         item_count: items.reduce((a, x) => a + x.qty, 0),
+        value_cents: Math.round(subtotal * 100),
+        currency: "MXN",
+        user_email: parsed.data.customerEmail,
+      });
+      trackCheckoutCrm("checkout_complete", {
+        order_id: data.order_id,
+        items: items.map((x) => ({ sku: x.productSlug + ":" + x.dose, name: `${x.productName} ${x.dose}`, qty: x.qty, price_cents: Math.round((x.lineTotal / Math.max(x.qty, 1)) * 100) })),
         value_cents: Math.round(subtotal * 100),
         currency: "MXN",
         user_email: parsed.data.customerEmail,
