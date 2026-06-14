@@ -18,6 +18,7 @@ import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/whatsapp";
 import { trackPageview } from "@/lib/analytics/track";
 import { ensureCartPersisted } from "@/lib/cart/store";
+import { initCrmTracker, trackPageview as crmTrackPageview } from "@/lib/crm-tracker";
 
 function NotFoundComponent() {
   return (
@@ -153,9 +154,11 @@ function ScrollToTop() {
 
 function PageviewTracker() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => { initCrmTracker(); }, []);
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin") || pathname.startsWith("/api")) return;
     trackPageview(pathname);
+    crmTrackPageview();
     ensureCartPersisted();
   }, [pathname]);
   return null;
